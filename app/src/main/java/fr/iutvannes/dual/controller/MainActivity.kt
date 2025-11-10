@@ -2,10 +2,10 @@ package fr.iutvannes.dual.controller
 
 import android.os.Bundle
 import android.view.View // Import pour gérer la visibilité (View.VISIBLE, View.GONE)
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -18,14 +18,15 @@ import fr.iutvannes.dual.controller.fragments.ClassesFragment
 import fr.iutvannes.dual.controller.fragments.InscriptionFragment
 import fr.iutvannes.dual.controller.fragments.ProfilFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
+import kotlin.text.replace
 
 class MainActivity : AppCompatActivity() {
 
     // Vues pour la barre de navigation et son conteneur
-    private lateinit var navBarContainer: LinearLayout
+    private lateinit var navBarContainer: ConstraintLayout
     private lateinit var navHomeButton: LinearLayout
     private lateinit var navClassesButton: LinearLayout
-    private lateinit var topBarContainer: LinearLayout
+    private lateinit var topBarContainer: ConstraintLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         // Listener pour le bouton de profil
         val profileButton = findViewById<ImageButton>(R.id.profileImage)
         profileButton.setOnClickListener {
-            showFragment(ProfilFragment())
+            showFragment(ProfilFragment(), false, false)
         }
 
         // --- GESTION DE LA NAVIGATION ---
@@ -58,13 +59,13 @@ class MainActivity : AppCompatActivity() {
 
         // Définir les actions des clics
         navHomeButton.setOnClickListener {
-            if (supportFragmentManager.findFragmentById(R.id.fragment_container) !is TableauDeBordFragment) {
-                showFragment(TableauDeBordFragment())
+            if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) !is TableauDeBordFragment) {
+                showFragment(TableauDeBordFragment(), true, true)
             }
         }
         navClassesButton.setOnClickListener {
-            if (supportFragmentManager.findFragmentById(R.id.fragment_container) !is ClassesFragment) {
-                showFragment(ClassesFragment())
+            if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) !is ClassesFragment) {
+                showFragment(ClassesFragment(), true, true)
             }
         }
 
@@ -85,9 +86,9 @@ class MainActivity : AppCompatActivity() {
         // --- ÉTAT INITIAL ---
         if (savedInstanceState == null) {
             if (isRemembered) {
-                showFragment(TableauDeBordFragment())
+                showFragment(TableauDeBordFragment(), true, true)
             } else {
-                showFragment(ConnexionFragment())
+                showFragment(ConnexionFragment(), false, false)
             }
         }
 
@@ -96,44 +97,30 @@ class MainActivity : AppCompatActivity() {
     /**
      * Remplace le fragment actuel ET gère la visibilité de la barre de navigation.
      */
-    fun showFragment(fragment: Fragment) {
-        // --- C'EST LA LOGIQUE LA PLUS IMPORTANTE ---
+    fun showFragment(fragment: Fragment, withNavigation: Boolean, withTopBar: Boolean) {
+
+        // Gérer la visibilité de la barre de navigation
+        findViewById<View>(R.id.bottomNav)?.apply {
+            visibility = if (withNavigation) View.VISIBLE else View.GONE
+        }
+
+        // Gérer la visibilité de la top bar
+        findViewById<View>(R.id.topBar)?.apply {
+            visibility = if (withTopBar) View.VISIBLE else View.GONE
+        }
+
+        // --- Met à jour la sélection du bouton de navigation ---
         when (fragment) {
-            is TableauDeBordFragment -> {
-                // Si c'est le tableau de bord
-                topBarContainer.visibility = View.VISIBLE
-                navBarContainer.visibility = View.VISIBLE // On MONTRE la barre
-                selectNavItem(navHomeButton) // On sélectionne l'icône "Home"
-            }
-
-            is ClassesFragment -> {
-                topBarContainer.visibility = View.VISIBLE
-                navBarContainer.visibility = View.VISIBLE // On MONTRE la barre
-                selectNavItem(navClassesButton) // On sélectionne l'icône "Classe"
-            }
-
-            is ProfilFragment -> {
-                topBarContainer.visibility = View.GONE
-                navBarContainer.visibility = View.GONE
-            }
-
-            is ConnexionFragment -> {
-                topBarContainer.visibility = View.GONE
-                navBarContainer.visibility = View.GONE
-            }
-
-            is InscriptionFragment -> {
-                topBarContainer.visibility = View.GONE
-                navBarContainer.visibility = View.GONE
-            }
-
-            // Pour tout autre fragment (Connexion, Inscription...), la barre sera cachée par défaut
+            is TableauDeBordFragment -> selectNavItem(navHomeButton)
+            is ClassesFragment -> selectNavItem(navClassesButton)
             else -> {
-                navBarContainer.visibility = View.GONE
+                // aucun bouton sélectionné (profil, connexion, etc.)
+                navHomeButton.isSelected = false
+                navClassesButton.isSelected = false
             }
         }
 
-        // Affiche le fragment passé en paramètre
+        // Afficher le fragment
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.slide_in_right, // entrée
@@ -141,8 +128,8 @@ class MainActivity : AppCompatActivity() {
                 R.anim.fade_in,        // retour
                 R.anim.slide_out_right // retour inverse
             )
-            .replace(R.id.fragment_container, fragment)
-            .addToBackStack(null)
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null) // Permet le retour avec le bouton retour
             .commit()
     }
 

@@ -27,7 +27,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
         backButton.setOnClickListener {
             // On demande à l'activité parente (MainActivity) d'afficher le fragment du tableau de bord
             // Le 'as?' est une sécurité pour éviter un crash si l'activité n'est pas MainActivity
-            (activity as? MainActivity)?.showFragment(TableauDeBordFragment())
+            (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
         }
     }
 }

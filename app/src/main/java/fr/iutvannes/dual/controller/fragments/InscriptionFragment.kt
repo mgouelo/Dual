@@ -30,7 +30,7 @@ class InscriptionFragment : Fragment() {
     ): View? {
 
         // On utilise le layout de l’inscription
-        val view = inflater.inflate(R.layout.activity_creation, container, false)
+        val view = inflater.inflate(R.layout.fragment_creation, container, false)
 
         // --- RÉCUPÉRATION DES VUES ---
         val nomInput = view.findViewById<EditText>(R.id.Nom)
@@ -110,14 +110,14 @@ class InscriptionFragment : Fragment() {
                     Toast.makeText(requireContext(), "Inscription réussie", Toast.LENGTH_SHORT).show()
 
                     // Retour vers la page de connexion
-                    (activity as? MainActivity)?.showFragment(ConnexionFragment())
+                    (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
                 }
             }
         }
 
         // --- LIEN "DÉJÀ UN COMPTE ? SE CONNECTER" ---
         connexionLien.setOnClickListener {
-            (activity as? MainActivity)?.showFragment(ConnexionFragment())
+            (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
         }
 
         return view

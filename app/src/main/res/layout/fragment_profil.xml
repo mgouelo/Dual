@@ -1,4 +1,5 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/blanc">
@@ -8,27 +9,31 @@
         android:id="@+id/top_bar_background"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_alignParentTop="true"
-        android:background="@drawable/top_bar_background_profil" />
+        android:background="@drawable/top_bar_background_profil"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
-        android:id="@+id/arrow_back_button" 
+        android:id="@+id/arrow_back_button"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginTop="40dp"
         android:layout_marginStart="40dp"
         android:src="@drawable/arrow_back_white"
         android:scaleType="centerCrop"
-        android:background="@android:color/transparent">
-
-    </ImageButton>
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="150dp">
+        android:layout_marginTop="150dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Texte de salutation, centré horizontalement dans la barre du haut -->
         <TextView
@@ -60,16 +65,17 @@
         android:layout_width="140dp"
         android:layout_height="140dp"
         android:src="@drawable/pfp"
-        android:layout_centerHorizontal="true"
-        android:layout_alignBottom="@+id/top_bar_background"
         android:layout_marginBottom="-70dp"
-        android:background="@drawable/rounded_pfp_circle_white"/>
+        android:background="@drawable/rounded_pfp_circle_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/top_bar_background" />
 
     <View
         android:id="@+id/view_after_top_bar_background"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_below="@id/top_bar_background"/>
+        app:layout_constraintTop_toBottomOf="@id/top_bar_background"/>
 
     <!-- Texte de rôle, positionné sous l'image de profil -->
     <TextView
@@ -77,11 +83,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/enseignant_d_eps"
-        android:layout_below="@id/view_after_top_bar_background"
-        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
         android:textSize="35sp"
-        android:textColor="@color/noir">
+        android:textColor="@color/noir"
+        app:layout_constraintTop_toBottomOf="@id/view_after_top_bar_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    </TextView>
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

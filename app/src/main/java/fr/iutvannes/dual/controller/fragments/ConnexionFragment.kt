@@ -29,7 +29,7 @@ class ConnexionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val view = inflater.inflate(R.layout.activity_connexion, container, false)
+        val view = inflater.inflate(R.layout.fragment_connexion, container, false)
 
         val emailInput = view.findViewById<EditText>(R.id.Email)
         val passwordInput = view.findViewById<EditText>(R.id.passwordInput)
@@ -107,14 +107,14 @@ class ConnexionFragment : Fragment() {
                             editor.clear()
                             editor.apply()
                         }
-                        (activity as? MainActivity)?.showFragment(TableauDeBordFragment())
+                        (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
                     }
                 }
             }
         }
 
         inscriptionLien.setOnClickListener {
-            (activity as? MainActivity)?.showFragment(InscriptionFragment())
+            (activity as? MainActivity)?.showFragment(InscriptionFragment(), false, false)
         }
 
         forgottenPassword.setOnClickListener {

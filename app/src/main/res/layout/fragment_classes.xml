@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <!-- Conteneur vertical pour votre liste de classes -->
-    <LinearLayout
-        android:id="@+id/container_classes"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Vous pourrez ajouter ici dynamiquement vos vues de classe -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Conteneur vertical pour la liste de classes -->
+        <LinearLayout
+            android:id="@+id/container_classes"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TODO: Lister les classes ici"
-            android:textSize="18sp"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    </LinearLayout>
+        </LinearLayout>
 
-</ScrollView>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
