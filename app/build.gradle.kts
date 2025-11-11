@@ -18,6 +18,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Permet d'exclure des fichiers du APK final afin d'éviter des conflits de dépendances.
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module"
+            )
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -113,5 +130,8 @@ dependencies {
     //Hash du password
     implementation("at.favre.lib:bcrypt:0.10.2")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Envoie de l'email de réinitialisation du mot de passe
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 

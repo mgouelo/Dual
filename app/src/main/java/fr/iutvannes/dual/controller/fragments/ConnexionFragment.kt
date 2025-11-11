@@ -93,6 +93,7 @@ class ConnexionFragment : Fragment() {
                 Toast.makeText(requireContext(), "L'email n'est pas valide", Toast.LENGTH_SHORT).show()
                 emailInput.setText("")
             } else {
+                // On lance une coroutine pour accéder à la DB
                 lifecycleScope.launch {
                     val prof = withContext(Dispatchers.IO) {
                         dao.getProfByEmail(email)
@@ -107,8 +108,8 @@ class ConnexionFragment : Fragment() {
                     } else {
                         Toast.makeText(requireContext(), "Connexion réussie !", Toast.LENGTH_SHORT).show()
                         if (rememberMe.isChecked) {
-                            editor.putString("email", email)
-                            editor.putString("password", password)
+                            editor.putString("email", emailInput.text.toString())
+                            editor.putString("password", passwordInput.text.toString())
                             editor.putBoolean("rememberMe", true)
                             editor.apply()
                         } else {
@@ -126,7 +127,7 @@ class ConnexionFragment : Fragment() {
         }
 
         forgottenPassword.setOnClickListener {
-            // TODO changement de fragment pour mot de passe oublié
+            (activity as? MainActivity)?.showFragment(ForgottenPasswordFragment(), false, false)
         }
 
         return view
