@@ -18,6 +18,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Permet d'exclure des fichiers du APK final afin d'éviter des conflits de dépendances.
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module"
+            )
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -114,8 +131,7 @@ dependencies {
     implementation("at.favre.lib:bcrypt:0.10.2")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // Traitement fichier Excel (.xls et .xlsx) - désactiver si la vm bug
-    implementation("org.apache.poi:poi:5.2.5")
-    implementation("org.apache.poi:poi-ooxml:5.2.5")
+    // Envoie de l'email de réinitialisation du mot de passe
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
