@@ -133,5 +133,9 @@ dependencies {
 
     // Envoie de l'email de réinitialisation du mot de passe
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Lecture fichier Excel (.xls et .xlsx)
+    implementation("org.apache.poi:poi:5.2.5")
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
 }
 
