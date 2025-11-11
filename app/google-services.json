@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "293314908011",
+    "project_id": "dual-biathlon",
+    "storage_bucket": "dual-biathlon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293314908011:android:518922191feb0ccb88862e",
+        "android_client_info": {
+          "package_name": "fr.iutvannes.dual"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgHa7uxPOpCTwsdaQzT83XtFoK1SRBMrI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

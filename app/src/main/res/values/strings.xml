@@ -32,4 +32,10 @@
     <string name="lancer_une_s_ance">Lancer une séance</string>
     <string name="empty">Empty</string>
 
+    <string name="forgottenpassword_page_title">Mot de passe oublié ?</string>
+    <string name="forgottenpassword_page_explication">Veuillez saisir l\'adresse email associée à votre compte pour recevoir le code de réinitialisation de votre mot de passe.</string>
+    <string name="forgottenpassword_page_email_input">Adresse email :</string>
+    <string name="forgottenpassword_page_button">Recevoir le code</string>
+    <string name="forgottenpassword_page_seconnecter_button">Déjà un compte ? Se connecter</string>
+
 </resources>
