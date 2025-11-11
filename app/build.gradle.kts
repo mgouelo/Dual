@@ -113,5 +113,9 @@ dependencies {
     //Hash du password
     implementation("at.favre.lib:bcrypt:0.10.2")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Traitement fichier Excel (.xls et .xlsx) - désactiver si la vm bug
+    implementation("org.apache.poi:poi:5.2.5")
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
 }
 
