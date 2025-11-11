@@ -78,39 +78,50 @@ class InscriptionFragment : Fragment() {
             val password = passwordInput.text.toString().trim()
             val passwordVerif = passwordVerifInput.text.toString().trim()
 
+            // Regex pour email simple
+            val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+
             if (nom.isEmpty() || prenom.isEmpty() || email.isEmpty() || password.isEmpty() || passwordVerif.isEmpty()) {
                 Toast.makeText(requireContext(), "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
-            }
-
-            if (password != passwordVerif) {
+            } else if (password != passwordVerif) {
                 Toast.makeText(requireContext(), "Les mots de passe ne correspondent pas", Toast.LENGTH_SHORT).show()
+                passwordInput.setText("")
+                passwordVerifInput.setText("")
                 return@setOnClickListener
-            }
-
-            // --- SAUVEGARDE DANS LA BASE ---
-            lifecycleScope.launch {
-                val existingProf = withContext(Dispatchers.IO) {
-                    dao.getProfByEmail(email)
-                }
-
-                if (existingProf != null) {
-                    Toast.makeText(requireContext(), "Un professeur avec cet email existe déjà", Toast.LENGTH_SHORT).show()
-                } else {
-                    withContext(Dispatchers.IO) {
-                        val prof = Prof(
-                            nom = nom,
-                            prenom = prenom,
-                            email = email,
-                            password = PasswordUtils.hashPassword(password)
-                        )
-                        dao.insert(prof)
+            } else if (!email.matches(emailRegex)) {
+                Toast.makeText(requireContext(), "L'email n'est pas valide", Toast.LENGTH_SHORT).show()
+                emailInput.setText("")
+            } else if (!PasswordUtils.isValid(password) || !PasswordUtils.isValid(passwordVerif)) {
+                Toast.makeText(requireContext(), "Le mot de passe doit contenir au moins 8 caractères dont une majuscule un chiffre et un symbole", Toast.LENGTH_SHORT).show()
+                passwordInput.setText("")
+                passwordVerifInput.setText("")
+            } else {
+                // --- SAUVEGARDE DANS LA BASE ---
+                lifecycleScope.launch {
+                    val existingProf = withContext(Dispatchers.IO) {
+                        dao.getProfByEmail(email)
                     }
 
-                    Toast.makeText(requireContext(), "Inscription réussie", Toast.LENGTH_SHORT).show()
+                    if (existingProf != null) {
+                        Toast.makeText(requireContext(), "Un professeur avec cet email existe déjà", Toast.LENGTH_SHORT).show()
+                        emailInput.setText("")
+                    } else {
+                        withContext(Dispatchers.IO) {
+                            val prof = Prof(
+                                nom = nom,
+                                prenom = prenom,
+                                email = email,
+                                password = PasswordUtils.hashPassword(password)
+                            )
+                            dao.insert(prof)
+                        }
 
-                    // Retour vers la page de connexion
-                    (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
+                        Toast.makeText(requireContext(), "Inscription réussie", Toast.LENGTH_SHORT).show()
+
+                        // Retour vers la page de connexion
+                        (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
+                    }
                 }
             }
         }

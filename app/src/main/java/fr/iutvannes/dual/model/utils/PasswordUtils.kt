@@ -12,4 +12,12 @@ object PasswordUtils {
         val result = BCrypt.verifyer().verify(password.toCharArray(), hashed)
         return result.verified
     }
+
+    fun isValid(password: String): Boolean {
+        if(password.length >= 8 && password.contains(Regex("[a-z]")) && password.contains(Regex("[A-Z]")) && password.contains(Regex("[0-9]"))){
+            return true
+        } else {
+            return false
+        }
+    }
 }
