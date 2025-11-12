@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -42,12 +43,14 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
         val mdpField = view.findViewById<EditText>(R.id.mdpField)
         val nouveauMdpField = view.findViewById<EditText>(R.id.nouveau_mdpField)
         val confirmerMdpField = view.findViewById<EditText>(R.id.confirmer_nouveau_mdpField)
+        val userProfilTxt = view.findViewById<TextView>(R.id.user_profil_txt)
 
         // --- BOUTONS ---
         val editButtonProfil = view.findViewById<ImageButton>(R.id.editButtonProfil)
         val editButtonMdp = view.findViewById<ImageButton>(R.id.editButtonMdp)
         val disconnectButton = view.findViewById<Button>(R.id.btnDisconnect)
         val backButton = view.findViewById<ImageButton>(R.id.arrow_back_button)
+
 
         // --- CONNEXION À LA BASE ---
         val db = Room.databaseBuilder(
@@ -88,6 +91,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
 
             // Si on a trouvé le prof, on remplit les champs
             profConnecte?.let {
+                userProfilTxt.setText(it.prenom)
                 nomField.setText(it.nom)
                 prenomField.setText(it.prenom)
                 adresseField.setText(it.email)
