@@ -1,9 +1,9 @@
-// Assurez-vous que le package est correct
 package fr.iutvannes.dual.controller.fragments
 
 // Imports nécessaires
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -29,34 +29,36 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            //Connexion BDD
-            val db = Room.databaseBuilder(
-                requireContext(),
-                AppDatabase::class.java, "dual.db"
-            ).build()
+//            //Connexion BDD
+//            val db = Room.databaseBuilder(
+//                requireContext(),
+//                AppDatabase::class.java, "dual.db"
+//            ).build()
+//
+//            val classes = db.EleveDao().getClasses()
 
-            val classes = db.EleveDao().getClasses()
+            val classes = listOf("6A", "5C", "3F")
 
             //retour sur le thread principale pour modification de l'interface graphique(UI)
             withContext(Dispatchers.Main) {
-                if(classes.isEmpty()){
-                    if(classes.isEmpty()) {
 
-                        val emptyText = TextView(requireContext()).apply {
-                            text = "Aucune classe enregistré"
+                container.removeAllViews()
+
+                if (classes.isEmpty()) {
+                    val emptyText = Button(requireContext()).apply {
+                        text = "Aucune classe enregistrée"
+                        textSize = 18f
+                        setPadding(8, 8, 8, 8)
+                    }
+                    container.addView(emptyText)
+                } else {
+                    for (classe in classes) {
+                        val textView = Button(requireContext()).apply {
+                            text = classe
                             textSize = 18f
                             setPadding(8, 8, 8, 8)
                         }
-                        container.addView(emptyText)
-                    } else {
-                        for (classe in classes) {
-                            val textView = TextView(requireContext()).apply {
-                                text = "Classe : $classe"
-                                textSize = 18f
-                                setPadding(8, 8, 8, 8)
-                            }
                         container.addView(textView)
-                        }
                     }
                 }
             }

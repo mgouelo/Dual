@@ -48,7 +48,9 @@ class InscriptionFragment : Fragment() {
             requireContext(),
             AppDatabase::class.java,
             "dual.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration() // supprime et recrée la DB si le schéma change
+            .build()
         val dao = db.profDAO()
 
         // --- GESTION DE L’AFFICHAGE DU MOT DE PASSE ---

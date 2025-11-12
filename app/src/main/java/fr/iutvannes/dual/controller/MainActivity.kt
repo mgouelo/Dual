@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
             } else {
-                showFragment(ConnexionFragment(), false, false)
+                showFragment(InscriptionFragment(), false, false)
             }
         }
 
