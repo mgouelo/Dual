@@ -83,12 +83,13 @@ class MainActivity : AppCompatActivity() {
         )
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
+
         // --- ÉTAT INITIAL ---
         if (savedInstanceState == null) {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
             } else {
-                showFragment(InscriptionFragment(), false, false)
+                showFragment(ConnexionFragment(), false, false)
             }
         }
 

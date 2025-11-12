@@ -10,6 +10,4 @@ data class Eleve(
     var nom: String = "",
     var prenom: String = "",
     var classe: String = "",
-    var data_naissance : String = "",
-    var password : String = "",
     )

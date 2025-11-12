@@ -2,6 +2,7 @@ package fr.iutvannes.dual.controller.fragments
 
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -116,7 +117,9 @@ class ConnexionFragment : Fragment() {
                             editor.putBoolean("rememberMe", true)
                             editor.apply()
                         } else {
-                            editor.clear()
+                            // On efface juste les champs inutiles, mais on garde l'email
+                            editor.remove("password")
+                            editor.putBoolean("rememberMe", false)
                             editor.apply()
                         }
                         (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
