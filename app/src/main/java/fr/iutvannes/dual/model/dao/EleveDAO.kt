@@ -21,6 +21,7 @@ interface EleveDAO {
     @Update
     suspend fun update(eleve: Eleve): Int
 
-    @Query("SELECT DISTINCT classe FROM Eleve ORDER BY classe ASC")
-    suspend fun getClasses(): List<String>
+
+    @Query("SELECT DISTINCT classe FROM Eleve")
+    fun getClasses(): List<String>
 }
