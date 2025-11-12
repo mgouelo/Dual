@@ -137,5 +137,8 @@ dependencies {
     // Lecture fichier Excel (.xls et .xlsx)
     implementation("org.apache.poi:poi:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
-}
 
+    // Lecture fichier libre office .odf (ODF Toolkit Simple API)
+    implementation("org.odftoolkit:odfdom-java:0.9.0")
+    implementation("org.odftoolkit:simple-odf:0.9.0")
+}
