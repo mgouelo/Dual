@@ -3,7 +3,6 @@ package fr.iutvannes.dual.controller.fragments
 // Imports nécessaires
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -14,6 +13,8 @@ import fr.iutvannes.dual.model.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.widget.Button
+import fr.iutvannes.dual.controller.MainActivity
 
 /**
  * Fragment pour afficher l'écran de profil de l'utilisateur.
@@ -45,7 +46,7 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
                 container.removeAllViews()
 
                 if (classes.isEmpty()) {
-                    val emptyText = Button(requireContext()).apply {
+                    val emptyText = TextView(requireContext()).apply {
                         text = "Aucune classe enregistrée"
                         textSize = 18f
                         setPadding(8, 8, 8, 8)
@@ -53,12 +54,19 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
                     container.addView(emptyText)
                 } else {
                     for (classe in classes) {
-                        val textView = Button(requireContext()).apply {
+                        val button = Button(requireContext()).apply {
                             text = classe
                             textSize = 18f
                             setPadding(8, 8, 8, 8)
                         }
-                        container.addView(textView)
+
+                        button.setOnClickListener {
+                            val fragment = ElevesFragment.newInstance(classe)
+                            (activity as MainActivity).showFragment(fragment, true, true)
+
+                        }
+
+                        container.addView(button)
                     }
                 }
             }
