@@ -13,7 +13,7 @@ import fr.iutvannes.dual.model.dao.SeanceDAO
 
 @Database(
     entities = [Eleve::class, Prof::class, Resultat::class, Seance::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

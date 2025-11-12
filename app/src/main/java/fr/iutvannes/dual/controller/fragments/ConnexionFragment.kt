@@ -56,7 +56,10 @@ class ConnexionFragment : Fragment() {
             requireContext(),
             AppDatabase::class.java,
             "dual.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration() // supprime et recrée la DB si le schéma change
+            .build()
+
         val dao = db.profDAO()
 
         val savedEmail = sharedPref.getString("email", "")
