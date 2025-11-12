@@ -4,12 +4,16 @@ import android.os.Bundle
 import android.view.View // Import pour gérer la visibilité (View.VISIBLE, View.GONE)
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import fr.iutvannes.dual.R
@@ -18,6 +22,10 @@ import fr.iutvannes.dual.controller.fragments.ClassesFragment
 import fr.iutvannes.dual.controller.fragments.InscriptionFragment
 import fr.iutvannes.dual.controller.fragments.ProfilFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
+import fr.iutvannes.dual.model.database.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.text.replace
 
 class MainActivity : AppCompatActivity() {
@@ -39,6 +47,9 @@ class MainActivity : AppCompatActivity() {
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContentView(R.layout.activity_main)
+
+        // --- RÉFÉRENCES AUX CHAMPS DE TEXTE ---
+        val prenomLabel = findViewById<TextView>(R.id.prenomLabel)
 
         // Listener pour le bouton de profil
         val profileButton = findViewById<ImageButton>(R.id.profileImage)
@@ -69,6 +80,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+        // --- CONNEXION À LA BASE ---
+        val db = Room.databaseBuilder(
+            this,
+            AppDatabase::class.java,
+            "dual.db"
+        ).build()
+
         // Récupère les SharedPreferences sécurisées
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -83,12 +102,34 @@ class MainActivity : AppCompatActivity() {
         )
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
+        // Charger les infos du prof connecté (depuis la base)
+        // lifectcleScope.launch est utilisé pour exécuter du code asynchrone permettant de ne pas bloquer l'UI lorsque l'utilisateur change de fragment
+        // (l'opération est annulée si on change de fragment)
+        lifecycleScope.launch {
+            val profConnecte = withContext(Dispatchers.IO) {
+                // Exemple : ici, on suppose qu'on a stocké l'email du prof connecté
+                val email = sharedPref.getString("email", null)
+                if (email != null) {
+                    // Si un email est présent, on cherche le prof correspondant dans la base
+                    db.profDAO().getProfByEmail(email)
+                } else {
+                    // Sinon, on retourne null (aucun prof connecté)
+                    null
+                }
+            }
+
+            // Si on a trouvé le prof, on remplit les champs
+            profConnecte?.let {
+                prenomLabel.setText(it.prenom)
+            }
+        }
+
         // --- ÉTAT INITIAL ---
         if (savedInstanceState == null) {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
             } else {
-                showFragment(InscriptionFragment(), false, false)
+                showFragment(ConnexionFragment(), false, false)
             }
         }
 

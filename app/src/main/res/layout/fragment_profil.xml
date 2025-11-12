@@ -1,18 +1,19 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/blanc">
 
-    <!-- Arrière-plan de la barre du haut. Sert de référence pour les autres éléments. -->
+    <!-- Barre du haut fixe -->
     <View
         android:id="@+id/top_bar_background"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="200dp"
         android:background="@drawable/top_bar_background_profil"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <ImageButton
         android:id="@+id/arrow_back_button"
@@ -20,9 +21,9 @@
         android:layout_height="40dp"
         android:layout_marginTop="40dp"
         android:layout_marginStart="40dp"
-        android:src="@drawable/arrow_back_white"
-        android:scaleType="centerCrop"
         android:background="@android:color/transparent"
+        android:src="@drawable/arrow_back_white"
+        android:scaleType="fitCenter"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -30,12 +31,11 @@
         android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Texte de salutation, centré horizontalement dans la barre du haut -->
         <TextView
             android:id="@+id/greeting_text"
             android:layout_width="wrap_content"
@@ -46,48 +46,313 @@
 
         <View
             android:layout_width="8dp"
-            android:layout_height="0dp" />
+            android:layout_height="0dp"/>
 
         <TextView
             android:id="@+id/user_profil_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/thierry"
+            android:text="@string/empty"
             android:textColor="@color/blanc"
             android:textSize="50sp"
-            android:textStyle="bold" />
-
+            android:textStyle="bold"/>
     </LinearLayout>
 
-    <!-- Image de profil, centrée horizontalement et "à cheval" sur la barre du haut -->
     <ImageView
         android:id="@+id/profileImage"
         android:layout_width="140dp"
         android:layout_height="140dp"
-        android:src="@drawable/pfp"
         android:layout_marginBottom="-70dp"
+        android:src="@drawable/pfp"
         android:background="@drawable/rounded_pfp_circle_white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/top_bar_background" />
+        app:layout_constraintBottom_toBottomOf="@id/top_bar_background"/>
 
-    <View
-        android:id="@+id/view_after_top_bar_background"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        app:layout_constraintTop_toBottomOf="@id/top_bar_background"/>
-
-    <!-- Texte de rôle, positionné sous l'image de profil -->
-    <TextView
-        android:id="@+id/metier_enseignant"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/enseignant_d_eps"
-        android:layout_marginTop="16dp"
-        android:textSize="35sp"
-        android:textColor="@color/noir"
-        app:layout_constraintTop_toBottomOf="@id/view_after_top_bar_background"
+    <!-- Scrollable content -->
+    <ScrollView
+        android:id="@+id/scrollable_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/profileImage"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:overScrollMode="always">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp"
+            android:minHeight="500dp"
+            android:gravity="center_horizontal">
+
+            <!-- Texte rôle -->
+            <TextView
+                android:id="@+id/metier_enseignant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enseignant_d_eps"
+                android:textSize="35sp"
+                android:textColor="@color/noir"
+                android:layout_marginTop="16dp"
+                android:gravity="center"/>
+
+            <!-- Carte profil -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/profil_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <!-- Colonne infos -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <!-- Nom -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+                            <TextView
+                                android:text="@string/nom"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/black"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <EditText
+                                android:id="@+id/nomField"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/empty"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:enabled="false"
+                                android:background="@null"
+                                android:layout_marginStart="12dp" />
+                        </LinearLayout>
+
+                        <!-- Prénom -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+                            <TextView
+                                android:text="@string/prenom"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/black"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <EditText
+                                android:id="@+id/prenomField"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/empty"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:enabled="false"
+                                android:background="@null"
+                                android:layout_marginStart="12dp" />
+                        </LinearLayout>
+
+                        <!-- Adresse -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+                            <TextView
+                                android:text="@string/email"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/black"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <EditText
+                                android:id="@+id/adresseField"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/empty"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:enabled="false"
+                                android:background="@null"
+                                android:layout_marginStart="12dp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Bouton édition -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                        <ImageButton
+                            android:id="@+id/editButtonProfil"
+                            android:layout_width="55dp"
+                            android:layout_height="55dp"
+                            android:background="@android:color/transparent"
+                            android:src="@drawable/edit_profil"
+                            android:contentDescription="Modifier"
+                            android:layout_gravity="center"
+                            android:scaleType="fitCenter"
+                            android:padding="8dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Changer mot de passe -->
+            <TextView
+                android:id="@+id/changer_mot_de_passe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/changer_mdp"
+                android:textSize="35sp"
+                android:textColor="@color/noir"
+                android:layout_marginTop="16dp"
+                android:gravity="center"/>
+
+            <!-- Carte mot de passe -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/mdp_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <!-- Colonne infos -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <!-- Mot de passe -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+                            <TextView
+                                android:text="@string/mot_de_passe"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/black"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <EditText
+                                android:id="@+id/mdpField"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:enabled="false"
+                                android:background="@null"
+                                android:layout_marginStart="12dp" />
+                        </LinearLayout>
+
+                        <!-- Nouveau mot de passe -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+                            <TextView
+                                android:text="@string/nouveau_mot_de_passe"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/black"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <EditText
+                                android:id="@+id/nouveau_mdpField"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:enabled="false"
+                                android:background="@null"
+                                android:layout_marginStart="12dp" />
+                        </LinearLayout>
+
+                        <!-- Confirmer nouveau mot de passe -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+                            <TextView
+                                android:text="@string/confirmer_nouveau_mot_de_passe"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/black"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <EditText
+                                android:id="@+id/confirmer_nouveau_mdpField"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:enabled="false"
+                                android:background="@null"
+                                android:layout_marginStart="12dp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Bouton édition -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                        <ImageButton
+                            android:id="@+id/editButtonMdp"
+                            android:layout_width="55dp"
+                            android:layout_height="55dp"
+                            android:background="@android:color/transparent"
+                            android:src="@drawable/edit_profil"
+                            android:contentDescription="Modifier"
+                            android:layout_gravity="center"
+                            android:scaleType="fitCenter"
+                            android:padding="8dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Bouton déconnexion -->
+            <Button
+                android:id="@+id/btnDisconnect"
+                android:layout_width="200dp"
+                android:layout_height="55dp"
+                android:text="@string/deconnexion"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/helvetica"
+                android:background="@drawable/btn_connexion"
+                android:layout_marginTop="24dp"/>
+
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
