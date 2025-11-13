@@ -7,8 +7,13 @@
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-  <div id="wrapper">
-    <h1>Test VMA</h1>
+  <div id="container">
+    
+    <header>
+        <h1>Test VMA</h1>
+        <p>Lancer le chono au début de l'épreuve et l'arrêter dès que le camarade ne peut plus suivre le rythme imposé</p>
+    </header>
+
     <div id="chrono">00:00:00</div>
 
     <div id="infos">
@@ -18,11 +23,16 @@
 
     <div id="buttons">
       <button id="reset" class="button">Reset</button>
-      <button id="stop" class="button2">Arrêter</button>
+      <button id="stop" class="button">Arrêter</button>
       <button id="start" class="button">Démarrer</button>
     </div>
 
-    <div id="resultat" style="margin-top:20px;font-size:1.3em;color:var(--blue);font-weight:bold;"></div>
+    <div id="resultat"></div>
+
+    <footer>
+        <p class="info">Connecté au serveur local</p>
+    </footer>
+
   </div>
 
   <script src="../js/vma.js"></script>

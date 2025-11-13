@@ -1,12 +1,11 @@
 /* Palette */
-root: {
+:root {
     --black: #202122;
     --grey: #989Ca0;
     --blue: #303586;
     --night-blue: #1c1e4e;
     --white: #e5e5e5;
 }
-
 
 body {
   font-family: "Poppins", Arial, sans-serif;
