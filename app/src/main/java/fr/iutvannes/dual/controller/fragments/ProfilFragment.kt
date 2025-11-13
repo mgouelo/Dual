@@ -53,12 +53,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
 
 
         // --- CONNEXION À LA BASE ---
-        val db = Room.databaseBuilder(
-            requireContext(),
-            AppDatabase::class.java,
-            "dual.db"
-        ).build()
-
+        val db = DatabaseProvider.db
 
         // Récupérer l'email de manière sécurisée
         val masterKey = MasterKey.Builder(requireContext())

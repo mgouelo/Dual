@@ -1,5 +1,6 @@
 package fr.iutvannes.dual.model.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import fr.iutvannes.dual.model.persistence.Prof
 
@@ -20,6 +21,9 @@ interface ProfDAO {
 
     @Query("SELECT * FROM Prof WHERE email = :email")
     suspend fun getProfByEmail(email: String): Prof?
+
+    @Query("SELECT * FROM Prof WHERE email = :email")
+    fun getProfLive(email: String): LiveData<Prof?>
 
     @Update
     suspend fun update(prof: Prof): Int
