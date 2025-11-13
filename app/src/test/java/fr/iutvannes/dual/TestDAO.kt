@@ -36,7 +36,7 @@ class TestDAO {
     // Test eleve
     @Test
     fun testInsertAndGetEleve() = runBlocking {
-        val eleve = Eleve(nom = "Dupont", prenom = "Jean", data_naissance = "2004-06-14", password = "Password1.")
+        val eleve = Eleve(nom = "Dupont", prenom = "Jean")
         val id = db.EleveDao().insert(eleve).toInt()
 
         val resultat = db.EleveDao().getEleveById(id)
@@ -46,7 +46,7 @@ class TestDAO {
 
     @Test
     fun testUpdateEleve() = runBlocking {
-        val eleve = Eleve(nom = "Durand", prenom = "Paul", data_naissance = "2003-04-10", password = "Password1.")
+        val eleve = Eleve(nom = "Durand", prenom = "Paul")
         val id = db.EleveDao().insert(eleve).toInt()
 
         val updated = eleve.copy(id_eleve = id, nom = "Durand-Modifié")
@@ -59,7 +59,7 @@ class TestDAO {
 
     @Test
     fun testDeleteEleve() = runBlocking {
-        val eleve = Eleve(nom = "Martin", prenom = "Léa", data_naissance = "2005-02-18", password = "Password1.")
+        val eleve = Eleve(nom = "Martin", prenom = "Léa")
         val id = db.EleveDao().insert(eleve).toInt()
 
         val rowsDeleted = db.EleveDao().delete(id)
@@ -87,7 +87,7 @@ class TestDAO {
             Prof(nom = "Kamp", prenom = "Jean-François", email = "jf.kamp@iutvannes.fr", password = "Password1.")
         ).toInt()
 
-        val seance = Seance(date = "2025-11-06", nb_tours = 3, nb_cibles = 5, id_prof = profId.toString())
+        val seance = Seance(date = "2025-11-06", nb_tours = 3, nb_cibles = 5, id_prof = profId)
         val id = db.seanceDao().insert(seance).toInt()
 
         val resultat = db.seanceDao().getSeanceById(id)
@@ -98,9 +98,9 @@ class TestDAO {
     // Test resultat
     @Test
     fun testInsertResultat() = runBlocking {
-        val eleveId = db.EleveDao().insert(Eleve(nom = "Bernard", prenom = "Luc", data_naissance = "2004-01-01", password = "Password1.")).toInt()
+        val eleveId = db.EleveDao().insert(Eleve(nom = "Bernard", prenom = "Luc")).toInt()
         val profId = db.profDAO().insert(Prof(nom = "Lemoine", prenom = "Anne", email = "anne@iutvannes.fr", password = "Password1.")).toInt()
-        val seanceId = db.seanceDao().insert(Seance(date = "2025-05-10", nb_tours = 4, nb_cibles = 5, id_prof = profId.toString())).toInt()
+        val seanceId = db.seanceDao().insert(Seance(date = "2025-05-10", nb_tours = 4, nb_cibles = 5, id_prof = profId)).toInt()
 
         val resultat = Resultat(id_eleve = eleveId, id_seance = seanceId, temp_course = 25.3F, cibles_touchees = 4, note_finale = 15.5F)
         val id = db.resultatDao().insert(resultat).toInt()
