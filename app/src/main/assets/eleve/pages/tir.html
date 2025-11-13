@@ -7,8 +7,12 @@
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-  <div id="wrapper">
-    <h1>Tir</h1>
+  <div id="container">
+    
+    <header>
+        <h1>Entraînement au tir</h1>
+        <p>Réaliser 6 tirs à la suite en réinitialisant la cible à chaque tir</p>
+    </header>
 
     <div id="tirs">
       <p>Tir 1 : <input type="number" id="tir1" min="0" /></p>
@@ -19,12 +23,14 @@
       <p>Tir 6 : <input type="number" id="tir6" min="0" /></p>
     </div>
 
-    <button id="calculer" class="button">Calculer moyenne</button>
-
-    <div id="resultats" style="margin-top: 20px; font-size: 1.2em;">
+    <div id="resultats">
       <p>Total : <span id="total">-</span></p>
       <p>Moyenne : <span id="moyenne">-</span></p>
     </div>
+
+    <footer>
+      <p class="info">Connecté au serveur local</p>
+    </footer>
   </div>
 
   <script src="../js/tir.js"></script>

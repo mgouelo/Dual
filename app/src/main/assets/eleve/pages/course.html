@@ -7,13 +7,18 @@
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-    <div id="wrapper">
-        <h1>Course</h1>
+    <div id="container">
+
+        <header>
+            <h1>Entraînement à la course</h1>
+            <p>Réaliser un tour de parcours et noter son temps (x6)</p>
+        </header>
+
         <div id="chrono">00:00:00</div>
 
         <div id="buttons">
             <button id="reset" class="button">Reset</button>
-            <button id="stop" class="button2">Arrêter</button>
+            <button id="stop" class="button">Arrêter</button>
             <button id="start" class="button">Démarrer</button>
             <button id="enregistrer" class="button">Enregistrer</button>
         </div>
@@ -26,6 +31,10 @@
             <p>Tour 5 : <span id="tour5">-</span></p>
             <p>Tour 6 : <span id="tour6">-</span></p>
         </div>
+
+        <footer>
+            <p class="info">Connecté au serveur local</p>
+        </footer>
     </div>
 
     <script src="../js/course.js"></script>

@@ -7,14 +7,22 @@
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-    <div id="wrapper">
-        <h1>Choisis ton entraînement</h1>
-        <div id="menu">
-    </div>
-    
-    <div id="buttons">
-        <button id="tir" onclick="location.href='tir.html'">Tir</button>
-        <button id="course" onclick="location.href='course.html'">Course</button>
+    <div id="container">
+        
+        <header>
+            <h1>Séance d'entraînement</h1>
+            <p>Sélectionne l'execice à réaliser</p>
+        </header>
+
+        <div id="buttons">
+            <button id="tir" class="button" onclick="location.href='tir.html'">Tir</button>
+            <button id="course" class="button" onclick="location.href='course.html'">Course</button>
+        </div>
+
+        <footer>
+            <p class="info">Connecté au serveur local</p>
+        </footer>
+
     </div>
 </body>
 </html>
