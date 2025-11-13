@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test VMA</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div id="wrapper">
+    <h1>Test VMA</h1>
+    <div id="chrono">00:00:00</div>
+
+    <div id="infos">
+      <p>Vitesse actuelle : <span id="vitesse">8.0</span> km/h</p>
+      <p>Distance parcourue : <span id="distance">0</span> m</p>
+    </div>
+
+    <div id="buttons">
+      <button id="reset" class="button">Reset</button>
+      <button id="stop" class="button2">Arrêter</button>
+      <button id="start" class="button">Démarrer</button>
+    </div>
+
+    <div id="resultat" style="margin-top:20px;font-size:1.3em;color:var(--blue);font-weight:bold;"></div>
+  </div>
+
+  <script src="../js/vma.js"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+/* Palette de couleur */
+:root {
+  --black: #202122;
+  --grey: #989ca0;
+  --blue: #303586;
+  --night-blue: #1c1e4e;
+  --white: #e5e5e5;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+  background-image: linear-gradient(120deg, var(--blue) 0%, var(--night-blue) 100%);
+}
+
+#wrapper {
+  padding: 80px;
+  border-radius: 30px;
+  background-color: var(--white);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+}
+
+#chrono {
+  font-size: 80px;
+  margin-bottom: 30px;
+  color: var(--black);
+  font-weight: bold;
+}
+
+#infos {
+  margin: 30px 0;       
+  text-align: center;      
+  font-size: 1.3em;              
+  font-weight: 600;         
+  line-height: 1.6;        
+}
+
+#tours {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 1.2em;
+  color: #989ca0;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+#tours p {
+  display: none;
+}
+
+#tirs p {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+#tirs input {
+  width: 60px;
+  font-size: 1em;
+  text-align: center;
+  padding: 5px;
+  border-radius: 8px;
+  border: 1px solid var(--grey);
+}
+
+#tirs {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 15px 40px; 
+  justify-items: center; 
+  margin: 20px 0;
+}
+
+#buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+button {
+  font-size: 20px;
+  width: 140px;
+  padding: 12px 0;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+#reset {
+  background-color: var(--grey);
+  color: white;
+}
+
+#stop {
+  background-color: #5f0404;
+  color: white;
+}
+
+#start {
+  background-color: var(--blue);
+  color: var(--white);
+}
+
+#tir {
+  background-color: #5f0404;
+  color: white;
+  margin-top: 20px;
+}
+
+#course {
+  background-color: var(--blue);
+  color: var(--white);
+  margin-top: 20px;
+}
+
+#enregistrer {
+  background-color: #1e4912;
+  color: white;
+}
+
+#calculer {
+  background-color: var(--blue);
+  color: var(--white);
+}
+
+/* Tablettes et téléphones */
+@media (max-width: 768px) {
+  #wrapper {
+    padding: 50px;
+  }
+
+  #chrono {
+    font-size: 60px;
+  }
+
+  button {
+    width: 120px;
+    font-size: 18px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  #wrapper {
+    padding: 30px;
+  }
+
+  #chrono {
+    font-size: 45px;
+    margin-bottom: 20px;
+  }
+
+  #buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  button {
+    width: 100%;
+    max-width: 250px;
+    font-size: 16px;
+  }
+
+  #tirs {
+    grid-template-columns: 1fr;
+    gap: 10px; 
+  }
+
+  #tirs p {
+    width: 100%; 
+    justify-content: space-between;
+  }
+
+  #tirs input {
+    width: 70px;
+  }
+}
