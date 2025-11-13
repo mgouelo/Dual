@@ -46,6 +46,14 @@
             android:layout_height="wrap_content"
             android:text="Ajouter un élève" />
 
+        <Button
+            android:id="@+id/btn_import_tableur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Importer avec un tableur" >
+        </Button>
+
     </LinearLayout>
 
 </ScrollView>

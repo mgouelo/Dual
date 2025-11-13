@@ -27,7 +27,12 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
         eleveDao = db.EleveDao()
     )
 
-    suspend fun importer(input: InputStream, fileName: String, mime: String?): ImportReport {
-        return importService.import(input, fileName, mime)
+    suspend fun importer(
+        input: InputStream,
+        fileName: String,
+        mime: String?,
+        classeNom: String?
+    ): ImportReport {
+        return importService.import(input, fileName, mime, classeNom)
     }
 }

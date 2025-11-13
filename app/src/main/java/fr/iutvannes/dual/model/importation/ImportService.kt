@@ -38,7 +38,8 @@ class ImportService(
     suspend fun import(
         input: InputStream,
         fileName: String,
-        mimeType: String? = null
+        mimeType: String? = null,
+        classeNom: String?
     ): ImportReport {
 
         val reader = pickReader(mimeType, fileName)
@@ -63,11 +64,17 @@ class ImportService(
                 return@forEachIndexed
             }
 
+            val effectiveClasse = when {
+                !d.classe.isNullOrBlank() -> d.classe.trim()
+                !classeNom.isNullOrBlank() -> classeNom.trim() // on prend la classe de l’écran
+                else -> "Non renseignée"
+            }
+
             // déduplication (supression des doublons)
             val key = Triple(
                 d.firstName.trim(),
                 d.lastName.trim(),
-                d.classe?.trim()
+                effectiveClasse
             )
             if (!seen.add(key)) {
                 skipped++
@@ -79,7 +86,7 @@ class ImportService(
                 id_eleve = 0, // id généré par room
                 prenom = d.firstName.trim(),
                 nom = d.lastName.trim(),
-                classe = d.classe?.trim() ?: "Non renseignée"
+                classe = effectiveClasse
             )
 
             try {
