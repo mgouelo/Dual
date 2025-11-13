@@ -1,85 +1,66 @@
-/* Palette de couleur */
+/* Palette */
 :root {
-  --black: #202122;
-  --grey: #989ca0;
-  --blue: #303586;
-  --night-blue: #1c1e4e;
-  --white: #e5e5e5;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    --black: #202122;
+    --grey: #989Ca0;
+    --blue: #303586;
+    --night-blue: #1c1e4e;
+    --white: #e5e5e5;
 }
 
 body {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: sans-serif;
-  background-image: linear-gradient(120deg, var(--blue) 0%, var(--night-blue) 100%);
-}
-
-#wrapper {
-  padding: 80px;
-  border-radius: 30px;
-  background-color: var(--white);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  max-width: 600px;
-  width: 90%;
-}
-
-#chrono {
-  font-size: 80px;
-  margin-bottom: 30px;
+  font-family: "Poppins", Arial, sans-serif;
+  background: var(--blue);
   color: var(--black);
-  font-weight: bold;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
 }
 
-#infos {
-  margin: 30px 0;       
-  text-align: center;      
-  font-size: 1.3em;              
-  font-weight: 600;         
-  line-height: 1.6;        
-}
-
-#tours {
-  margin-top: 30px;
+#container {
   text-align: center;
-  font-size: 1.2em;
-  color: #989ca0;
-  font-weight: 600;
-  line-height: 1.6;
+  background: var(--white);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  width: 90%;
+  max-width: 450px;
+  margin: 40px
 }
 
-#tours p {
-  display: none;
+header h1 {
+  font-size: 1.8rem;
+  color: var(--night-blue);
+  margin-bottom: 0.5em;
 }
 
-#tirs p {
-  font-size: 1.2em;
-  margin: 10px 0;
+header p {
+  color: var(--blue);
+  margin-bottom: 1.5em;
 }
 
-#tirs input {
-  width: 60px;
-  font-size: 1em;
-  text-align: center;
-  padding: 5px;
-  border-radius: 8px;
-  border: 1px solid var(--grey);
+footer .info {
+  font-size: 0.85rem;
+  color: var(--grey);
 }
 
-#tirs {
-  display: grid;
-  grid-template-columns: 1fr 1fr; 
-  gap: 15px 40px; 
-  justify-items: center; 
-  margin: 20px 0;
+.button {
+  background: #303586;
+  width: 100%;
+  max-width: 200px;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 0;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  background: #1C1E4E;
+  transform: translateY(-3px);
 }
 
 #buttons {
@@ -89,82 +70,72 @@ body {
   gap: 15px;
 }
 
-button {
-  font-size: 20px;
-  width: 140px;
-  padding: 12px 0;
-  border: none;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+#chrono {
+  font-size: 40px;
+  margin-bottom: 30px;
+  color: var(--night-blue);
 }
 
-button:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+#resultat {
+  color: var(--blue);
+  margin-top: 1.5em;
 }
 
-#reset {
-  background-color: var(--grey);
-  color: white;
+#tours p {
+  display: none;
 }
 
-#stop {
-  background-color: #5f0404;
-  color: white;
+#tours {
+  font-size: 0.85rem;
+  color: var(--black);
+  text-align: center;
+  font-weight: 600;
 }
 
-#start {
-  background-color: var(--blue);
-  color: var(--white);
+#tirs p {
+  font-size: 0.85rem;
+  color: var(--black);
+  font-weight: 600;
 }
 
-#tir {
-  background-color: #5f0404;
-  color: white;
-  margin-top: 20px;
+#tirs input {
+  width: 100px;
+  font-size: 1em;
+  text-align: center;
+  padding: 5px;
+  border-radius: 8px;
+  border: 1px solid var(--grey);
 }
 
-#course {
-  background-color: var(--blue);
-  color: var(--white);
-  margin-top: 20px;
+#resultats {
+  display: none;
 }
 
-#enregistrer {
-  background-color: #1e4912;
-  color: white;
-}
-
-#calculer {
-  background-color: var(--blue);
-  color: var(--white);
-}
 
 /* Tablettes et téléphones */
 @media (max-width: 768px) {
-  #wrapper {
+  #container {
     padding: 50px;
   }
 
   #chrono {
-    font-size: 60px;
+    font-size: 30px;
   }
 
-  button {
-    width: 120px;
-    font-size: 18px;
-    padding: 10px;
+  .button {
+    width: 160px;
+    font-size: 0.9rem;
+    padding: 12px 0;
   }
 }
 
 @media (max-width: 480px) {
-  #wrapper {
+  #container {
     padding: 30px;
   }
 
   #chrono {
-    font-size: 45px;
+    font-size: 25px;
     margin-bottom: 20px;
   }
 
@@ -173,23 +144,9 @@ button:hover {
     align-items: center;
   }
 
-  button {
+  .button {
     width: 100%;
-    max-width: 250px;
-    font-size: 16px;
-  }
-
-  #tirs {
-    grid-template-columns: 1fr;
-    gap: 10px; 
-  }
-
-  #tirs p {
-    width: 100%; 
-    justify-content: space-between;
-  }
-
-  #tirs input {
-    width: 70px;
+    max-width: 300px;
+    font-size: 0.85rem;
   }
 }

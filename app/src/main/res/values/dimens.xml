@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="default_margin">20dp</dimen>
+    <!-- Page de connexion et inscription -->
+    <dimen name="fond_bleu_height">350dp</dimen>
+    <dimen name="adresse_mdp_width">380dp</dimen>
+    <dimen name="adresse_bar_mdp_width">400dp</dimen>
+    <dimen name="mdp_width">380dp</dimen>
+    <dimen name="mdp_bar_width">400dp</dimen>
+    <dimen name="margin_left_mdp_oublie">240dp</dimen>
 </resources>

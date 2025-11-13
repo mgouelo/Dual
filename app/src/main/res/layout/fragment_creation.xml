@@ -5,18 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
+    <!-- Bande bleue -->
+    <View
         android:id="@+id/FondBleu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:contentDescription="Le fond bleu de la page de connexion"
-        android:scaleType="fitCenter"
-        android:src="@drawable/fond_bleu_connexion"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/fond_bleu_height"
+        android:background="@drawable/fond_bleu_connexion"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText,MissingConstraints" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Titre -->
     <TextView
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
@@ -26,229 +25,229 @@
         android:textSize="40sp"
         android:textColor="@color/blanc"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@id/FondBleu"
+        app:layout_constraintBottom_toBottomOf="@id/FondBleu"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintVertical_bias="0.5" />
 
-    <EditText
-        android:id="@+id/Nom"
-        android:layout_width="480dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/helvetica_light"
-        android:hint="@string/inscription_page_nom_input"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:textColor="#8D8D8D"
-        android:textSize="25sp"
-        android:textStyle="normal"
-        android:background="@null"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.42" />
+    <!-- Scroll principal -->
+    <ScrollView
+        android:id="@+id/scrollViewInscription"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/FondBleu"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-    <View
-        android:id="@+id/PremiereBarre"
-        android:layout_width="500dp"
-        android:layout_height="2dp"
-        android:background="#D9D9D9"
-        app:layout_constraintTop_toBottomOf="@id/Nom"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/Prenom"
-        android:layout_width="480dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/helvetica_light"
-        android:hint="@string/inscription_page_prenom_input"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:textColor="#8D8D8D"
-        android:textSize="25sp"
-        android:textStyle="normal"
-        android:background="@null"
-        app:layout_constraintTop_toTopOf="@+id/PremiereBarre"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
-
-    <View
-        android:id="@+id/DeuxiemeBarre"
-        android:layout_width="500dp"
-        android:layout_height="2dp"
-        android:background="#D9D9D9"
-        app:layout_constraintTop_toBottomOf="@id/Prenom"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/Email"
-        android:layout_width="480dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/helvetica_light"
-        android:hint="@string/inscription_page_email_input"
-        android:importantForAutofill="no"
-        android:inputType="textEmailAddress"
-        android:textColor="#8D8D8D"
-        android:textSize="25sp"
-        android:textStyle="normal"
-        android:background="@null"
-        app:layout_constraintTop_toTopOf="@id/DeuxiemeBarre"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
-
-    <View
-        android:id="@+id/TroisiemeBarre"
-        android:layout_width="500dp"
-        android:layout_height="2dp"
-        android:background="#D9D9D9"
-        app:layout_constraintTop_toBottomOf="@id/Email"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/passwordContainer"
-        android:layout_width="480dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/TroisiemeBarre"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
-
-        <EditText
-            android:id="@+id/passwordInput"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/inscription_page_password_input"
-            android:importantForAutofill="no"
-            android:textColor="#8D8D8D"
-            android:fontFamily="@font/helvetica_light"
-            android:inputType="textPassword"
-            android:background="@null"
-            android:textSize="25sp"
-            android:textStyle="normal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/oeilIcon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            android:paddingBottom="32dp">
 
-        <ImageView
-            android:id="@+id/oeilIcon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/oeil"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:contentDescription="Afficher/masquer le mot de passe"
-            tools:ignore="HardcodedText" />
+            <!-- Nom -->
+            <EditText
+                android:id="@+id/Nom"
+                android:layout_width="@dimen/adresse_mdp_width"
+                android:layout_height="wrap_content"
+                android:hint="@string/inscription_page_nom_input"
+                android:fontFamily="@font/helvetica_light"
+                android:inputType="textPersonName"
+                android:textColor="#8D8D8D"
+                android:textSize="25sp"
+                android:background="@null"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <View
+                android:id="@+id/PremiereBarre"
+                android:layout_width="@dimen/adresse_bar_mdp_width"
+                android:layout_height="2dp"
+                android:background="#D9D9D9"
+                app:layout_constraintTop_toBottomOf="@id/Nom"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
 
-    <View
-        android:id="@+id/PremierTrait"
-        android:layout_width="500dp"
-        android:layout_height="2dp"
-        android:background="#D9D9D9"
-        app:layout_constraintTop_toBottomOf="@id/passwordContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
+            <!-- Prénom -->
+            <EditText
+                android:id="@+id/Prenom"
+                android:layout_width="@dimen/adresse_mdp_width"
+                android:layout_height="wrap_content"
+                android:hint="@string/inscription_page_prenom_input"
+                android:fontFamily="@font/helvetica_light"
+                android:inputType="textPersonName"
+                android:textColor="#8D8D8D"
+                android:textSize="25sp"
+                android:background="@null"
+                app:layout_constraintTop_toBottomOf="@id/PremiereBarre"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/passwordVerifContainer"
-        android:layout_width="480dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/PremierTrait"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+            <View
+                android:id="@+id/DeuxiemeBarre"
+                android:layout_width="@dimen/adresse_bar_mdp_width"
+                android:layout_height="2dp"
+                android:background="#D9D9D9"
+                app:layout_constraintTop_toBottomOf="@id/Prenom"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
 
-        <EditText
-            android:id="@+id/passwordVerifInput"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/inscription_page_passwordVerif_input"
-            android:importantForAutofill="no"
-            android:textColor="#8D8D8D"
-            android:fontFamily="@font/helvetica_light"
-            android:inputType="textPassword"
-            android:background="@null"
-            android:textSize="25sp"
-            android:textStyle="normal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/oeilVerifIcon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            <!-- Email -->
+            <EditText
+                android:id="@+id/Email"
+                android:layout_width="@dimen/adresse_mdp_width"
+                android:layout_height="wrap_content"
+                android:hint="@string/inscription_page_email_input"
+                android:fontFamily="@font/helvetica_light"
+                android:inputType="textEmailAddress"
+                android:textColor="#8D8D8D"
+                android:textSize="25sp"
+                android:background="@null"
+                app:layout_constraintTop_toBottomOf="@id/DeuxiemeBarre"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp" />
 
-        <ImageView
-            android:id="@+id/oeilVerifIcon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/oeil"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:contentDescription="Afficher/masquer le mot de passe"
-            tools:ignore="HardcodedText" />
+            <View
+                android:id="@+id/TroisiemeBarre"
+                android:layout_width="@dimen/adresse_bar_mdp_width"
+                android:layout_height="2dp"
+                android:background="#D9D9D9"
+                app:layout_constraintTop_toBottomOf="@id/Email"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Mot de passe -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/passwordContainer"
+                android:layout_width="@dimen/mdp_width"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/TroisiemeBarre"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp">
 
-    <View
-        android:id="@+id/DeuxiemeTrait"
-        android:layout_width="500dp"
-        android:layout_height="2dp"
-        android:background="#D9D9D9"
-        app:layout_constraintTop_toBottomOf="@id/passwordVerifContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
+                <EditText
+                    android:id="@+id/passwordInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/inscription_page_password_input"
+                    android:inputType="textPassword"
+                    android:textColor="#8D8D8D"
+                    android:fontFamily="@font/helvetica_light"
+                    android:background="@null"
+                    android:textSize="25sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/oeilIcon"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-    <Button
-        android:id="@+id/inscriptionButton"
-        android:layout_width="400dp"
-        android:layout_height="45dp"
-        android:text="@string/inscription_page_button"
-        android:textSize="20sp"
-        android:textColor="#FFFFFF"
-        android:fontFamily="@font/helvetica"
-        android:background="@drawable/btn_connexion"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/DeuxiemeTrait"
-        android:layout_marginTop="48dp" />
+                <ImageView
+                    android:id="@+id/oeilIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/oeil"
+                    android:contentDescription="Afficher le mot de passe"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/connexionLien"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/inscription_page_seconnecter_button"
-        android:textSize="16sp"
-        android:textColor="@color/bleu"
-        android:fontFamily="@font/helvetica_light"
-        android:textStyle="normal"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintTop_toBottomOf="@id/inscriptionButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"/>
+            <View
+                android:id="@+id/PremierTrait"
+                android:layout_width="@dimen/mdp_bar_width"
+                android:layout_height="2dp"
+                android:background="#D9D9D9"
+                app:layout_constraintTop_toBottomOf="@id/passwordContainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
 
+            <!-- Vérif mot de passe -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/passwordVerifContainer"
+                android:layout_width="@dimen/mdp_width"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/PremierTrait"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp">
+
+                <EditText
+                    android:id="@+id/passwordVerifInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/inscription_page_passwordVerif_input"
+                    android:inputType="textPassword"
+                    android:textColor="#8D8D8D"
+                    android:fontFamily="@font/helvetica_light"
+                    android:background="@null"
+                    android:textSize="25sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/oeilVerifIcon"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <ImageView
+                    android:id="@+id/oeilVerifIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/oeil"
+                    android:contentDescription="Afficher le mot de passe"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/DeuxiemeTrait"
+                android:layout_width="@dimen/mdp_bar_width"
+                android:layout_height="2dp"
+                android:background="#D9D9D9"
+                app:layout_constraintTop_toBottomOf="@id/passwordVerifContainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
+
+            <!-- Bouton -->
+            <Button
+                android:id="@+id/inscriptionButton"
+                android:layout_width="400dp"
+                android:layout_height="45dp"
+                android:text="@string/inscription_page_button"
+                android:textSize="20sp"
+                android:textColor="@color/blanc"
+                android:fontFamily="@font/helvetica"
+                android:background="@drawable/btn_connexion"
+                app:layout_constraintTop_toBottomOf="@id/DeuxiemeTrait"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="32dp" />
+
+            <TextView
+                android:id="@+id/connexionLien"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/inscription_page_seconnecter_button"
+                android:textSize="16sp"
+                android:textColor="@color/bleu"
+                android:fontFamily="@font/helvetica_light"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintTop_toBottomOf="@id/inscriptionButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
