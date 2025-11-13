@@ -24,4 +24,10 @@ interface EleveDAO {
 
     @Query("SELECT DISTINCT classe FROM Eleve")
     fun getClasses(): List<String>
+
+    @Query("SELECT * FROM Eleve WHERE classe = :classe")
+    fun getElevesByClasse(classe: String): List<Eleve>
+
+    @Query("DELETE FROM Eleve")
+    fun clearTable()
 }

@@ -86,7 +86,9 @@ class MainActivity : AppCompatActivity() {
             this,
             AppDatabase::class.java,
             "dual.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
 
         // Récupère les SharedPreferences sécurisées
         val masterKey = MasterKey.Builder(this)

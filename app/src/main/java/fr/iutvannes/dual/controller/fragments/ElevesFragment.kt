@@ -2,13 +2,17 @@ package fr.iutvannes.dual.controller.fragments
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import fr.iutvannes.dual.R
+import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
+import fr.iutvannes.dual.model.persistence.Eleve
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,7 +34,24 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+        val titre = view.findViewById<TextView>(R.id.classe_titre)
         val container = view.findViewById<LinearLayout>(R.id.container_eleves)
+        val btnAdd = view.findViewById<Button>(R.id.btn_add_eleve)
+        val backButton = view.findViewById<ImageButton>(R.id.arrow_back_button)
+
+        backButton.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+
+        titre.text = "Élèves de $classeNom"
+
+        //Action du bouton
+        btnAdd.setOnClickListener {
+            // On ouvre le fragment d'ajout
+            val fragment = AjoutFragment.newInstance(classeNom!!)
+            (activity as MainActivity).showFragment(fragment, true, true)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
@@ -41,7 +62,9 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 .fallbackToDestructiveMigration()
                 .build()
 
-            val eleves = db.EleveDao().getAll()
+
+            val eleveDao = db.EleveDao()
+            val eleves = db.EleveDao().getElevesByClasse(classeNom!!)
 
             withContext(Dispatchers.Main) {
 
@@ -58,12 +81,10 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                     //Pour chaque élève trouvé
                     for(Eleve in eleves) {
                         val textView = TextView(requireContext()).apply {
-                            text = "${Eleve.nom} $Eleve.nom"
+                            text = "${Eleve.prenom} ${Eleve.nom}"
                             textSize = 18f
-                            setPadding(8,8,8,8)
+                            setPadding(8, 8, 8, 8)
                         }
-
-                        //On ajoute chaque ligne à la vue
                         container.addView(textView)
                     }
                 }

@@ -3,11 +3,49 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- UNIQUE enfant du ScrollView -->
     <LinearLayout
-        android:id="@+id/container_eleves"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp" />
+        android:padding="16dp">
+
+        <ImageButton
+            android:id="@+id/arrow_back_button"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_fleche_retour"
+            android:scaleType="fitCenter"/>
+
+        <!-- TITRE : Classe -->
+        <TextView
+            android:id="@+id/classe_titre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp" />
+
+
+        <LinearLayout
+            android:id="@+id/container_eleves"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp" />
+
+        <Button
+            android:id="@+id/btn_add_eleve"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un élève" />
+
+    </LinearLayout>
 
 </ScrollView>
