@@ -22,6 +22,7 @@ import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.content.edit
 
 /**
  * Fragment pour afficher l'écran de profil de l'utilisateur.
@@ -163,7 +164,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
                         withContext(Dispatchers.IO) { db.profDAO().update(prof) }
 
                         // Si l’utilisateur a changé son email, on met aussi à jour l’email stocké localement
-                        sharedPrefs.edit().putString("email", newEmail).apply()
+                        sharedPrefs.edit { putString("email", newEmail) }
 
                         // Message de confirmation visuel
                         Toast.makeText(requireContext(), "Profil mis à jour", Toast.LENGTH_SHORT).show()
@@ -291,8 +292,8 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
         // --- GESTION DU BOUTON DÉCONNEXION ---
         disconnectButton.setOnClickListener {
             // Supprimer l’utilisateur en mémoire (si tu stockes une session)
-            sharedPrefs.edit().putString("email", "").apply()
-            sharedPrefs.edit().putString("password", "").apply()
+            sharedPrefs.edit { putString("email", "") }
+            sharedPrefs.edit { putString("password", "") }
             (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
         }
     }

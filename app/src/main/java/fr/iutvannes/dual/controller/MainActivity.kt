@@ -82,13 +82,8 @@ class MainActivity : AppCompatActivity() {
 
 
         // --- CONNEXION À LA BASE ---
-        val db = Room.databaseBuilder(
-            this,
-            AppDatabase::class.java,
-            "dual.db"
-        )
-            .fallbackToDestructiveMigration()
-            .build()
+        DatabaseProvider.init(this)
+        val db = DatabaseProvider.db
 
         // Récupère les SharedPreferences sécurisées
         val masterKey = MasterKey.Builder(this)
@@ -105,24 +100,10 @@ class MainActivity : AppCompatActivity() {
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
         // Charger les infos du prof connecté (depuis la base)
-        // lifectcleScope.launch est utilisé pour exécuter du code asynchrone permettant de ne pas bloquer l'UI lorsque l'utilisateur change de fragment
-        // (l'opération est annulée si on change de fragment)
-        lifecycleScope.launch {
-            val profConnecte = withContext(Dispatchers.IO) {
-                // Exemple : ici, on suppose qu'on a stocké l'email du prof connecté
-                val email = sharedPref.getString("email", null)
-                if (email != null) {
-                    // Si un email est présent, on cherche le prof correspondant dans la base
-                    db.profDAO().getProfByEmail(email)
-                } else {
-                    // Sinon, on retourne null (aucun prof connecté)
-                    null
-                }
-            }
-
-            // Si on a trouvé le prof, on remplit les champs
-            profConnecte?.let {
-                prenomLabel.setText(it.prenom)
+        val email = sharedPref.getString("email", null)
+        if (email != null) {
+            db.profDAO().getProfLive(email).observe(this) { prof ->
+                prenomLabel.text = prof?.prenom ?: ""
             }
         }
 
