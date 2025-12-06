@@ -30,15 +30,20 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-//            //Connexion BDD
-//            val db = Room.databaseBuilder(
-//                requireContext(),
-//                AppDatabase::class.java, "dual.db"
-//            ).build()
-//
-//            val classes = db.EleveDao().getClasses()
+            //Connexion BDD
+            val db = Room.databaseBuilder(
+                requireContext(),
+                AppDatabase::class.java, "dual.db"
+            ).build()
 
-            val classes = listOf("6A", "5C", "3F")
+            val classes = db.classeDao().getClasses()
+
+            val btn_ajoutClasse = view.findViewById<Button>(R.id.ajout_classe)
+
+            btn_ajoutClasse.setOnClickListener {
+                val fragment = AjoutClasseFragment()
+                (activity as MainActivity).showFragment(fragment, true, true)
+            }
 
             //retour sur le thread principale pour modification de l'interface graphique(UI)
             withContext(Dispatchers.Main) {

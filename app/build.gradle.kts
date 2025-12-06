@@ -77,6 +77,7 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation(libs.androidx.constraintlayout)
     implementation(libs.filament.android)
+    implementation(libs.material)
 
     // Tests
     testImplementation(libs.junit)
