@@ -81,6 +81,11 @@ footer .info {
   margin-top: 1.5em;
 }
 
+#parcours {
+    color: var(--black);
+    margin-top: 1.5em;
+}
+
 #tours p {
   display: none;
 }
@@ -149,4 +154,34 @@ footer .info {
     max-width: 300px;
     font-size: 0.85rem;
   }
+}
+
+/* Changement des couleurs pour le parcours */
+.rond {
+    display: inline-block;
+    width: 12px;          /* taille du rond */
+    height: 12px;
+    border-radius: 50%;   /* rend le cercle rond */
+    margin-left: 5px;
+}
+
+/* Couleurs possibles */
+.rond-rouge {
+    background-color: red;
+}
+
+.rond-vert {
+    background-color: green;
+}
+
+.rond-bleu {
+    background-color: blue;
+}
+
+.rond-jaune {
+    background-color: yellow;
+}
+
+.rond-noir {
+    background-color: black;
 }
