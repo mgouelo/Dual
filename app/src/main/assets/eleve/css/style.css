@@ -86,11 +86,8 @@ footer .info {
     margin-top: 1.5em;
 }
 
-#tours p {
-  display: none;
-}
-
-#tours {
+#listeTours {
+    margin-top: 2vh;
   font-size: 0.85rem;
   color: var(--black);
   text-align: center;
