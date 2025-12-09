@@ -1,6 +1,5 @@
 package fr.iutvannes.dual.model.utils
 
-// Import des librairies nécessaires
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -12,20 +11,19 @@ import org.json.JSONObject
 
 /**
  * EmailService est un objet Kotlin (singleton) utilisé pour envoyer des emails
- * via l'API SendGrid. Il est conçu pour être appelé depuis n'importe quel
- * endroit de l'application (ex : lors d'une réinitialisation de mot de passe).
+ * via l'API Brevo (anciennement Sendinblue).
+ * Il est conçu pour être appelé depuis n'importe quel endroit de l'application
+ * (ex : réinitialisation de mot de passe).
  */
 object EmailService {
 
-    /** Clé API SendGrid (à ne jamais exposer dans un code client en production !)
-    Elle permet d'authentifier les requêtes vers le service SendGrid. */
-    private const val API_KEY = "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"
+    /** Clé API Brevo (à ne jamais exposer dans un code client en production !) */
+    private const val API_KEY = "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"
+    /** Adresse de l'expéditeur vérifiée sur Brevo */
+    private const val SENDER_EMAIL = "biathlon.dual@outlook.fr"
 
-    /** Adresse de l'expéditeur qui sera affichée dans le mail reçu */
-    private const val SENDER_EMAIL = "biathlon.dual@protonmail.com"
-
-    /** URL officielle de l’API SendGrid pour l’envoi de mails */
-    private const val SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send"
+    /** URL de l’API Brevo pour l’envoi d’emails transactionnels */
+    private const val BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
     /** Client HTTP utilisé pour faire les requêtes réseau */
     private val client = OkHttpClient()
@@ -34,54 +32,38 @@ object EmailService {
     private val JSON = "application/json; charset=utf-8".toMediaType()
 
     /**
-     * Envoie un email de réinitialisation de mot de passe via SendGrid.
-     * @param emailTo : adresse du destinataire (le prof)
+     * Envoie un email de réinitialisation de mot de passe via Brevo.
+     * @param emailTo : adresse du destinataire
      * @param newPassword : mot de passe temporaire généré
-     * @return true si l'email a été accepté par SendGrid, false sinon
+     * @return true si l'email a été accepté par Brevo, false sinon
      */
     suspend fun sendPasswordResetEmail(emailTo: String, newPassword: String): Boolean {
-        // withContext(Dispatchers.IO) => exécute ce code sur un thread d'entrée/sortie (I/O)
-        // pour ne pas bloquer le thread principal (UI)
         return withContext(Dispatchers.IO) {
             try {
-                // --- Construction du JSON attendu par SendGrid ---
+                // --- Construction du JSON attendu par Brevo ---
                 val json = JSONObject().apply {
-                    // "personalizations" contient la liste des destinataires
-                    put("personalizations", JSONArray().apply {
-                        put(JSONObject().apply {
-                            // "to" : à qui on envoie le mail
-                            put("to", JSONArray().apply {
-                                put(JSONObject().apply {
-                                    put("email", emailTo)
-                                })
-                            })
-                        })
+                    // "sender" : expéditeur vérifié
+                    put("sender", JSONObject().apply { put("email", SENDER_EMAIL) })
+
+                    // "to" : liste des destinataires
+                    put("to", JSONArray().apply {
+                        put(JSONObject().apply { put("email", emailTo) })
                     })
 
-                    // "from" : adresse de l'expéditeur (doit être vérifiée chez SendGrid)
-                    put("from", JSONObject().apply {
-                        put("email", SENDER_EMAIL)
-                    })
-
-                    // Sujet du mail
+                    // Sujet de l'email
                     put("subject", "Réinitialisation de votre mot de passe")
 
-                    // "content" : contenu du mail (texte brut ici)
-                    put("content", JSONArray().apply {
-                        put(JSONObject().apply {
-                            put("type", "text/plain") // Type de contenu : texte simple
-                            put("value", """
-                                Bonjour,
+                    // Contenu texte simple de l'email
+                    put("textContent", """
+                        Bonjour,
 
-                                Votre nouveau mot de passe temporaire est : $newPassword
+                        Votre nouveau mot de passe temporaire est : $newPassword
 
-                                Veuillez le changer dès votre prochaine connexion.
+                        Veuillez le changer dès votre prochaine connexion.
 
-                                Cordialement,
-                                L'équipe DUAL
-                            """.trimIndent())
-                        })
-                    })
+                        Cordialement,
+                        L'équipe DUAL
+                    """.trimIndent())
                 }
 
                 // --- Conversion du JSON en corps de requête HTTP ---
@@ -89,12 +71,13 @@ object EmailService {
 
                 // --- Création de la requête HTTP ---
                 val request = Request.Builder()
-                    .url(SENDGRID_API_URL) // URL de l’API SendGrid
-                    // Authentification via la clé API dans l’en-tête
-                    .addHeader("Authorization", "Bearer $API_KEY")
+                    .url(BREVO_API_URL) // URL de l’API Brevo
+                    // Authentification via la clé API Brevo
+                    .addHeader("api-key", API_KEY)
                     // Type de contenu JSON
+                    .addHeader("accept", "application/json")
                     .addHeader("Content-Type", "application/json")
-                    // Méthode POST car on envoie des données
+                    // Méthode POST pour envoyer le mail
                     .post(requestBody)
                     .build()
 
@@ -102,14 +85,12 @@ object EmailService {
                 val response = client.newCall(request).execute()
 
                 // --- Vérification du résultat ---
-                // SendGrid renvoie 202 si l'email a été "accepté"
-                println("SendGrid Response: ${response.code} - ${response.message}")
+                println("Brevo Response: ${response.code} - ${response.message}")
                 println("Response body: ${response.body?.string()}")
 
-                // On renvoie true si tout s'est bien passé (code HTTP 2xx)
+                // Retourne true si code HTTP 2xx
                 response.isSuccessful
             } catch (e: Exception) {
-                // En cas d'erreur réseau ou JSON, on affiche la trace et on retourne false
                 e.printStackTrace()
                 false
             }
