@@ -80,63 +80,70 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"/>
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggle_group_lettre"
+
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:singleSelection="true"
-        app:selectionRequired="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_a"
-            android:text="A"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_b"
-            android:text="B"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_c"
-            android:text="C"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_d"
-            android:text="D"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_e"
-            android:text="E"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_f"
-            android:text="F"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+        android:layout_height="match_parent"
+        android:scrollbars="none">
         
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lettre_g"
-            android:text="G"
-            android:layout_width="wrap_content"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggle_group_lettre"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            app:singleSelection="true"
+            app:selectionRequired="true">
 
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_a"
+                android:text="A"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_b"
+                android:text="B"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_c"
+                android:text="C"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_d"
+                android:text="D"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_e"
+                android:text="E"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_f"
+                android:text="F"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lettre_g"
+                android:text="G"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+    </HorizontalScrollView>
 
         <Button
             android:id="@+id/btn_valider"
