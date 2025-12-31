@@ -15,7 +15,7 @@ import fr.iutvannes.dual.model.persistence.Classe
 
 @Database(
     entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
