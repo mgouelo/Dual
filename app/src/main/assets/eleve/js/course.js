@@ -68,24 +68,29 @@ const reset = () => {
     clearTimeout(timeout);
     minutes = secondes = millisecondes = 0;
     chrono.textContent = "00:00:00";
+
+    // Réinitialiser les tours
+    const listeTours = document.getElementById("listeTours");
+    if (listeTours) {
+        listeTours.innerHTML = "";
+        tourActuel = 1;
+    }
 };
 
 const enregistrer = () => {
     if(chrono.textContent != "00:00:00"){
-        if (tourActuel <= 6) {
-            const leTour = document.querySelector(`#tour${tourActuel}`);
-            const leChrono = leTour.parentElement;
+        const listeTours = document.getElementById("listeTours"); // conteneur de tous les tours
+        const nouveauTour = document.createElement("span");
+        nouveauTour.innerHTML = `Tour ${tourActuel}: ${chrono.textContent}<br><br> `;
+        listeTours.appendChild(nouveauTour);
 
-            leChrono.style.display = "block";
-            leTour.textContent = chrono.textContent;
-            
-            tourActuel++;
+        tourActuel++;
 
-            estArrete = true;
-            clearTimeout(timeout);
-            minutes = secondes = millisecondes = 0;
-            chrono.textContent = "00:00:00";
-        }
+        // estArrete = true;
+        // clearTimeout(timeout);
+        // minutes = secondes = millisecondes = 0;
+        // chrono.textContent = "00:00:00";
+
     }
 };
 

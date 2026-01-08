@@ -1,38 +1,40 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tir</title>
-  <link rel="stylesheet" href="../css/style.css" />
-</head>
-<body>
-  <div id="container">
-    
-    <header>
-        <h1>Entraînement au tir</h1>
-        <p>Réaliser 6 tirs à la suite en réinitialisant la cible à chaque tir</p>
-    </header>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Entraînement Tir</title>
+        <link rel="stylesheet" href="../css/style.css"/>
+    </head>
+    <body>
+        <div id="container">
 
-    <div id="tirs">
-      <p>Tir 1 : <input type="number" id="tir1" min="0" /></p>
-      <p>Tir 2 : <input type="number" id="tir2" min="0" /></p>
-      <p>Tir 3 : <input type="number" id="tir3" min="0" /></p>
-      <p>Tir 4 : <input type="number" id="tir4" min="0" /></p>
-      <p>Tir 5 : <input type="number" id="tir5" min="0" /></p>
-      <p>Tir 6 : <input type="number" id="tir6" min="0" /></p>
-    </div>
+            <header>
+                <h1>Tir</h1>
+                <p>Réalise 6 tirs de 5 balles </p>
+            </header>
 
-    <div id="resultats">
-      <p>Total : <span id="total">-</span></p>
-      <p>Moyenne : <span id="moyenne">-</span></p>
-    </div>
+            <div id="tirs">
+                <p>Série 1 : <input type="number" id="tir1" min="0" max="5" placeholder="0-5"/></p>
+                <p>Série 2 : <input type="number" id="tir2" min="0" max="5" placeholder="0-5"/></p>
+                <p>Série 3 : <input type="number" id="tir3" min="0" max="5" placeholder="0-5"/></p>
+                <p>Série 4 : <input type="number" id="tir4" min="0" max="5" placeholder="0-5"/></p>
+                <p>Série 5 : <input type="number" id="tir5" min="0" max="5" placeholder="0-5"/></p>
+                <p>Série 6 : <input type="number" id="tir6" min="0" max="5" placeholder="0-5"/></p>
+            </div>
 
-    <footer>
-      <p class="info">Connecté au serveur local</p>
-    </footer>
-  </div>
+            <div id="resultats" style="display: none; margin-top: 20px;">
+                <p>Total réussites : <span id="total" style="font-weight: bold;">-</span> / 30</p>
 
-  <script src="../js/tir.js"></script>
-</body>
+                <div id="medaille-display" style="margin-top: 15px; font-weight: bold;"></div>
+            </div>
+
+            <footer>
+                <button class="button btn-back" onclick="location.href='seance.html'" style="margin-top: 20px;">Retour séance
+                </button>
+            </footer>
+        </div>
+
+        <script src="../js/tir.js"></script>
+    </body>
 </html>
