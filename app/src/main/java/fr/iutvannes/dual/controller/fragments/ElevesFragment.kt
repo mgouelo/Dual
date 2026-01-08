@@ -107,7 +107,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     }
 
     /**
-     * analyse les métadonnées du fichier (nom + type MIME)
+     * analyse les métadonnées du fichier tableur (nom + type MIME)
      * ouvre un objet InputStream + appel la viewModel
      * recharge dynamiquement la liste d'éleve
      */
