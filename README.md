@@ -134,7 +134,7 @@ Responsable du besoin pédagogique et validation fonctionnelle
 
 ## 📌 Cadre académique
 
-Ce projet est réalisé dans le cadre du **semestre 3** du **BUT Informatique** et fait l’objet :
+Ce projet est réalisé dans le cadre de la **SAE** en **BUT Informatique 2eme année** et fait l’objet :
 - d’un rendu client,
 - d’une recette fonctionnelle,
 - d’une évaluation portant sur le produit, la documentation et l’organisation du projet.
