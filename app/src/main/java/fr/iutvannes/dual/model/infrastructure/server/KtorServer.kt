@@ -98,30 +98,7 @@ fun Application.module(appContext: Context) {
             val host = call.request.host()
             val port = call.request.port()
             val base = "http://$host${if (port in listOf(80, 443)) "" else ":$port"}"
-            call.respond(mapOf("join" to "$base/student"))
-        }
-
-        // UI élève depuis assets/student
-        get("/student") {
-            call.respondRedirect("/student/", permanent = false)
-        }
-
-        get("/student/") {
-            val bytes = appContext.assets.open("student/index.html").use { it.readBytes() }
-            call.respondBytes(bytes, contentType = ContentType.Text.Html)
-        }
-        get("/student/{path...}") {
-            val segments = call.parameters.getAll("path") ?: emptyList()
-            val rest = if (segments.isEmpty()) "index.html" else segments.joinToString("/")
-            val p = "student/$rest"
-
-            runCatching {
-                appContext.assets.open(p).use { it.readBytes() }
-            }.onSuccess { bytes ->
-                call.respondBytes(bytes, contentType = contentTypeFor(p))
-            }.onFailure {
-                call.respond(HttpStatusCode.NotFound, "Fichier introuvable: $p")
-            }
+            call.respond(mapOf("join" to base))
         }
 
         // Reçoit les événements des élèves
@@ -148,10 +125,22 @@ fun Application.module(appContext: Context) {
         }
 
         get("/") {
-            call.respondText(
-                "BIATHLON actif • Élève: /student • Prof (SSE): /live • QR: /qr-url",
-                ContentType.Text.Plain
-            )
+            val bytes = appContext.assets.open("eleve/index.html").use { it.readBytes() }
+            call.respondBytes(bytes, contentType = ContentType.Text.Html)
+        }
+
+        get("/{path...}") {
+            val segments = call.parameters.getAll("path") ?: emptyList()
+            val rest = segments.joinToString("/")
+            val p = "eleve/$rest"
+
+            runCatching {
+                appContext.assets.open(p).use { it.readBytes() }
+            }.onSuccess { bytes ->
+                call.respondBytes(bytes, contentType = contentTypeFor(p))
+            }.onFailure {
+                call.respond(HttpStatusCode.NotFound, "Fichier introuvable: $p")
+            }
         }
     }
 }
