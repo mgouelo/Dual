@@ -6,6 +6,9 @@ let vitesseAff = document.getElementById("vitesse");
 let distanceAff = document.getElementById("distance");
 let resultat = document.getElementById("resultat");
 let parcours = document.getElementById("parcours");
+const modal = document.getElementById("custom-confirm");
+const confirmOk = document.getElementById("confirm-ok");
+const confirmCancel = document.getElementById("confirm-cancel");
 
 let minutes = 0;
 let secondes = 0;
@@ -166,7 +169,7 @@ const setColorTrack4eme = () => {
     let color = "";
 
     // Coupelles jaunes : 9.5 ou 10
-    if (vmaArrondie === 9.5 || vmaArrondie === 10) {
+    if (vmaArrondie <= 9.5 || vmaArrondie === 10) {
         color = coupellesJaunes;
 
         // Plots verts : 10.5 ou 11
@@ -202,6 +205,7 @@ const demarrer = () => {
     if (estArrete) {
         estArrete = false;
         resultat.textContent = "";
+        parcours.textContent = "";
         defilerTemps();
     }
 };
@@ -221,15 +225,44 @@ const arreter = () => {
     }
 };
 
-const reset = () => {
-    estArrete = true;
-    clearTimeout(timeout);
-    minutes = secondes = millisecondes = tempsEcoule = 0;
-    currentIndex = 0;
-    chrono.textContent = "00:00:00";
-    vitesseAff.textContent = tableVma[0].vitesse.toFixed(1);
-    distanceAff.textContent = `${tableVma[0].distance}`;
-    resultat.textContent = "";
+const reset = async() => {
+    const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
+
+    if (confirmation) {
+        estArrete = true;
+        clearTimeout(timeout);
+        minutes = secondes = millisecondes = tempsEcoule = 0;
+        currentIndex = 0;
+        chrono.textContent = "00:00:00";
+        vitesseAff.textContent = tableVma[0].vitesse.toFixed(1);
+        distanceAff.textContent = "0";
+        resultat.textContent = "";
+        parcours.textContent = "";
+    }
+};
+
+const demanderConfirmation = (message) => {
+    document.getElementById("confirm-message").textContent = message;
+
+    modal.style.display = "flex";
+    // Petit timeout pour laisser le navigateur appliquer le display:flex
+    // avant de lancer l'animation CSS
+    setTimeout(() => {
+        modal.classList.add("show");
+    }, 10);
+
+    return new Promise((resolve) => {
+        confirmOk.onclick = () => {
+            modal.classList.remove("show");
+            setTimeout(() => { modal.style.display = "none"; }, 300);
+            resolve(true);
+        };
+        confirmCancel.onclick = () => {
+            modal.classList.remove("show");
+            setTimeout(() => { modal.style.display = "none"; }, 300);
+            resolve(false);
+        };
+    });
 };
 
 startBtn.addEventListener("click", demarrer);
