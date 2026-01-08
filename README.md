@@ -115,6 +115,15 @@ Responsable du besoin pédagogique et validation fonctionnelle
 
 ---
 
+
+### 🎓 Enseignant référent
+**Jean-François Kamp**  
+Enseignant – IUT de Vannes  
+Professeur référent du projet Biathlon
+
+---
+
+
 ### 💻 Équipe de développement  
 **IUT de Vannes – BUT Informatique**
 
