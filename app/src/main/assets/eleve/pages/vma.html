@@ -17,7 +17,7 @@
     <div id="chrono">00:00:00</div>
 
     <div id="infos">
-      <p>Vitesse actuelle : <span id="vitesse">8.0</span> km/h</p>
+      <p>Vitesse : <span id="vitesse">8.0</span> km/h</p>
       <p>Distance parcourue : <span id="distance">0</span> m</p>
     </div>
 
@@ -34,6 +34,17 @@
         <p class="info">Connecté au serveur local</p>
     </footer>
 
+  </div>
+
+  <div id="custom-confirm" class="modal">
+      <div class="modal-content">
+          <h3>Confirmation</h3>
+          <p id="confirm-message">Êtes-vous sûr ?</p>
+          <div class="modal-buttons">
+              <button id="confirm-ok" class="btn-confirm">OK</button>
+              <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+          </div>
+      </div>
   </div>
 
   <script src="../js/vma.js"></script>
