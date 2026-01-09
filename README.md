@@ -139,11 +139,4 @@ Professeur référent du projet Biathlon
 - **Glen Potay**  
   Développeur Full Stack
 
----
 
-## 📌 Cadre académique
-
-Ce projet est réalisé dans le cadre de la **SAE** en **BUT Informatique 2eme année** et fait l’objet :
-- d’un rendu client,
-- d’une recette fonctionnelle,
-- d’une évaluation portant sur le produit, la documentation et l’organisation du projet.
