@@ -3,26 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seance</title>
+    <title>Séance Biathlon</title>
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-    <div id="container">
-        
-        <header>
-            <h1>Séance d'entraînement</h1>
-            <p>Sélectionne l'execice à réaliser</p>
-        </header>
+<div id="container">
 
-        <div id="buttons">
-            <button id="tir" class="button" onclick="location.href='tir.html'">Tir</button>
-            <button id="course" class="button" onclick="location.href='course.html'">Course</button>
+    <header>
+        <h1 id="titre-session">Session Biathlon</h1>
+        <p id="info-classe">Préparation de l'épreuve</p>
+    </header>
+
+    <div class="hub-sections">
+
+        <div class="mode-group">
+            <p class="mode-title">Initialisation</p>
+            <button class="button" onclick="location.href='vma.html'">Faire le Test VMA</button>
         </div>
 
-        <footer>
-            <p class="info">Connecté au serveur local</p>
-        </footer>
+        <div class="mode-group">
+            <p class="mode-title">Entraînement</p>
+            <button class="button" onclick="location.href='tir.html'">Tir</button>
+            <button class="button" onclick="location.href='course.html'">Course</button>
+        </div>
+
+        <hr class="separator">
+
+        <div class="mode-group">
+            <p class="mode-title">Évaluation</p>
+            <button id="btn-eval" class="button btn-eval">Lancer l'Épreuve Finale</button>
+        </div>
 
     </div>
+
+    <footer>
+        <button class="button btn-back" onclick="location.href='../index.html'">Retour au binôme</button>
+    </footer>
+
+</div>
+
+<script src="../js/seance.js"></script>
 </body>
 </html>
