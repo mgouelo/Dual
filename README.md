@@ -3,7 +3,7 @@
 
 ## 📘 Présentation du projet
 
-**Dual** (Cycle de Biathlon en Éducation Physique) est une application mobile Android destinée à accompagner les **enseignants d’Éducation Physique et Sportive** lors des **séances de biathlon scolaire**, notamment en classe de 4ᵉ.
+**Dual** (Cycle de Biathlon en Éducation Physique) est une application mobile Android destinée à accompagner les **enseignants d’Éducation Physique et Sportive** lors des **séances de biathlon scolaire**, notamment en classe de 6e et 4e.
 
 Le projet est développé dans le cadre d’une **SAE (Situation d’Apprentissage et d’Évaluation)** du **BUT Informatique de l’IUT de Vannes**, en collaboration avec le **Collège Notre-Dame-La-Blanche (Theix-Noyalo)**.
 
@@ -139,11 +139,4 @@ Professeur référent du projet Biathlon
 - **Glen Potay**  
   Développeur Full Stack
 
----
 
-## 📌 Cadre académique
-
-Ce projet est réalisé dans le cadre de la **SAE** en **BUT Informatique 2eme année** et fait l’objet :
-- d’un rendu client,
-- d’une recette fonctionnelle,
-- d’une évaluation portant sur le produit, la documentation et l’organisation du projet.
