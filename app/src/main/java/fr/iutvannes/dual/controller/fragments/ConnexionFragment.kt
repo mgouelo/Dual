@@ -19,6 +19,7 @@ import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.content.edit
 
 class ConnexionFragment : Fragment() {
 
@@ -122,6 +123,12 @@ class ConnexionFragment : Fragment() {
                             editor.putBoolean("rememberMe", false)
                             editor.apply()
                         }
+
+                        // Enregistrer l'email pour la top bar dans le tableau de bord
+                        sharedPref.edit { putString("email", email) }
+                        // Mettre à jour la top bar
+                        (activity as? MainActivity)?.chargerUtilisateur()
+
                         (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
                     }
                 }

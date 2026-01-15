@@ -1,5 +1,6 @@
 package fr.iutvannes.dual.controller
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View // Import pour gérer la visibilité (View.VISIBLE, View.GONE)
 import android.widget.ImageButton
@@ -36,6 +37,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navClassesButton: LinearLayout
     private lateinit var topBarContainer: ConstraintLayout
 
+    /** SharedPreferences pour la connexion cela permet de garder l'email même après un redémarrage */
+    private lateinit var sharedPref: SharedPreferences
+    /** Base de données */
+    private lateinit var db: AppDatabase
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +53,6 @@ class MainActivity : AppCompatActivity() {
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContentView(R.layout.activity_main)
-
-        // --- RÉFÉRENCES AUX CHAMPS DE TEXTE ---
-        val prenomLabel = findViewById<TextView>(R.id.prenomLabel)
 
         // Listener pour le bouton de profil
         val profileButton = findViewById<ImageButton>(R.id.profileImage)
@@ -80,17 +83,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-        // --- CONNEXION À LA BASE ---
+        // Initialiser la base
         DatabaseProvider.init(this)
-        val db = DatabaseProvider.db
+        db = DatabaseProvider.db
 
         // Récupère les SharedPreferences sécurisées
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
 
-        val sharedPref = EncryptedSharedPreferences.create(
+        sharedPref = EncryptedSharedPreferences.create(
             this,
             "loginPrefs",
             masterKey,
@@ -99,13 +101,8 @@ class MainActivity : AppCompatActivity() {
         )
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
-        // Charger les infos du prof connecté (depuis la base)
-        val email = sharedPref.getString("email", null)
-        if (email != null) {
-            db.profDAO().getProfLive(email).observe(this) { prof ->
-                prenomLabel.text = prof?.prenom ?: ""
-            }
-        }
+        // Premier essai de chargement
+        chargerUtilisateur()
 
         // --- ÉTAT INITIAL ---
         if (savedInstanceState == null) {
@@ -166,6 +163,20 @@ class MainActivity : AppCompatActivity() {
         navHomeButton.isSelected = false
         navClassesButton.isSelected = false
         itemToSelect.isSelected = true
+    }
+
+    /**
+     * Charge l'utilisateur depuis la base de données et met à jour la top bar.
+     */
+    fun chargerUtilisateur() {
+        val email = sharedPref.getString("email", null)
+        val prenomLabel = findViewById<TextView>(R.id.prenomLabel)
+
+        if (email != null) {
+            db.profDAO().getProfLive(email).observe(this) { prof ->
+                prenomLabel.text = prof?.prenom ?: ""
+            }
+        }
     }
 }
 
