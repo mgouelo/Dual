@@ -30,4 +30,7 @@ interface EleveDAO {
 
     @Query("DELETE FROM Eleve")
     fun clearTable()
+
+    @Query("SELECT * FROM Eleve")
+    fun getAllEleves(): List<Eleve>
 }

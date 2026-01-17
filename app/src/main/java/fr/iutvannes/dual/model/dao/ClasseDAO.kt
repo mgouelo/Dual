@@ -21,4 +21,7 @@ interface ClasseDAO {
     //getClasses
     @Query("SELECT nom FROM Classe")
     suspend fun getClasses(): List<String>
+
+    @Query("SELECT * FROM Classe")
+    fun getAllClasses(): List<Classe>
 }

@@ -24,7 +24,7 @@ import android.provider.OpenableColumns
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
 
-    //ariable qui contiendra le nom de la classe
+    //variable qui contiendra le nom de la classe
     private var classeNom: String? = null
 
     // viewModel

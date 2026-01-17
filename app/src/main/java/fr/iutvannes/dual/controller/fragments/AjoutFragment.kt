@@ -68,8 +68,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                     Toast.makeText(requireContext(), "Élève ajouté", Toast.LENGTH_SHORT).show()
 
                     //Retour à ElevesFragment
-                    val fragment = ElevesFragment.newInstance(classeNom!!)
-                    (activity as MainActivity).showFragment(fragment, true, true)
+                    requireActivity().supportFragmentManager.popBackStack()
                 }
             }
         }

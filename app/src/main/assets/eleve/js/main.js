@@ -1,40 +1,75 @@
-// Binomes temporaires pour démonstration
-const binomes = [
-    { id: "1", noms: "Binôme 1" },
-    { id: "2", noms: "Binôme 2" },
-    { id: "3", noms: "Binôme 3" },
-    { id: "4", noms: "Binôme 4" }
-];
+const container = document.getElementById("buttons");
 
-const initialiserPortail = () => {
-    // On récupère l'élément ici pour être sûr que le DOM est chargé
-    const containerBoutons = document.getElementById("buttons");
+/**
+ * Classe pour charger et afficher toutes les classes (étape 1)
+ */
+async function chargerClasses() {
+    try {
+        const response = await fetch('/api/classes/all');
+        const classes = await response.json();
 
-    // Vérification de sécurité pour éviter l'erreur "null"
-    if (!containerBoutons) return;
+        container.innerHTML = "<h2>Sélectionnez votre classe</h2>";
 
-    // On attend 1.5 seconde (1500ms) avant d'afficher les boutons
-    setTimeout(() => {
-        containerBoutons.innerHTML = ""; // On efface le texte de chargement
+        if (classes.length === 0) {
+            container.innerHTML += "<p>Aucune classe disponible.</p>";
+            return;
+        }
 
-        binomes.forEach(b => {
+        classes.forEach(nomClasse => {
             const btn = document.createElement("button");
-            // On applique la classe .student définie dans ton CSS actuel
             btn.className = "button";
-            btn.textContent = b.noms;
+            btn.textContent = nomClasse;
+
+            //Au clic, on passe à l'affichage des élèves de la classe
+            btn.onclick = () => chargerElevesDeLaClasse(nomClasse);
+
+            container.appendChild(btn);
+        });
+    } catch (error) {
+        console.error("Erreur:", error);
+        container.innerHTML = "<p>Erreur de connexion au serveur.</p>";
+    }
+}
+
+/**
+ * Classe pour charger les élèves de la classe sélectionnée (étape 2)
+ */
+async function chargerElevesDeLaClasse(nomClasse) {
+    try {
+        const response = await fetch(`/api/eleves/par-classe/${nomClasse}`);
+        const eleves = await response.json();
+
+        container.innerHTML = `<h2>Classe ${nomClasse}</h2>`;
+
+        eleves.forEach(nomComplet => {
+            const btn = document.createElement("button");
+            btn.className = "button";
+            btn.textContent = nomComplet;
 
             btn.onclick = () => {
-                // Sauvegarde du choix
-                localStorage.setItem("binome_actif", b.noms);
-                localStorage.setItem("binome_id", b.id);
+                //On stocke les infos pour les pages suivantes (Tir, Course)
+                localStorage.setItem("eleve_nom", nomComplet);
+                localStorage.setItem("eleve_classe", nomClasse);
 
-                // Redirection vers la page de séance
+                //Redirection vers le hub (seance.html)
                 window.location.href = "pages/seance.html";
             };
 
-            containerBoutons.appendChild(btn);
+            container.appendChild(btn);
         });
-    }, 1500);
-};
 
-window.onload = initialiserPortail;
+        //Bouton pour revenir en arrière si on s'est trompé de classe
+        const btnRetour = document.createElement("button");
+        btnRetour.textContent = "⬅ Retour aux classes";
+        btnRetour.className = "button btn-back";
+        btnRetour.style.marginTop = "20px";
+        btnRetour.onclick = chargerClasses;
+        container.appendChild(btnRetour);
+
+    } catch (error) {
+        container.innerHTML = "<p>Erreur lors du chargement des élèves.</p>";
+    }
+}
+
+// Lancement au chargement de la page
+window.onload = chargerClasses;
