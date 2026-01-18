@@ -51,8 +51,8 @@ async function chargerElevesDeLaClasse(nomClasse) {
                 localStorage.setItem("eleve_nom", nomComplet);
                 localStorage.setItem("eleve_classe", nomClasse);
 
-                //Redirection vers le hub (seance.html)
-                window.location.href = "pages/seance.html";
+                //Redirection vers le choix du niveau (6ème ou 4ème)
+                window.location.href = "pages/choix_niveau.html";
             };
 
             container.appendChild(btn);

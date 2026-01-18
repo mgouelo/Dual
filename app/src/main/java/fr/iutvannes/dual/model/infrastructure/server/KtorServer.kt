@@ -121,6 +121,10 @@ fun Application.module(appContext: Context) {
             val evt = runCatching { call.receive<EventDTO>() }.getOrElse {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid_body")); return@post
             }
+
+            // Voir les logs pour la route /event
+            Log.i("KtorServer", "Évènement reçu : Type=${evt.type}, Élève=${evt.studentId}, Payload=${evt.payload}")
+
             liveBus.tryEmit(evt)
             call.respond(HttpStatusCode.Accepted, mapOf("status" to "received"))
         }
