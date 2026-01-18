@@ -17,42 +17,60 @@ class OdfStudentReader : StudentReader {
     }
 
     override fun read(input: InputStream): List<StudentDraft> {
-        val doc = SpreadsheetDocument.loadDocument(input)
-        doc.use { d ->
-            val sheet = d.getSheetByIndex(0)
-                ?: return emptyList()
+        // on copie le flux dans un fichier temporaire physique + utilise createTempFile dans le cache de l'appli
+        val tempFile = java.io.File.createTempFile("import_eleve", ".ods")
+        tempFile.deleteOnExit() // nettoyage auto à la fin du programme
 
-            // En-tête (ligne 0)
-            val colCount = max(0, sheet.columnCount - 1) // simple API calcule souvent bien
+        // copie du flux vers le fichier
+        input.use { stream ->
+            tempFile.outputStream().use { fileOut ->
+                stream.copyTo(fileOut)
+            }
+        }
+
+        // charge le document depuis le fichier, pas le flux du .ods (car un .ods est un zip de plusieurs fichiers)
+        val doc = SpreadsheetDocument.loadDocument(tempFile)
+
+        doc.use { d ->
+            val sheet = d.getSheetByIndex(0) ?: return emptyList()
+
+            val colCount = max(0, sheet.columnCount - 1)
             val header = mutableMapOf<Int, String>()
+
+            // parsing des en-têtes
             for (c in 0..colCount) {
                 val cell = sheet.getCellByPosition(c, 0)
                 val name = normalize(cell.displayText ?: "")
                 if (name.isNotBlank()) header[c] = name
             }
 
-            val idxFirst = findIndex(header, setOf("prénom", "prenom", "first name", "firstname", "givenname"))
-                ?: throw IllegalArgumentException("Colonne 'Prénom' absente dans l’ODS")
-            val idxLast  = findIndex(header, setOf("nom", "last name", "lastname", "surname"))
-                ?: throw IllegalArgumentException("Colonne 'Nom' absente dans l’ODS")
-            val idxClass = findIndex(header, setOf("classe", "class", "group"))
+            val idxFirst = findIndex(header, setOf("prénom", "prenom", "first name", "firstname"))
+                ?: throw IllegalArgumentException("Colonne 'Prénom' introuvable")
+            val idxLast  = findIndex(header, setOf("nom", "last name", "lastname"))
+                ?: throw IllegalArgumentException("Colonne 'Nom' introuvable")
+            val idxClass = findIndex(header, setOf("classe", "groupe", "class", "group"))
 
             val out = mutableListOf<StudentDraft>()
             val rowCount = sheet.rowCount
-            for (r in 1 until rowCount) {
-                val first = sheet.getCellByPosition(idxFirst, r).displayText?.trim().orEmpty()
-                val last  = sheet.getCellByPosition(idxLast,  r).displayText?.trim().orEmpty()
-                val cls   = idxClass?.let { sheet.getCellByPosition(it, r).displayText?.trim().orEmpty() }.orEmpty()
 
-                if (first.isBlank() && last.isBlank()) {
-                    continue
+            // ajout d'une sécurité pour sauter les lignes vide
+            for (r in 1 until rowCount) {
+                val cellFirst = sheet.getCellByPosition(idxFirst, r)
+                val cellLast  = sheet.getCellByPosition(idxLast, r)
+
+                // sécurité si cellule null
+                val first = cellFirst?.displayText?.trim().orEmpty()
+                val last  = cellLast?.displayText?.trim().orEmpty()
+
+                val cls = if (idxClass != null) {
+                    sheet.getCellByPosition(idxClass, r)?.displayText?.trim().orEmpty()
+                } else {
+                    ""
                 }
 
-                out += StudentDraft(
-                    firstName = first,
-                    lastName  = last,
-                    classe   = cls.ifBlank { null }
-                )
+                if (first.isBlank() && last.isBlank()) continue
+
+                out += StudentDraft(first, last, cls.ifBlank { null })
             }
             return out
         }

@@ -8,7 +8,7 @@ object Utils {
     /**
      * Renvoie l’adresse IP locale de la tablette
      * Retourne null si aucune connexion réseau active --> on part sur localhost dans ce cas
-     * Permet de construire ensuite l'url du type http://ip:8080/student/
+     * Permet de construire ensuite l'url du type http://ip:8080/
      */
     fun getLocalIpAddress(): String? {
         try {
@@ -30,3 +30,8 @@ object Utils {
         return null
     }
 }
+
+/**
+ * Pour que la tablette prof ait toujours la même adresse IP lors de la création de la séance, il faudra modifier
+ * le fichier de configuration réseau du Raspberry Pi afin d'associé une adresse MAC <-> à une unique adresse IP.
+ */
