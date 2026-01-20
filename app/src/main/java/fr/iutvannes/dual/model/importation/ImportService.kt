@@ -31,7 +31,7 @@ class ImportService(
 
     /**
      * Import d’un fichier d’élèves.
-     * @param input flux du fichier (CSV/XLS/ODS)
+     * @param input flux du fichier (CSV/XLS)
      * @param fileName nom du fichier (pour l’extension)
      * @param mimeType type MIME si connu (sinon null)
      */

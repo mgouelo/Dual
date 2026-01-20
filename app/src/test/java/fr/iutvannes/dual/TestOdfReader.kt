@@ -1,7 +1,6 @@
 package fr.iutvannes.dual
 
 import fr.iutvannes.dual.model.importation.StudentDraft
-import fr.iutvannes.dual.model.importation.readers.OdfStudentReader
 import org.junit.Before
 import org.junit.Test
 import org.odftoolkit.simple.SpreadsheetDocument
@@ -11,11 +10,11 @@ import java.io.ByteArrayOutputStream
 class TestOdfStudentReader {
 
     // objet à tester
-    private lateinit var reader: OdfStudentReader
+    private lateinit var reader: OdsStudentReader
 
     @Before
     fun setUp() {
-        reader = OdfStudentReader()
+        reader = OdsStudentReader()
     }
 
     // test principal de lecture d’un fichier ODF

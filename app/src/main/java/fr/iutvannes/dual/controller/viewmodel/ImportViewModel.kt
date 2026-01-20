@@ -7,7 +7,6 @@ import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.importation.ImportReport
 import fr.iutvannes.dual.model.importation.ImportService
 import fr.iutvannes.dual.model.importation.readers.CsvStudentReader
-import fr.iutvannes.dual.model.importation.readers.OdfStudentReader
 import fr.iutvannes.dual.model.importation.readers.XlsStudentReader
 import java.io.InputStream
 
@@ -22,7 +21,6 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
         readers = listOf(
             CsvStudentReader(),
             XlsStudentReader(),
-            OdfStudentReader()
         ),
         eleveDao = db.EleveDao()
     )

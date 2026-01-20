@@ -93,7 +93,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
     /**
      * Ouvre le sélecteur de fichier android
-     * + applique un filtre pour afficher que les fichiers .xls / .xlsx / .ods / .csv
+     * + applique un filtre pour afficher que les fichiers .xls / .xlsx / .csv
      */
     private fun ouvrirSelectionFichier() {
         openDocument.launch(
@@ -104,7 +104,6 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 "application/csv",
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.oasis.opendocument.spreadsheet"
             )
         )
     }
