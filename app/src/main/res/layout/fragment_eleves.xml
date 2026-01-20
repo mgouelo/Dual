@@ -1,59 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
-    <!-- UNIQUE enfant du ScrollView -->
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/arrow_back_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_fleche_retour"
+        android:contentDescription="@drawable/ic_fleche_retour"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/classe_titre"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:text=""
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:paddingStart="8dp"
+        app:layout_constraintStart_toEndOf="@id/arrow_back_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/arrow_back_button"
+        app:layout_constraintBottom_toBottomOf="@id/arrow_back_button"/>
 
-        <ImageButton
-            android:id="@+id/arrow_back_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="12dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_fleche_retour"
-            android:scaleType="fitCenter"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewEleves"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/classe_titre"
+        app:layout_constraintBottom_toTopOf="@id/btn_add_eleve"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- TITRE : Classe -->
-        <TextView
-            android:id="@+id/classe_titre"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:padding="8dp"
-            android:layout_marginBottom="12dp" />
+    <Button
+        android:id="@+id/btn_add_eleve"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Ajouter un élève"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_import_tableur" />
 
+    <Button
+        android:id="@+id/btn_import_tableur"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Importer avec un tableur"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-        <LinearLayout
-            android:id="@+id/container_eleves"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp" />
-
-        <Button
-            android:id="@+id/btn_add_eleve"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ajouter un élève" />
-
-        <Button
-            android:id="@+id/btn_import_tableur"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Importer avec un tableur" >
-        </Button>
-
-    </LinearLayout>
-
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
