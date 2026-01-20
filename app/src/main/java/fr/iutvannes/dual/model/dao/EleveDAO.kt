@@ -6,7 +6,7 @@ import fr.iutvannes.dual.model.persistence.Eleve
 @Dao
 interface EleveDAO {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(eleve: Eleve): Long
 
     @Query("DELETE FROM Eleve WHERE id_eleve = :idEleve")
@@ -20,7 +20,6 @@ interface EleveDAO {
 
     @Update
     suspend fun update(eleve: Eleve): Int
-
 
     @Query("SELECT DISTINCT classe FROM Eleve")
     fun getClasses(): List<String>

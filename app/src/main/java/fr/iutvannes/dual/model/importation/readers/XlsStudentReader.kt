@@ -58,6 +58,7 @@ class XlsStudentReader : StudentReader {
                 out += StudentDraft(
                     firstName = first,
                     lastName  = last,
+                    genre =  "", // le genre n'est pas géré dans les XLS pour l'instant
                     classe   = cls.ifBlank { null } // null si non trouvé
                 )
             }
