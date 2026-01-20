@@ -4,15 +4,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
-import fr.iutvannes.dual.model.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,6 +17,7 @@ import fr.iutvannes.dual.controller.viewmodel.ImportViewModel
 import androidx.fragment.app.viewModels
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.recyclerview.widget.RecyclerView
 
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
@@ -29,6 +27,10 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
     // viewModel
     private val importViewModel: ImportViewModel by viewModels()
+
+    private lateinit var adapter: ElevesAdapter
+    private lateinit var recyclerViewEleves: RecyclerView
+    private lateinit var tvEmpty: TextView
 
     // Sélecteur de fichier pour tableur
     private val openDocument = registerForActivityResult(
@@ -51,10 +53,32 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
 
         val titre = view.findViewById<TextView>(R.id.classe_titre)
-        val container = view.findViewById<LinearLayout>(R.id.container_eleves)
         val btnAdd = view.findViewById<Button>(R.id.btn_add_eleve)
         val backButton = view.findViewById<ImageButton>(R.id.arrow_back_button)
         val btnImport = view.findViewById<Button>(R.id.btn_import_tableur)
+        recyclerViewEleves = view.findViewById(R.id.recyclerViewEleves)
+        tvEmpty = view.findViewById(R.id.tvEmpty)
+        adapter = ElevesAdapter(
+            onEdit = { eleve ->
+                Toast.makeText(requireContext(), "Modifier ${eleve.prenom}", Toast.LENGTH_SHORT).show()
+            },
+            onDelete = { eleve ->
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    val db = DatabaseProvider.db
+                    db.EleveDao().delete(eleve.id_eleve)
+
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Élève supprimé", Toast.LENGTH_SHORT).show()
+                        chargerEleves()
+                    }
+                }
+            }
+        )
+        recyclerViewEleves.adapter = adapter
+        recyclerViewEleves.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+
+
+
 
         backButton.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -74,7 +98,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
             ouvrirSelectionFichier()
         }
 
-        chargerEleves(container)
+        chargerEleves()
     }
 
     companion object {
@@ -132,10 +156,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 ).show()
 
                 // maj de la liste des eleves
-                val container = view?.findViewById<LinearLayout>(R.id.container_eleves)
-                if (container != null) {
-                    chargerEleves(container)
-                }
+                chargerEleves()
             }
         }
     }
@@ -157,40 +178,18 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     /**
      * Exécute une requête room pour récupréer les élèves en DB
      */
-    private fun chargerEleves(container: LinearLayout) {
+    private fun chargerEleves() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            val db = Room.databaseBuilder(
-                requireContext(),
-                AppDatabase::class.java, "dual.db"
-            )
-                .fallbackToDestructiveMigration()
-                .build()
-
+            val db = DatabaseProvider.db
             val eleves = db.EleveDao().getElevesByClasse(classeNom!!)
 
             withContext(Dispatchers.Main) {
-                container.removeAllViews()
+                adapter.submitList(eleves)
 
-                if (eleves.isEmpty()) {
-                    val emptyText = TextView(requireContext()).apply {
-                        text = "Aucun élève"
-                        textSize = 18f
-                    }
-                    container.addView(emptyText)
-                } else {
-                    for (eleve in eleves) {
-                        val tv = TextView(requireContext()).apply {
-                            text = "${eleve.prenom} ${eleve.nom}"
-                            textSize = 18f
-                            setPadding(8, 8, 8, 8)
-                        }
-                        container.addView(tv)
-                    }
-                }
+                tvEmpty.visibility = if (eleves.isEmpty()) View.VISIBLE else View.GONE
+                recyclerViewEleves.visibility = if (eleves.isEmpty()) View.GONE else View.VISIBLE
             }
         }
     }
-
-
 }
