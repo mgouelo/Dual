@@ -16,9 +16,9 @@ class XlsStudentReader : StudentReader {
         val n = fileName.lowercase()
         val mime = mimeType?.lowercase().orEmpty()
         return n.endsWith(".xlsx") || n.endsWith(".xls")
-                || mime.contains("spreadsheet")
-                || mime.contains("vnd.ms-excel")
-                || mime.contains("vnd.openxmlformats-officedocument.spreadsheetml.sheet") // mimeType correspondant à un tableur excel
+                || mime.contains("ms-excel")
+                || mime.contains("spreadsheetml")
+                || mime.contains("excel") // mimeType correspondant à un tableur excel
     }
 
     override fun read(input: InputStream): List<StudentDraft> {
@@ -38,6 +38,8 @@ class XlsStudentReader : StudentReader {
             val lastIdx  = findColumnIndex(headerByIndex, setOf("nom", "last name", "lastname", "surname"))
                 ?: throw IllegalArgumentException("Colonne 'Nom' inexistente")
             val classIdx = findColumnIndex(headerByIndex, setOf("classe", "class", "group")) // On essaye de chercher aussi une colonne classe
+            // Nouvelle détection pour le genre
+            val idxGenre = findColumnIndex(headerByIndex, setOf("genre", "sexe", "gender", "sex"))
 
             // On parcours les lignes associées aux colones trouvées
             val out = mutableListOf<StudentDraft>()
@@ -50,6 +52,10 @@ class XlsStudentReader : StudentReader {
                 val last  = cellString(row.getCell(lastIdx),  formatter).trim()
                 val cls   = classIdx?.let { cellString(row.getCell(it), formatter).trim() }.orEmpty()
 
+                // Lecture du genre (on normalise pour avoir "M" ou "F")
+                val rawGenre = idxGenre?.let { cellString(row.getCell(it), formatter).trim() }.orEmpty()
+                val finalGenre = mapToGenderCode(rawGenre)
+
                 // on ignore les lignes vides
                 if (first.isBlank() && last.isBlank()) {
                     continue
@@ -58,6 +64,7 @@ class XlsStudentReader : StudentReader {
                 out += StudentDraft(
                     firstName = first,
                     lastName  = last,
+                    genre =  finalGenre,
                     classe   = cls.ifBlank { null } // null si non trouvé
                 )
             }
@@ -115,5 +122,17 @@ class XlsStudentReader : StudentReader {
         val noAccents = Normalizer.normalize(lowered, Normalizer.Form.NFD)
             .replace("\\p{Mn}+".toRegex(), "")
         return noAccents.replace("\\s+".toRegex(), " ")
+    }
+
+    /**
+     * Convertit les entrées Xls (homme, garçon, M, femme, etc.) en "M" ou "F"
+     */
+    private fun mapToGenderCode(s: String): String {
+        val clean = s.trim().uppercase()
+        return when {
+            clean.startsWith("H") || clean.startsWith("M") || clean.startsWith("G") -> "M"
+            clean.startsWith("F") -> "F"
+            else -> "M" // Valeur par défaut
+        }
     }
 }

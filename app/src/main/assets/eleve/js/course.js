@@ -3,6 +3,9 @@ let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
 let startBtn = document.getElementById("start");
 let enregistrerBtn = document.getElementById("enregistrer");
+const modal = document.getElementById("custom-confirm");
+const confirmOk = document.getElementById("confirm-ok");
+const confirmCancel = document.getElementById("confirm-cancel");
 
 let minutes = 0;
 let secondes = 0;
@@ -63,11 +66,15 @@ const arreter = () => {
     }
 };
 
-const reset = () => {
-    estArrete = true;
-    clearTimeout(timeout);
-    minutes = secondes = millisecondes = 0;
-    chrono.textContent = "00:00:00";
+const reset = async() => {
+    const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
+
+    if (confirmation) {
+        estArrete = true;
+        clearTimeout(timeout);
+        minutes = secondes = millisecondes = 0;
+        chrono.textContent = "00:00:00";
+    }
 
     // Réinitialiser les tours
     const listeTours = document.getElementById("listeTours");
@@ -75,6 +82,30 @@ const reset = () => {
         listeTours.innerHTML = "";
         tourActuel = 1;
     }
+};
+
+const demanderConfirmation = (message) => {
+    document.getElementById("confirm-message").textContent = message;
+
+    modal.style.display = "flex";
+    // Petit timeout pour laisser le navigateur appliquer le display:flex
+    // avant de lancer l'animation CSS
+    setTimeout(() => {
+        modal.classList.add("show");
+    }, 10);
+
+    return new Promise((resolve) => {
+        confirmOk.onclick = () => {
+            modal.classList.remove("show");
+            setTimeout(() => { modal.style.display = "none"; }, 300);
+            resolve(true);
+        };
+        confirmCancel.onclick = () => {
+            modal.classList.remove("show");
+            setTimeout(() => { modal.style.display = "none"; }, 300);
+            resolve(false);
+        };
+    });
 };
 
 const enregistrer = () => {

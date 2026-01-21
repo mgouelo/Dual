@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const classe = localStorage.getItem("eleve_classe");
 
         const event = {
-            type: "TIR_RESULTAT",
+            type: "TIR_RESULTAT_6EME",
             studentId: identite,
             payload: {
                 total: total,

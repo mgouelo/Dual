@@ -7,5 +7,6 @@ package fr.iutvannes.dual.model.importation
 data class StudentDraft (
     val firstName: String,
     val lastName: String,
+    val genre: String,
     val classe: String? = null
 )

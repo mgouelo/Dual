@@ -2,12 +2,16 @@ package fr.iutvannes.dual.model.persistence
 
 import androidx.room.PrimaryKey
 import androidx.room.Entity
+import androidx.room.Index
 
-@Entity(tableName = "Eleve")
+@Entity(
+    indices = [Index(value = ["nom", "prenom", "classe"], unique = true)]
+)
 data class Eleve(
     @PrimaryKey(autoGenerate = true)
     var id_eleve: Int = 0,
     var nom: String = "",
     var prenom: String = "",
+    var genre : String = "",
     var classe: String = "",
     )

@@ -37,6 +37,8 @@ class CsvStudentReader : StudentReader {
         val idxLast  = findIndex(headerCells, setOf("nom", "last name", "lastname", "surname"))
             ?: throw IllegalArgumentException("Colonne 'Nom' absente dans le CSV")
         val idxClass = findIndex(headerCells, setOf("classe", "class", "group")) // optionnelle
+        // Nouvelle détection pour le genre
+        val idxGenre = findIndex(headerCells, setOf("genre", "sexe", "gender", "sex"))
 
         val out = mutableListOf<StudentDraft>()
         for (line in lines) {
@@ -45,7 +47,11 @@ class CsvStudentReader : StudentReader {
 
             val first = cells.getOrNull(idxFirst)?.trim().orEmpty()
             val last  = cells.getOrNull(idxLast )?.trim().orEmpty()
-            val cls   = idxClass?.let { cells.getOrNull(it)?.trim().orEmpty() }.orEmpty()
+            val cls = idxClass?.let { cells.getOrNull(it)?.trim().orEmpty() }.orEmpty()
+
+            // Lecture du genre (on normalise pour avoir "M" ou "F")
+            val rawGenre = idxGenre?.let { cells.getOrNull(it)?.trim().orEmpty() }.orEmpty()
+            val finalGenre = mapToGenderCode(rawGenre)
 
             if (first.isBlank() && last.isBlank()) continue
 
@@ -53,6 +59,7 @@ class CsvStudentReader : StudentReader {
             out += StudentDraft(
                 firstName = first,
                 lastName  = last,
+                genre = finalGenre,
                 classe   = cls.ifBlank { null }
             )
         }
@@ -134,5 +141,17 @@ class CsvStudentReader : StudentReader {
         val normalizedAliases = aliases.map { normalize(it) }.toSet()
         return headers.indexOfFirst { normalize(it) in normalizedAliases }
             .takeIf { it >= 0 }
+    }
+
+    /**
+     * Convertit les entrées CSV (homme, garçon, M, femme, etc.) en "M" ou "F"
+     */
+    private fun mapToGenderCode(s: String): String {
+        val clean = s.trim().uppercase()
+        return when {
+            clean.startsWith("H") || clean.startsWith("M") || clean.startsWith("G") -> "M"
+            clean.startsWith("F") -> "F"
+            else -> "M" // Valeur par défaut
+        }
     }
 }

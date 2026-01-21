@@ -31,7 +31,7 @@ class ImportService(
 
     /**
      * Import d’un fichier d’élèves.
-     * @param input flux du fichier (CSV/XLS/ODS)
+     * @param input flux du fichier (CSV/XLS)
      * @param fileName nom du fichier (pour l’extension)
      * @param mimeType type MIME si connu (sinon null)
      */
@@ -45,6 +45,7 @@ class ImportService(
         val reader = pickReader(mimeType, fileName)
         val drafts = reader.read(input)
 
+        // Pour éviter les doublons à l'intérieur du fichier même
         val seen = mutableSetOf<Triple<String, String, String?>>()
         var created = 0
         var skipped = 0
@@ -72,11 +73,25 @@ class ImportService(
 
             // déduplication (supression des doublons)
             val key = Triple(
-                d.firstName.trim(),
-                d.lastName.trim(),
-                effectiveClasse
+                d.firstName.trim().lowercase(),
+                d.lastName.trim().lowercase(),
+                effectiveClasse.lowercase()
             )
+
             if (!seen.add(key)) {
+                skipped++
+                return@forEachIndexed
+            }
+
+            // Déduplication DB (vérifie si l'élève existe déjà physiquement en base)
+            // On peut faire ça proprement en cherchant dans la liste des élèves de la classe
+            val existants = eleveDao.getElevesByClasse(effectiveClasse)
+            val estDejaEnBase = existants.any {
+                it.prenom.equals(d.firstName.trim(), ignoreCase = true) &&
+                        it.nom.equals(d.lastName.trim(), ignoreCase = true)
+            }
+
+            if (estDejaEnBase) {
                 skipped++
                 return@forEachIndexed
             }
@@ -86,6 +101,7 @@ class ImportService(
                 id_eleve = 0, // id généré par room
                 prenom = d.firstName.trim(),
                 nom = d.lastName.trim(),
+                genre = d.genre, // On récupère le genre
                 classe = effectiveClasse
             )
 
