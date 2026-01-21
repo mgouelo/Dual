@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.kapt")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -58,6 +59,7 @@ android {
     // car c'est la valeur par défaut. Je le laisse pour la clarté.
     buildFeatures {
         compose = false
+        buildConfig = true
     }
 
     packaging {

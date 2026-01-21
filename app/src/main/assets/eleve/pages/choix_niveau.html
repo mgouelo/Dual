@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sélection du Niveau</title>
+    <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<div id="container">
+    <header>
+        <h1>Session Biathlon</h1>
+        <p>Sélectionnez le format de la séance</p>
+    </header>
+
+    <div class="mode-group">
+        <div class="mode-title">Cycle Initiation (6ème)</div>
+        <button id="niveau-6eme" class="button">Séance 6eme</button>
+        <p class="info" style="margin-top:10px; font-size:0.8rem;">Informations : Endurance (20 min) et Précision cumulée.</p>
+    </div>
+
+    <div class="mode-group">
+        <div class="mode-title">Cycle Compétition (4ème)</div>
+        <button id="niveau-4eme" class="button">Séance 4eme</button>
+        <p class="info" style="margin-top:10px; font-size:0.8rem;">Informations : Sprint, Chrono de tir et Pénalités.</p>
+    </div>
+
+    <button class="button btn-back" onclick="location.href='../index.html'">Retour choix élève</button>
+</div>
+
+<script src="../js/choix_niveau.js"></script>
+</body>
+</html>

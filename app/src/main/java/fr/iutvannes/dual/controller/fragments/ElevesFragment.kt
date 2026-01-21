@@ -24,7 +24,7 @@ import android.provider.OpenableColumns
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
 
-    //ariable qui contiendra le nom de la classe
+    //variable qui contiendra le nom de la classe
     private var classeNom: String? = null
 
     // viewModel
@@ -99,6 +99,9 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         openDocument.launch(
             arrayOf(
                 "text/csv",
+                "text/comma-separated-values",
+                "text/plain", // Ajout crucial : certains CSV sont vus comme du texte brut
+                "application/csv",
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "application/vnd.oasis.opendocument.spreadsheet"
@@ -181,7 +184,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 } else {
                     for (eleve in eleves) {
                         val tv = TextView(requireContext()).apply {
-                            text = "${eleve.prenom} ${eleve.nom}"
+                            text = "${eleve.prenom} ${eleve.nom} ${if (eleve.genre == "M") "(M)" else "(F)"}"
                             textSize = 18f
                             setPadding(8, 8, 8, 8)
                         }

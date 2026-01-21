@@ -1,5 +1,6 @@
 package fr.iutvannes.dual.model.utils
 
+import fr.iutvannes.dual.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -18,7 +19,7 @@ import org.json.JSONObject
 object EmailService {
 
     /** Clé API Brevo (à ne jamais exposer dans un code client en production !) */
-    private const val API_KEY = "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<"
+    private const val API_KEY = BuildConfig.MY_API_KEY
     /** Adresse de l'expéditeur vérifiée sur Brevo */
     private const val SENDER_EMAIL = "biathlon.dual@outlook.fr"
 

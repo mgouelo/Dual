@@ -155,6 +155,8 @@ const defilerTemps = () => {
 };
 
 const setColorTrack4eme = () => {
+    const niveau = localStorage.getItem("niveau") || "6eme";
+
     const coupellesJaunes = `Parcours : <span class="rond rond-jaune"></span> (coupelles jaunes – 250m)`
     const coupellesBleues = `Parcours : <span class="rond rond-bleu"></span> (coupelles bleues – 300m)`
     const coupellesRouges = `Parcours : <span class="rond rond-rouge"></span> (coupelles rouges – 350m)`
@@ -167,6 +169,12 @@ const setColorTrack4eme = () => {
     const vmaArrondie = Math.ceil(vma * 2) / 2;
 
     let color = "";
+
+    if (niveau === "6eme") {
+
+    } else {
+
+    }
 
     // Coupelles jaunes : 9.5 ou 10
     if (vmaArrondie <= 9.5 || vmaArrondie === 10) {

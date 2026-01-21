@@ -51,6 +51,7 @@ class OdfStudentReader : StudentReader {
                 out += StudentDraft(
                     firstName = first,
                     lastName  = last,
+                    genre =  "", // le genre n'est pas géré dans les ODF pour l'instant
                     classe   = cls.ifBlank { null }
                 )
             }

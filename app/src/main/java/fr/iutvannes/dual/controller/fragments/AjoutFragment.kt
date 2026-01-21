@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +32,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
         val inputPrenom = view.findViewById<EditText>(R.id.input_prenom)
         val inputNom = view.findViewById<EditText>(R.id.input_nom)
+        val groupSexe = view.findViewById<RadioGroup>(R.id.group_sexe)
         val buttonBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
         val buttonValider = view.findViewById<Button>(R.id.btn_valider)
 
@@ -43,7 +45,17 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
             val prenom = inputPrenom.text.toString().trim()
             val nom = inputNom.text.toString().trim()
 
-            if (prenom.isEmpty() || nom.isEmpty()) {
+            // Récupérer l'ID du bouton coché
+            val selectedId = groupSexe.checkedRadioButtonId
+
+            // Déterminer le genre en fonction de l'ID
+            val genre = when (selectedId) {
+                R.id.radio_homme -> "M"
+                R.id.radio_femme -> "F"
+                else -> "" // Rien n'est coché
+            }
+
+            if (prenom.isEmpty() || nom.isEmpty() || genre.isEmpty()) {
                 Toast.makeText(requireContext(), "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -59,6 +71,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                 val eleve = Eleve(
                     prenom = prenom,
                     nom = nom,
+                    genre = genre,
                     classe = classeNom!!
                 )
 
@@ -68,8 +81,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                     Toast.makeText(requireContext(), "Élève ajouté", Toast.LENGTH_SHORT).show()
 
                     //Retour à ElevesFragment
-                    val fragment = ElevesFragment.newInstance(classeNom!!)
-                    (activity as MainActivity).showFragment(fragment, true, true)
+                    requireActivity().supportFragmentManager.popBackStack()
                 }
             }
         }

@@ -1,6 +1,37 @@
 document.addEventListener("DOMContentLoaded", () => {
     const nombreDeTirs = 6;
 
+
+    //Fonction d'envoi JSON au serveur (tablette prof)
+    async function envoyerResultatAuServeur(total, medaille) {
+        const identite = localStorage.getItem("eleve_identite");
+        const classe = localStorage.getItem("eleve_classe");
+
+        const event = {
+            type: "TIR_RESULTAT_6EME",
+            studentId: identite,
+            payload: {
+                total: total,
+                medaille: medaille,
+                classe: classe,
+                timestamp: Date.now()
+            }
+        };
+
+        try {
+            const response = await fetch('/event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(event)
+            });
+            if (response.ok) {
+                console.log("Données envoyées avec succès au serveur Ktor.");
+            }
+        } catch (error) {
+            console.error("Erreur de connexion au serveur :", error);
+        }
+    }
+
     function calculerResultats() {
         let total = 0;
         let compteTirs = 0;
@@ -42,6 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // Sauvegarde pour le bilan final
             localStorage.setItem("tir_total", total);
             localStorage.setItem("tir_medaille", medaille);
+
+            //Appel de l'envoie JSON
+            envoyerResultatAuServeur(total, medaille);
+
         } else {
             display.textContent = `Saisie en cours (${compteTirs}/${nombreDeTirs})`;
             display.style.backgroundColor = "transparent";

@@ -101,11 +101,30 @@ fun Application.module(appContext: Context) {
             call.respond(mapOf("join" to base))
         }
 
+        //Route pour envoyer toutes les classes existantes
+        get("/api/classes/all") {
+            val classes = DatabaseProvider.db.classeDao().getAllClasses()
+            val nomsClasses = classes.map { it.nom }
+            call.respond(nomsClasses)
+        }
+
+        //Route pour envoyer les élèves d'UNE classe précise
+        get("/api/eleves/par-classe/{nomClasse}") {
+            val nomClasse = call.parameters["nomClasse"] ?: ""
+            val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
+            val nomsComplets = eleves.map { "${it.prenom} ${it.nom.uppercase()}" }
+            call.respond(nomsComplets)
+        }
+
         // Reçoit les événements des élèves
         post("/event") {
             val evt = runCatching { call.receive<EventDTO>() }.getOrElse {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid_body")); return@post
             }
+
+            // Voir les logs pour la route /event
+            Log.i("KtorServer", "Évènement reçu : Type=${evt.type}, Élève=${evt.studentId}, Payload=${evt.payload}")
+
             liveBus.tryEmit(evt)
             call.respond(HttpStatusCode.Accepted, mapOf("status" to "received"))
         }

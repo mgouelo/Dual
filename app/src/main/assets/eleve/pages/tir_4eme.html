@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Entraînement Tir 4ème</title>
+    <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<div id="container">
+
+    <header>
+        <h1>Tir - Efficience</h1>
+        <p>Objectif : Réussir vite et bien</p>
+    </header>
+
+    <div id="chrono">00:00:00</div>
+
+    <div id="buttons">
+        <button id="start" class="button">Démarrer</button>
+        <button id="stop" class="button">Arrêter & Valider</button>
+    </div>
+
+    <div id="section-saisie" style="display: none; margin-top: 25px;">
+        <div id="tirs">
+            <p>Nombre de réussites :
+                <input type="number" id="reussites" min="0" max="5" placeholder="0-5" autocomplete="off"/>
+            </p>
+        </div>
+        <button id="valider-tir" class="button btn-eval" style="margin-top: 15px;">Enregistrer le tir</button>
+    </div>
+
+    <div id="resultat-4eme" style="display: none; margin-top: 20px; padding: 15px; border-radius: 12px; background: rgba(0,0,0,0.05);">
+        <h2 id="penalite-msg" style="color: #e74c3c; font-size: 1.2rem;"></h2>
+        <p id="details-tir" style="font-weight: 600; color: var(--night-blue);"></p>
+
+        <button class="button" onclick="location.reload()">Nouvelle série</button>
+    </div>
+
+    <footer>
+        <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+    </footer>
+</div>
+
+<script src="../js/tir_4eme.js"></script>
+</body>
+</html>
