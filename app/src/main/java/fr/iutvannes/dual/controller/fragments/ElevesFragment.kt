@@ -60,7 +60,8 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         tvEmpty = view.findViewById(R.id.tvEmpty)
         adapter = ElevesAdapter(
             onEdit = { eleve ->
-                Toast.makeText(requireContext(), "Modifier ${eleve.prenom}", Toast.LENGTH_SHORT).show()
+                val fragment = AjoutFragment.newInstanceForEdit(classeNom!!, eleve.id_eleve)
+                (activity as MainActivity).showFragment(fragment, true, true)
             },
             onDelete = { eleve ->
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -76,9 +77,6 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         )
         recyclerViewEleves.adapter = adapter
         recyclerViewEleves.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-
-
-
 
         backButton.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()

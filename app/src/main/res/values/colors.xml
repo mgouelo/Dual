@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="noir">#202122</color>
-    <color name="gris">#989CA0</color>
+    <color name="gris">#666666</color>
     <color name="bleu">#303586</color>
     <color name="bleu_25">#D3D4E9</color>
     <color name="bleu_fonce">#1C1E4E</color>

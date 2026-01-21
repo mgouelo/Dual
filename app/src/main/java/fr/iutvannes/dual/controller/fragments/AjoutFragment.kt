@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import fr.iutvannes.dual.R
-import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Eleve
 import kotlinx.coroutines.Dispatchers
@@ -21,10 +20,15 @@ import kotlinx.coroutines.withContext
 class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
     private var classeNom: String? = null
+    private var eleveID: Int = -1
+
+    // init db via provider
+    val db = DatabaseProvider.db
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         classeNom = arguments?.getString("classeNom")
+        eleveID = arguments?.getInt("eleveID", -1) ?: -1
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,6 +40,26 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
         val buttonBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
         val buttonValider = view.findViewById<Button>(R.id.btn_valider)
 
+        if (eleveID != -1) { // id différent de celui par défaut --> élève déjà existant --> mode édition
+            buttonValider.text = "Enregistrer les modifications"
+
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                val eleveExist = db.EleveDao().getEleveById(eleveID) // sécruité : on vérifie quand même existence de l'élève
+                if (eleveExist != null) {
+                    withContext(Dispatchers.Main) {
+                        inputPrenom.setText(eleveExist.prenom)
+                        inputNom.setText(eleveExist.nom)
+
+                        if (eleveExist.genre == "F") {
+                            groupSexe.check(R.id.radio_femme)
+                        } else if (eleveExist.genre == "M") {
+                            groupSexe.check(R.id.radio_homme)
+                        }
+                    }
+                }
+            }
+        }
+
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -44,8 +68,6 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
             val prenom = inputPrenom.text.toString().trim()
             val nom = inputNom.text.toString().trim()
-
-            // Récupérer l'ID du bouton coché
             val selectedId = groupSexe.checkedRadioButtonId
 
             // Déterminer le genre en fonction de l'ID
@@ -62,12 +84,6 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-                val db = Room.databaseBuilder(
-                    requireContext(),
-                    AppDatabase::class.java,
-                    "dual.db"
-                ).build()
-
                 val eleve = Eleve(
                     prenom = prenom,
                     nom = nom,
@@ -75,11 +91,21 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                     classe = classeNom!!
                 )
 
-                db.EleveDao().insert(eleve)
+                if (eleveID != -1) {
+                    eleve.id_eleve = eleveID
+                    db.EleveDao().update(eleve)
+
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Elève modifié !", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    db.EleveDao().insert(eleve)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Elève ajouté !", Toast.LENGTH_SHORT).show()
+                    }
+                }
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Élève ajouté", Toast.LENGTH_SHORT).show()
-
                     //Retour à ElevesFragment
                     requireActivity().supportFragmentManager.popBackStack()
                 }
@@ -92,6 +118,15 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
             val fragment = AjoutFragment()
             val args = Bundle()
             args.putString("classeNom", classeNom)
+            fragment.arguments = args
+            return fragment
+        }
+
+        fun newInstanceForEdit(classeNom: String, eleveID: Int): AjoutFragment {
+            val fragment = AjoutFragment()
+            val args = Bundle()
+            args.putString("classeNom", classeNom)
+            args.putInt("eleveID", eleveID)
             fragment.arguments = args
             return fragment
         }

@@ -12,7 +12,6 @@
         android:layout_height="40dp"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_fleche_retour"
-        android:contentDescription="@drawable/ic_fleche_retour"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -20,7 +19,7 @@
         android:id="@+id/classe_titre"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text=""
+        android:text="Titre Classe"
         android:textSize="22sp"
         android:textStyle="bold"
         android:paddingStart="8dp"
@@ -37,39 +36,71 @@
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/classe_titre"
-        app:layout_constraintBottom_toTopOf="@id/btn_add_eleve"
+        app:layout_constraintTop_toBottomOf="@id/arrow_back_button"
+        app:layout_constraintBottom_toTopOf="@id/footer_layout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"/>
 
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Aucun élève"
-        android:textSize="18sp"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/recyclerViewEleves"
         app:layout_constraintBottom_toBottomOf="@id/recyclerViewEleves"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/btn_add_eleve"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/footer_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ajouter un élève"
+        android:orientation="vertical"
+        android:paddingBottom="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btn_import_tableur" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btn_import_tableur"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Importer avec un tableur"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        <Button
+            android:id="@+id/btn_add_eleve"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un élève" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un seul élève"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/gris"
+            android:layout_marginBottom="8dp"/>
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/noir"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"/>
+
+        <Button
+            android:id="@+id/btn_import_tableur"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Importer avec un tableur" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Importer un ou plusieurs élèves via fichier Excel ou CSV"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/gris"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
