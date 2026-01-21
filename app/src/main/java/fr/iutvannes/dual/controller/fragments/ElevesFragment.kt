@@ -121,9 +121,11 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         openDocument.launch(
             arrayOf(
                 "text/csv",
+                "text/comma-separated-values",
+                "text/plain", // Ajout crucial : certains CSV sont vus comme du texte brut
+                "application/csv",
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.oasis.opendocument.spreadsheet"
             )
         )
     }

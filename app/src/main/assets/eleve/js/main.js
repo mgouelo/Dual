@@ -1,4 +1,6 @@
 const container = document.getElementById("buttons");
+const typeClasse = document.getElementById("typeClasse");
+const retourClasseBtn = document.getElementById("retourClasseBtn");
 
 /**
  * Classe pour charger et afficher toutes les classes (étape 1)
@@ -39,7 +41,11 @@ async function chargerElevesDeLaClasse(nomClasse) {
         const response = await fetch(`/api/eleves/par-classe/${nomClasse}`);
         const eleves = await response.json();
 
-        container.innerHTML = `<h2>Classe ${nomClasse}</h2>`;
+        // On vide le conteneur pour afficher les élèves
+        container.innerHTML = "";
+
+        typeClasse.style.display = "block";
+        typeClasse.innerHTML = `<h2>Classe ${nomClasse}</h2>`;
 
         eleves.forEach(nomComplet => {
             const btn = document.createElement("button");
@@ -64,7 +70,7 @@ async function chargerElevesDeLaClasse(nomClasse) {
         btnRetour.className = "button btn-back";
         btnRetour.style.marginTop = "20px";
         btnRetour.onclick = chargerClasses;
-        container.appendChild(btnRetour);
+        retourClasseBtn.appendChild(btnRetour);
 
     } catch (error) {
         container.innerHTML = "<p>Erreur lors du chargement des élèves.</p>";
