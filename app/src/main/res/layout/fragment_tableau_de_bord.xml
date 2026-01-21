@@ -45,6 +45,27 @@
                 android:textSize="16sp"
                 android:visibility="gone"/>
 
+            <TextView
+                android:id="@+id/text_resultats_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Résultats reçus : 0"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#2C3E50"
+                android:layout_marginTop="20dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btn_download_excel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Télécharger les résultats (Excel)"
+                android:backgroundTint="#27ae60"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="10dp"
+                android:visibility="gone"/>
+
         </LinearLayout>
 
     </ScrollView>

@@ -48,7 +48,7 @@ async function chargerElevesDeLaClasse(nomClasse) {
 
             btn.onclick = () => {
                 //On stocke les infos pour les pages suivantes (Tir, Course)
-                localStorage.setItem("eleve_nom", nomComplet);
+                localStorage.setItem("eleve_identite", nomComplet);
                 localStorage.setItem("eleve_classe", nomClasse);
 
                 //Redirection vers le choix du niveau (6ème ou 4ème)

@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Event test eleve -> server
@@ -116,30 +118,52 @@ fun Application.module(appContext: Context) {
             call.respond(nomsComplets)
         }
 
-        // Reçoit les événements des élèves
+        //Reçoit les événements des élèves
         post("/event") {
-            val evt = runCatching { call.receive<EventDTO>() }.getOrElse {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid_body")); return@post
-            }
+            try {
+                //On reçoit le texte brut pour éviter les erreurs de Serializer
+                val body = call.receiveText()
+                Log.d("KtorServer", "Texte brut reçu : $body")
 
-            // Voir les logs pour la route /event
-            Log.i("KtorServer", "Évènement reçu : Type=${evt.type}, Élève=${evt.studentId}, Payload=${evt.payload}")
+                //Analyse manuelle du JSON
+                val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                val jsonElement = jsonParser.parseToJsonElement(body).jsonObject
 
-            liveBus.tryEmit(evt)
-            call.respond(HttpStatusCode.Accepted, mapOf("status" to "received"))
-        }
+                val type = jsonElement["type"]?.jsonPrimitive?.content ?: ""
+                val studentId = jsonElement["studentId"]?.jsonPrimitive?.content ?: ""
 
-        // SSE manuel on fait sans module SSE
-        get("/live") {
-            call.response.cacheControl(CacheControl.NoCache(null))
-            call.respondTextWriter(contentType = ContentType.Text.EventStream) {
-                fun sendSse(data: String) { write("data: $data\n\n"); flush() }
-                sendSse("""{"type":"connected","payload":{"msg":"ready"}}""")
-                liveBus.collect { evt ->
-                    val payload = evt.payload ?: JsonObject(mapOf("ts" to JsonPrimitive(System.currentTimeMillis())))
-                    val sid = evt.studentId ?: ""
-                    sendSse("""{"type":"${evt.type}","studentId":"$sid","payload":$payload}""")
+                //Logique métier : On traite le tir
+                if (type == "TIR_RESULTAT_6EME") {
+                    val payload = jsonElement["payload"]?.jsonObject
+                    val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
+                    val scoreInt = scoreRaw.toIntOrNull() ?: 0
+
+                    //On sépare Prénom et Nom
+                    val parts = studentId.split(" ")
+                    val prenom = parts.getOrNull(0) ?: ""
+                    val nom = parts.getOrNull(1) ?: ""
+
+                    //Insertion bdd
+                    val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                    if (eleve != null) {
+                        val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                            id_eleve = eleve.id_eleve,
+                            id_seance = 1,
+                            cibles_touchees = scoreInt,
+                            temp_course = 0F
+                        )
+                        DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                        Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
+                    } else {
+                        Log.e("KtorServer", "ÉLÈVE NON TROUVÉ en BDD : $prenom $nom")
+                    }
                 }
+
+                call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
+
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur critique route event : ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error"))
             }
         }
 
@@ -159,6 +183,44 @@ fun Application.module(appContext: Context) {
                 call.respondBytes(bytes, contentType = contentTypeFor(p))
             }.onFailure {
                 call.respond(HttpStatusCode.NotFound, "Fichier introuvable: $p")
+            }
+        }
+
+        // Route d'export CSV pour le professeur
+        get("/api/admin/export") {
+            try {
+                //Récupération des données depuis la base Room
+                val resultats = DatabaseProvider.db.resultatDao().getAllResultats()
+
+                //Construction du contenu CSV
+                val csv = StringBuilder("prenom;nom;cibles touchees\n")
+
+                resultats.forEach { res ->
+                    val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                    if (eleve != null) {
+                        val prenom = eleve.prenom
+                        val nom = eleve.nom.uppercase()
+                        val genre = eleve.genre
+                        val score = res.cibles_touchees
+
+                        csv.append("$prenom;$nom;$genre;$score\n")
+                    }
+                }
+
+                //Configuration des Headers pour déclencher le téléchargement
+                call.response.header(
+                    HttpHeaders.ContentDisposition,
+                    ContentDisposition.Attachment.withParameter(
+                        ContentDisposition.Parameters.FileName, "resultats_biathlon.csv"
+                    ).toString()
+                )
+
+                //Envoi de la réponse
+                call.respondText(csv.toString(), ContentType.Text.CSV)
+
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur Export CSV: ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, "Erreur lors de la génération du fichier")
             }
         }
     }
