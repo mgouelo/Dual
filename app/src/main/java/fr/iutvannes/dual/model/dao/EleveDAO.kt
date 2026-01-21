@@ -32,4 +32,7 @@ interface EleveDAO {
 
     @Query("SELECT * FROM Eleve")
     fun getAllEleves(): List<Eleve>
+
+    @Query("SELECT * FROM Eleve WHERE LOWER(prenom) = LOWER(:prenom) AND LOWER(nom) = LOWER(:nom) LIMIT 1")
+    fun findByName(prenom: String, nom: String): Eleve?
 }

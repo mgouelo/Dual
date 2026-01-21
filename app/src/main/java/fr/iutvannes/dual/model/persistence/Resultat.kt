@@ -4,6 +4,7 @@ import androidx.room.*
 
 @Entity(
     tableName = "Resultat",
+    /** A refaire plus tard au moment de la création des séances
     foreignKeys = [
         ForeignKey(
             entity = Eleve::class,
@@ -19,6 +20,7 @@ import androidx.room.*
         )
     ],
     indices = [Index("id_eleve"), Index("id_seance")]
+    */
 )
 data class Resultat (
     @PrimaryKey(autoGenerate = true)

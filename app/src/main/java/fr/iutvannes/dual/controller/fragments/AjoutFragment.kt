@@ -66,7 +66,9 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                     requireContext(),
                     AppDatabase::class.java,
                     "dual.db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
 
                 val eleve = Eleve(
                     prenom = prenom,
