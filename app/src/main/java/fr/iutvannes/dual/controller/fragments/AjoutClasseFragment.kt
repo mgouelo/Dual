@@ -56,7 +56,9 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                     requireContext(),
                     AppDatabase::class.java,
                     "dual.db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
 
                 val classe = Classe(
                     nom = classeNom

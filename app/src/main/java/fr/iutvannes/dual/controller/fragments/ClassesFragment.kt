@@ -34,7 +34,9 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
             val db = Room.databaseBuilder(
                 requireContext(),
                 AppDatabase::class.java, "dual.db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
 
             val classes = db.classeDao().getClasses()
 

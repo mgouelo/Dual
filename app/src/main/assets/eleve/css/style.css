@@ -272,3 +272,14 @@ footer .info {
     font-size: 0.9rem;
     margin-top: 20px;
 }
+
+#tir-series {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+}
+
+#input-tir {
+    margin-left: 2vw;
+    margin-right: 2vw;
+}

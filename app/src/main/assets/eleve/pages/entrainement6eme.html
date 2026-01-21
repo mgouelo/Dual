@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Entraînement 6eme</title>
+    <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<div id="container">
+
+    <header>
+        <h1>Entraînement</h1>
+        <p>Réalise un entraînement de 20min </p>
+    </header>
+
+    <div id="chrono">00:00:00</div>
+
+    <div id="buttons">
+        <button id="reset" class="button">Reset</button>
+        <button id="start" class="button">Démarrer</button>
+        <button id="enregistrer" class="button">+1 tour</button>
+    </div>
+
+    <div id="listeTours"></div>
+
+    <div id="tirs" style="display: flex; margin-top:10px; justify-content:center; flex-direction: column; align-items: center;">
+        <p style="font-size: 16px; margin-bottom: 0px;"><strong>Série n°<span id="num-serie">1</span></strong></p>
+        <p style="margin-top: 2px;">Cible touchées (0-5) :</p>
+        <div id="tir-series">
+            <button id="ajoutTir" class="button" style="width: auto; padding-left: 2vw; padding-right: 2vw">+1 tir</button>
+            <input id="input-tir" min="0" max="5" placeholder="0-5" readonly/>
+            <button id="retirerTir" class="button" style="width: auto; padding-left: 2vw; padding-right: 2vw">-1 tir</button>
+        </div>
+
+        <button id="btnValiderTour" class="button" style="margin-top: 2vh; width: fit-content; padding-left: 2vw; padding-right: 2vw; background: #2ecc71">
+            Valider Série & Repartir
+        </button>
+    </div>
+
+    <button class="button btn-back" onclick="location.href='seance.html'" style="margin-top: 20px;">Retour séance</button>
+
+    <div id="custom-confirm" class="modal">
+        <div class="modal-content">
+            <h3>Confirmation</h3>
+            <p id="confirm-message">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok" class="btn-confirm">OK</button>
+                <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p class="info">Connecté au serveur local</p>
+    </footer>
+
+</div>
+
+<script src="../js/entrainement6eme.js"></script>
+</body>
+</html>
