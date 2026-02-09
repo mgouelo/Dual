@@ -29,6 +29,8 @@ import kotlinx.coroutines.withContext
  */
 class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
+
+    private var countInitial = 0
     private val sessionViewModel: SessionViewModel by activityViewModels()
 
     /**
@@ -40,7 +42,30 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
         val sessionBtn = view.findViewById<Button>(R.id.launchASession)
         sessionBtn.setOnClickListener {
-            sessionViewModel.startSession(requireContext())
+            viewLifecycleOwner.lifecycleScope.launch {
+                countInitial = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.resultatDao().getCount()
+                }
+                //On lance la session
+                sessionViewModel.startSession(requireContext())
+            }
+        }
+
+        val nbResultat = view.findViewById<TextView>(R.id.text_resultats_count)
+
+        val btnExport = view.findViewById<Button>(R.id.btn_download_excel) // L'ID de ton bouton XML
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            while (true) {
+                if (sessionViewModel.running.value) {
+                    val totalEnBase = withContext(Dispatchers.IO) {
+                        DatabaseProvider.db.resultatDao().getCount()
+                    }
+                    val resultatsSeance = totalEnBase - countInitial
+                    nbResultat.text = "Résultats reçus : $resultatsSeance"
+                }
+                kotlinx.coroutines.delay(2000)
+            }
         }
 
         val qrCode = view.findViewById<ImageView>(R.id.qrCodeView)
@@ -52,6 +77,8 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     Toast.makeText(requireContext(), "URL: $url", Toast.LENGTH_LONG).show()
                     qrCode.visibility = View.VISIBLE
                     sessionUrl.visibility = View.VISIBLE
+                    nbResultat.visibility = View.VISIBLE
+                    btnExport.visibility = View.VISIBLE
                     sessionUrl.text = url
                     qrCode.setImageBitmap(genererQRCode(url))
                 }
@@ -60,6 +87,20 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.running.collect { running ->
                 sessionBtn.isEnabled = !running // si le serveur tourne on désactive le btn
+            }
+        }
+
+        btnExport.setOnClickListener {
+            val currentUrl = sessionViewModel.url.value
+            if (currentUrl != null) {
+                //On construit l'URL de téléchargement
+                val downloadUrl = "$currentUrl/api/admin/export"
+
+                //On ouvre le navigateur de la tablette pour lancer le téléchargement
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(downloadUrl))
+                startActivity(intent)
+            } else {
+                Toast.makeText(requireContext(), "Démarrez une session d'abord", Toast.LENGTH_SHORT).show()
             }
         }
     }

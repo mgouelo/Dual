@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const nombreDeTirs = 6;
+    const btnEnvoyer = document.getElementById("btn-envoyer");
 
 
     //Fonction d'envoi JSON au serveur (tablette prof)
@@ -11,10 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
             type: "TIR_RESULTAT_6EME",
             studentId: identite,
             payload: {
-                total: total,
+                total: String(total),
                 medaille: medaille,
                 classe: classe,
-                timestamp: Date.now()
+                timestamp: String(Date.now())
             }
         };
 
@@ -23,13 +24,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(event)
-            });
-            if (response.ok) {
-                console.log("Données envoyées avec succès au serveur Ktor.");
+                });
+                if (response.ok) {
+                    console.log("Données envoyées avec succès au serveur Ktor.");
+                    //Feedback visuel et redirection
+                    btnEnvoyer.textContent = "Résultats transmis !";
+                    btnEnvoyer.style.backgroundColor = "#7f8c8d";
+                    setTimeout(() => { window.location.href = "../index.html"; }, 1500);
+                }
+            } catch (error) {
+                console.error("Erreur de connexion au serveur :", error);
+                btnEnvoyer.textContent = "Erreur de connexion";
+                btnEnvoyer.disabled = false;
             }
-        } catch (error) {
-            console.error("Erreur de connexion au serveur :", error);
-        }
     }
 
     function calculerResultats() {
@@ -75,7 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("tir_medaille", medaille);
 
             //Appel de l'envoie JSON
-            envoyerResultatAuServeur(total, medaille);
+            if (btnEnvoyer) {
+                btnEnvoyer.style.display = "block";
+                btnEnvoyer.onclick = () => {
+                    btnEnvoyer.disabled = true; // Empêche l'élève de cliquer plusieurs fois
+                    btnEnvoyer.textContent = "Envoi en cours...";
+                    envoyerResultatAuServeur(total, medaille);
+                };
+            }
 
         } else {
             display.textContent = `Saisie en cours (${compteTirs}/${nombreDeTirs})`;

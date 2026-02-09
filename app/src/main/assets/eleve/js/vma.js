@@ -151,7 +151,7 @@ const defilerTemps = () => {
         }
     }
 
-    timeout = setTimeout(defilerTemps, 0.1);
+    timeout = setTimeout(defilerTemps, 10);
 };
 
 const setColorTrack4eme = () => {
