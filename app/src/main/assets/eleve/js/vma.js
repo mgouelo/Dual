@@ -6,6 +6,7 @@ let vitesseAff = document.getElementById("vitesse");
 let distanceAff = document.getElementById("distance");
 let resultat = document.getElementById("resultat");
 let parcours = document.getElementById("parcours");
+let btnValider = document.getElementById("btn-envoyer-vma");
 const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
@@ -17,6 +18,40 @@ let timeout;
 let estArrete = true;
 let tempsEcoule = 0; // en secondes
 let currentIndex = 0;
+
+
+
+async function envoyerVMAAuServeur(valeurVma) {
+    const identite = localStorage.getItem("eleve_identite");
+    const classe = localStorage.getItem("eleve_classe");
+    const btnEnvoyer = document.getElementById("btn-envoyer-vma");
+
+    const event = {
+        type: "VMA_RESULTAT",
+        studentId: identite,
+        payload: {
+            vma: String(valeurVma),
+            classe: classe,
+            timestamp: String(Date.now())
+        }
+    };
+
+    try {
+        const response = await fetch('/event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event)
+        });
+
+        if (response.ok) {
+            btnEnvoyer.textContent = "VMA transmise !";
+            btnEnvoyer.style.backgroundColor = "#7f8c8d";
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur de connexion au serveur");
+    }
+}
 
 /// Données extraites de VMA.pdf
 // tempsCumule est converti en secondes (ex: 1.30 = 90 secondes)
@@ -231,6 +266,10 @@ const arreter = () => {
         resultat.innerHTML += `VMA arrondie : ${vmaArrondie.toFixed(1)} km/h `;
         parcours.innerHTML = setColorTrack4eme();
     }
+
+    if (btnValider) {
+        btnValider.style.display = "block";
+    }
 };
 
 const reset = async() => {
@@ -246,6 +285,10 @@ const reset = async() => {
         distanceAff.textContent = "0";
         resultat.textContent = "";
         parcours.textContent = "";
+    }
+
+    if (btnValider) {
+        btnValider.style.display = "none";
     }
 };
 
@@ -271,6 +314,20 @@ const demanderConfirmation = (message) => {
             resolve(false);
         };
     });
+};
+
+btnValider.onclick = async () => {
+    const index = Math.max(0, currentIndex - 1);
+    const vmaAEnvoyer = tableVma[index].vma;
+
+    //demander confirmation
+    const ok = await demanderConfirmation(`Envoyer ma VMA de ${vmaAEnvoyer.toFixed(2)} km/h au professeur ?`);
+
+    if (ok) {
+        btnValider.disabled = true;
+        btnValider.textContent = "Envoi en cours...";
+        await envoyerVMAAuServeur(vmaAEnvoyer);
+    }
 };
 
 startBtn.addEventListener("click", demarrer);

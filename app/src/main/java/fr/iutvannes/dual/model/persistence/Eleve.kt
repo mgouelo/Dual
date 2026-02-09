@@ -14,4 +14,5 @@ data class Eleve(
     var prenom: String = "",
     var genre : String = "",
     var classe: String = "",
+    var vma: Float = 0F,
     )

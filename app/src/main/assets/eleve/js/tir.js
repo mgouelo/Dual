@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let valeur = parseInt(champ.value);
 
             if (!isNaN(valeur) && champ.value !== "") {
-                // Strict nécessaire : borner entre 0 et 5 (5 balles max par tir)
+                //Strict nécessaire : borner entre 0 et 5 (5 balles max par tir)
                 valeur = Math.min(Math.max(valeur, 0), 5);
                 champ.value = valeur; // Correction visuelle pour l'élève
 
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultatsDiv.style.display = "block";
         document.getElementById("total").textContent = total;
 
-        // Ajout de la médaille selon le barème officiel
+        //Ajout de la médaille selon le barème officiel
         const display = document.getElementById("medaille-display");
         if (compteTirs === nombreDeTirs) {
             let medaille = "BRONZE";
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (btnEnvoyer) {
                 btnEnvoyer.style.display = "block";
                 btnEnvoyer.onclick = () => {
-                    btnEnvoyer.disabled = true; // Empêche l'élève de cliquer plusieurs fois
+                    btnEnvoyer.disabled = true; //Empêche l'élève de cliquer plusieurs fois
                     btnEnvoyer.textContent = "Envoi en cours...";
                     envoyerResultatAuServeur(total, medaille);
                 };

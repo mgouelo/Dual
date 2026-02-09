@@ -121,49 +121,67 @@ fun Application.module(appContext: Context) {
         //Reçoit les événements des élèves
         post("/event") {
             try {
-                //On reçoit le texte brut pour éviter les erreurs de Serializer
                 val body = call.receiveText()
-                Log.d("KtorServer", "Texte brut reçu : $body")
-
-                //Analyse manuelle du JSON
                 val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
                 val jsonElement = jsonParser.parseToJsonElement(body).jsonObject
 
                 val type = jsonElement["type"]?.jsonPrimitive?.content ?: ""
                 val studentId = jsonElement["studentId"]?.jsonPrimitive?.content ?: ""
 
-                //Logique métier : On traite le tir
-                if (type == "TIR_RESULTAT_6EME") {
-                    val payload = jsonElement["payload"]?.jsonObject
-                    val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
-                    val scoreInt = scoreRaw.toIntOrNull() ?: 0
+                val parts = studentId.split(" ")
+                val prenom = parts.getOrNull(0) ?: ""
+                val nom = parts.getOrNull(1) ?: ""
 
-                    //On sépare Prénom et Nom
-                    val parts = studentId.split(" ")
-                    val prenom = parts.getOrNull(0) ?: ""
-                    val nom = parts.getOrNull(1) ?: ""
+                when (type) {
+                    "TIR_RESULTAT_6EME" -> {
+                        val payload = jsonElement["payload"]?.jsonObject
+                        val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
+                        val scoreInt = scoreRaw.toIntOrNull() ?: 0
 
-                    //Insertion bdd
-                    val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
-                    if (eleve != null) {
-                        val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
-                            id_eleve = eleve.id_eleve,
-                            id_seance = 1,
-                            cibles_touchees = scoreInt,
-                            temp_course = 0F
-                        )
-                        DatabaseProvider.db.resultatDao().insert(nouveauResultat)
-                        Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
-                    } else {
-                        Log.e("KtorServer", "ÉLÈVE NON TROUVÉ en BDD : $prenom $nom")
+                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        if (eleve != null) {
+                            val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                                id_eleve = eleve.id_eleve,
+                                id_seance = 1,
+                                cibles_touchees = scoreInt,
+                                temp_course = 0F
+                            )
+                            DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                            Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
+                            call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
+                        } else {
+                            Log.e("KtorServer", "ÉLÈVE NON TROUVÉ : $prenom $nom")
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Eleve non trouvé"))
+                        }
+                    }
+
+                    "VMA_RESULTAT" -> {
+                        val payload = jsonElement["payload"]?.jsonObject
+                        val vmaValue = payload?.get("vma")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+
+                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        if (eleve != null) {
+                            eleve.vma = vmaValue
+                            DatabaseProvider.db.EleveDao().update(eleve)
+                            Log.i("KtorServer", "VMA mise à jour : $studentId -> $vmaValue km/h")
+                            call.respond(HttpStatusCode.Accepted, mapOf("status" to "VMA_OK"))
+                        } else {
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Eleve non trouvé"))
+                        }
+                    }
+
+                    else -> {
+                        Log.w("KtorServer", "Type d'événement inconnu : $type")
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Unknown type"))
                     }
                 }
 
-                call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
-
             } catch (e: Exception) {
                 Log.e("KtorServer", "Erreur critique route event : ${e.message}")
-                call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error"))
+                // On vérifie si une réponse n'a pas déjà été envoyée avant d'envoyer l'erreur
+                if (!call.response.isCommitted) {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error"))
+                }
             }
         }
 
@@ -193,7 +211,7 @@ fun Application.module(appContext: Context) {
                 val resultats = DatabaseProvider.db.resultatDao().getAllResultats()
 
                 //Construction du contenu CSV
-                val csv = StringBuilder("prenom;nom;genre;cibles_touchees\n")
+                val csv = StringBuilder("prenom;nom;genre;cibles_touchees;vma\n")
 
                 resultats.forEach { res ->
                     val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
@@ -202,8 +220,10 @@ fun Application.module(appContext: Context) {
                         val nom = eleve.nom.uppercase()
                         val genre = eleve.genre
                         val score = res.cibles_touchees
+                        val vma = eleve.vma
 
-                        csv.append("$prenom;$nom;$genre;$score\n")
+
+                        csv.append("$prenom;$nom;$genre;$score;$vma\n")
                     }
                 }
 
