@@ -17,17 +17,30 @@ import android.widget.Button
 import fr.iutvannes.dual.controller.MainActivity
 
 /**
- * Fragment pour afficher l'écran de profil de l'utilisateur.
- * Le layout associé est R.layout.fragment_profile.
+ * Fragment pour afficher la liste des classes.
+ * Ainsi que le bouton pour ajouter une nouvelle classe.
+ * Le layout utilisé est fragment_classes.xml.
+ *
+ * @see AppDatabase
+ * @see R.layout.fragment_classes
  */
 class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
+    /**
+     * Méthode appelée lorsque le fragment est créé.
+     * Ce fragment est utilisé pour afficher la liste des classes.
+     * Ainsi que le bouton pour ajouter une nouvelle classe.
+     *
+     * @param view La vue du fragment.
+     * @param savedInstanceState Les données sauvegardées du fragment.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialisation des vues et des listeners
         val container = view.findViewById<LinearLayout>(R.id.container_classes)
 
+        // Ouvertures d'une coroutine dans le thread IO pour effectuer des tâches en arrière-plan
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
             //Connexion BDD
@@ -42,12 +55,13 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
             val btn_ajoutClasse = view.findViewById<Button>(R.id.ajout_classe)
 
+            // Gestion du clic sur le bouton pour ajouter une nouvelle classe
             btn_ajoutClasse.setOnClickListener {
                 val fragment = AjoutClasseFragment()
                 (activity as MainActivity).showFragment(fragment, true, true)
             }
 
-            //retour sur le thread principale pour modification de l'interface graphique(UI)
+            // Retour sur le thread principale pour modification de l'interface graphique(UI)
             withContext(Dispatchers.Main) {
 
                 container.removeAllViews()
@@ -67,6 +81,7 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
                             setPadding(8, 8, 8, 8)
                         }
 
+                        // Gestion du clic sur la classe pour afficher la liste des élèves
                         button.setOnClickListener {
                             val fragment = ElevesFragment.newInstance(classe)
                             (activity as MainActivity).showFragment(fragment, true, true)

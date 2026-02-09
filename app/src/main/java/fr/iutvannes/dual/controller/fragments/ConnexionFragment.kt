@@ -2,7 +2,6 @@ package fr.iutvannes.dual.controller.fragments
 
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,18 +12,36 @@ import androidx.room.Room
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
+import fr.iutvannes.dual.model.utils.PasswordUtils
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.content.edit
 
+/**
+ * Fragment pour la connexion
+ * Ce fragment est utilisé pour se connecter à l'application.
+ *
+ * @see MainActivity
+ * @see AppDatabase
+ * @see PasswordUtils
+ * @see R.layout.fragment_connexion
+ */
 class ConnexionFragment : Fragment() {
 
+    /* Variable permettant de savoir si le mot de passe est visible ou non */
     private var passwordVisible = false
 
+    /**
+     * Méthode appelée lorsque le fragment est créé.
+     *
+     * @param inflater L'inflatreur utilisé pour infler le layout du fragment.
+     * @param container Le conteneur dans lequel le fragment sera affiché.
+     * @param savedInstanceState Les données sauvegardées du fragment.
+     * @return La vue du fragment.
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,10 +58,13 @@ class ConnexionFragment : Fragment() {
         val rememberMe = view.findViewById<CheckBox>(R.id.rememberMeCheckBox)
         val forgottenPassword = view.findViewById<TextView>(R.id.forgottenPassword)
 
+
+        // Création d'une clé secrète pour le stockage sécurisé des préférences
         val masterKey = MasterKey.Builder(requireContext())
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
 
+        // Création d'un objet de stockage sécurisé des préférences
         val sharedPref = EncryptedSharedPreferences.create(
             requireContext(),
             "loginPrefs",
@@ -52,8 +72,11 @@ class ConnexionFragment : Fragment() {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+
+        // Récupération des préférences de connexion
         val editor = sharedPref.edit()
 
+        // Création ou ouverture de la base de données
         val db = Room.databaseBuilder(
             requireContext(),
             AppDatabase::class.java,
@@ -68,12 +91,14 @@ class ConnexionFragment : Fragment() {
         val savedPassword = sharedPref.getString("password", "")
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
+        // Si les préférences de connexion existent, les charger
         if (isRemembered) {
             emailInput.setText(savedEmail)
             passwordInput.setText(savedPassword)
             rememberMe.isChecked = true
         }
 
+        // Affichage du mot de passe
         oeilIcon.setOnClickListener {
             passwordVisible = !passwordVisible
             passwordInput.inputType = if (passwordVisible)
@@ -83,6 +108,7 @@ class ConnexionFragment : Fragment() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
+        // Gestion du clic sur le bouton de connexion
         connexionButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
@@ -135,10 +161,12 @@ class ConnexionFragment : Fragment() {
             }
         }
 
+        // Gestion du clic sur le lien d'inscription
         inscriptionLien.setOnClickListener {
             (activity as? MainActivity)?.showFragment(InscriptionFragment(), false, false)
         }
 
+        // Gestion du clic sur le lien de mot de passe oublié
         forgottenPassword.setOnClickListener {
             (activity as? MainActivity)?.showFragment(ForgottenPasswordFragment(), false, false)
         }

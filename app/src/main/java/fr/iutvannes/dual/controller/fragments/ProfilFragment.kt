@@ -3,7 +3,6 @@ package fr.iutvannes.dual.controller.fragments
 
 // Imports nécessaires
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -12,7 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import fr.iutvannes.dual.R
@@ -27,12 +25,20 @@ import androidx.core.content.edit
 /**
  * Fragment pour afficher l'écran de profil de l'utilisateur.
  * Le layout associé est R.layout.fragment_profile.
+ *
+ * @see AppDatabase
+ * @see MainActivity
+ * @see PasswordUtils
+ * @see R.layout.fragment_profil
  */
 class ProfilFragment : Fragment(R.layout.fragment_profil) {
 
     /**
      * Cette fonction est appelée lorsque la vue du fragment est créée.
      * Elle initialise les interactions avec les vues.
+     *
+     * @param view La vue du fragment.
+     * @param savedInstanceState Les données sauvegardées du fragment
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -95,11 +101,13 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
         }
 
         // --- GESTION DU BOUTON RETOUR ---
+        //Gestion du clic sur le bouton de retour
         backButton.setOnClickListener {
             (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
         }
 
         // --- GESTION DU BOUTON D'ÉDITION DU PROFIL ---
+        //Gestion du clic sur le bouton d'édition du profil
         editButtonProfil.setOnClickListener {
             // On détermine si les champs sont actuellement éditables ou non
             val isEditable = !nomField.isEnabled   // Si les champs sont désactivés, on passe en mode édition
@@ -187,6 +195,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
         }
 
         // --- GESTION DU BOUTON D'ÉDITION DU MOT DE PASSE ---
+        //Gestion du clic sur le bouton d'édition du mot de passe
         editButtonMdp.setOnClickListener {
             // On inverse l’état d’édition (si c’est désactivé, on l’active)
             val isEditable = !nouveauMdpField.isEnabled
@@ -290,6 +299,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
 
 
         // --- GESTION DU BOUTON DÉCONNEXION ---
+        //Gestion du clic sur le bouton de déconnexion
         disconnectButton.setOnClickListener {
             // Supprimer l’utilisateur en mémoire (si tu stockes une session)
             sharedPrefs.edit { putString("email", "") }

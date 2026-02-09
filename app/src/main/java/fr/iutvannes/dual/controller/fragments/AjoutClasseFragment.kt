@@ -16,8 +16,29 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Fragment pour ajouter une nouvelle classe.
+ * Ce fragment est utilisé pour créer une nouvelle classe dans la base de données en sélectionnant
+ * un niveau et une lettre. Lors de la validation, le fragment vérifie si une classe existe ou
+ * doit être créé.
+ * Des Toasts sont présents pour informer l'utilisateur des différents résultats.
+ * Le layout utilisé est fragment_ajout_classe.xml.
+ *
+ * @see AppDatabase
+ * @see MainActivity
+ * @see Classe
+ * @see R.layout.fragment_ajout_classe
+ */
 class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
+    /**
+     * Méthode appelée lorsque le fragment est créé.
+     * Gère les clics sur les boutons de retour et de validation.
+     * Créé une nouvelle classe en fonction du niveau et de la lettre sélectionnées.
+     *
+     * @param view La vue du fragment.
+     * @param savedInstanceState Les données sauvegardées du fragment.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -28,11 +49,12 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
         val toogleLettre = view.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.toggle_group_lettre)
 
 
-
+        // Gestion du clic sur le bouton de retour
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
+        // Gestion du clic sur le bouton de validation
         buttonValider.setOnClickListener {
             val idNiveau = toogleNiveau.checkedButtonId
             val idLettre = toogleLettre.checkedButtonId
@@ -51,7 +73,9 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
             val classeNom = "${niveau[0]}$lettre"
 
+            // Ouverture d'une coroutine sur le thread IO pour ajouter la classe à la base de données
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO){
+                // Création ou ouverture de la base de données
                 val db = Room.databaseBuilder(
                     requireContext(),
                     AppDatabase::class.java,
@@ -66,7 +90,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
                 val existeDeja = db.classeDao().getClasseByName(classeNom) != null
 
-
+                // Affichage d'un message si la classe existe déjà par le Thread principal
                 withContext(Dispatchers.Main){
                     if (existeDeja) {
                         Toast.makeText(requireContext(), "Cette classe existe déjà", Toast.LENGTH_SHORT).show()
@@ -74,8 +98,10 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 }
 
                 if(!existeDeja) {
+                    // Ajout de la classe à la base de données
                     db.classeDao().insert(classe)
 
+                    // Affichage d'un message si la classe a été ajoutée par le Thread principal
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Classe ajoutée", Toast.LENGTH_SHORT).show()
 
@@ -84,6 +110,6 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                     }
                 }
             }
-            }
         }
+    }
 }

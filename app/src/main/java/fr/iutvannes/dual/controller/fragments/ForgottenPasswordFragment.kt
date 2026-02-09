@@ -17,17 +17,25 @@ import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
 
 /**
  * Fragment pour gérer la réinitialisation du mot de passe oublié.
  * Le layout associé est R.layout.fragment_forgotten_password.
+ *
+ * @see AppDatabase
+ * @see MainActivity
+ * @see EmailService
+ * @see PasswordUtils
+ * @see R.layout.fragment_forgotten_password
  */
 class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password) {
 
     /**
      * Cette fonction est appelée lorsque la vue du fragment est créée.
      * Elle initialise les interactions avec les vues.
+     *
+     * @param view La vue du fragment.
+     * @param savedInstanceState Les données conservées lors de l'état de l'activité.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -96,6 +104,8 @@ class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password)
 
     /**
      * Génère un mot de passe temporaire aléatoire de 10 caractères.
+     *
+     * @return Le mot de passe temporaire généré.
      */
     private fun generateTempPassword(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

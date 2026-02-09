@@ -9,7 +9,6 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Eleve
@@ -17,20 +16,47 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Fragment pour ajouter ou modifier un élève.
+ * Ce fragment est utilisé pour créer un nouvel élève ou pour modifier les informations d'un élève
+ * existant en y précisant les informations utiles.
+ * Le layout utilisé est celui de fragment_ajout_eleve.xml.
+ *
+ * @see Eleve
+ * @see AppDatabase
+ * @see R.layout.fragment_ajout_eleve
+ */
 class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
+    /* Variable permettant de stocker le nom de la classe. */
     private var classeNom: String? = null
+
+    /* Variable permettant de stocker l'ID de l'élève. */
     private var eleveID: Int = -1
 
     // init db via provider
     val db = DatabaseProvider.db
 
+    /**
+     * Méthode appelée lorsque le fragment est créé.
+     * Récupère les données fournies lors de la création du fragment.
+     *
+     * @param savedInstanceState Les données sauvegardées du fragment.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         classeNom = arguments?.getString("classeNom")
         eleveID = arguments?.getInt("eleveID", -1) ?: -1
     }
 
+    /**
+     * Méthode appelée lorsque le fragment est créé.
+     * Gère l'ajout ou la modification d'un élève en fonction des données fournies.
+     * Ainsi que les clics sur les boutons de validation et de retour.
+     *
+     * @param view La vue du fragment
+     * @param savedInstanceState Les données sauvegardées du fragment.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -43,9 +69,11 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
         if (eleveID != -1) { // id différent de celui par défaut --> élève déjà existant --> mode édition
             buttonValider.text = "Enregistrer les modifications"
 
+            // Ouverture d'une coroutine sur le thread IO pour effectuer l'opération de lecture de l'élève
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 val eleveExist = db.EleveDao().getEleveById(eleveID) // sécruité : on vérifie quand même existence de l'élève
                 if (eleveExist != null) {
+                    // Retour sur le thread principal pour mettre à jour l'interface utilisateur
                     withContext(Dispatchers.Main) {
                         inputPrenom.setText(eleveExist.prenom)
                         inputNom.setText(eleveExist.nom)
@@ -60,10 +88,12 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
             }
         }
 
+        // Gestion du clic sur le bouton de retour
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
+        // Gestion du clic sur le bouton de validation
         buttonValider.setOnClickListener {
 
             val prenom = inputPrenom.text.toString().trim()
@@ -82,6 +112,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                 return@setOnClickListener
             }
 
+            // Ouverture d'une coroutine sur le thread IO pour effectuer l'opération d'insertion ou de modification de l'élève
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
                 val eleve = Eleve(
@@ -93,27 +124,42 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
                 if (eleveID != -1) {
                     eleve.id_eleve = eleveID
+                    // Modification de l'élève
                     db.EleveDao().update(eleve)
 
+                    // Retour sur le thread principal pour afficher un message de succès de modification
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Elève modifié !", Toast.LENGTH_SHORT).show()
                     }
                 } else {
+                    // Ajout d'un nouvel élève
                     db.EleveDao().insert(eleve)
+                    // Retour sur le thread principal pour afficher un message de succès d'ajout
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Elève ajouté !", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 withContext(Dispatchers.Main) {
-                    //Retour à ElevesFragment
+                    //Retour à ElevesFragment (la liste des élèves)
                     requireActivity().supportFragmentManager.popBackStack()
                 }
             }
         }
     }
 
+    /**
+     * Méthode statique pour créer une nouvelle instance de ce fragment.
+     *
+     * @return Un nouvel objet AjoutFragment
+     */
     companion object {
+        /**
+         * Méthode statique pour créer une nouvelle instance de ce fragment.
+         *
+         * @param classeNom Le nom de la classe
+         * @return Un nouvel objet AjoutFragment
+         */
         fun newInstance(classeNom: String): AjoutFragment {
             val fragment = AjoutFragment()
             val args = Bundle()
@@ -122,6 +168,13 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
             return fragment
         }
 
+        /**
+         * Méthode statique pour créer une nouvelle instance de ce fragment en mode édition.
+         *
+         * @param classeNom Le nom de la classe
+         * @param eleveID L'ID de l'élève à modifier
+         * @return Un nouvel objet AjoutFragment en mode édition
+         */
         fun newInstanceForEdit(classeNom: String, eleveID: Int): AjoutFragment {
             val fragment = AjoutFragment()
             val args = Bundle()

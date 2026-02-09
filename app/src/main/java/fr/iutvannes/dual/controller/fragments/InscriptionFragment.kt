@@ -13,16 +13,38 @@ import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Prof
+import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import fr.iutvannes.dual.model.utils.PasswordUtils
 
+/**
+ * Fragment pour la page d'inscription.
+ * Affiche un formulaire pour l'inscription d'un nouveau professeur.
+ * L'inscription est enregistrée dans la base de données.
+ *
+ * @see MainActivity
+ * @see Prof
+ * @see AppDatabase
+ * @see PasswordUtils
+ * @see R.layout.fragment_creation
+ */
 class InscriptionFragment : Fragment() {
 
+    /* Variables de visibilté pour le mot de passe */
     private var passwordVisible = false
+
+    /* Variables de visibilté pour le mot de passe de confirmation */
     private var passwordVerifVisible = false
 
+    /**
+     * Méthode appelée lors de la création de la vue du fragment.
+     *
+     * @param inflater L'inflatreur utilisé pour infler le layout du fragment.
+     * @param container Le conteneur parent du fragment.
+     * @param savedInstanceState Les données sauvegardées du fragment.
+     * @return La vue du fragment.
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,6 +76,7 @@ class InscriptionFragment : Fragment() {
         val dao = db.profDAO()
 
         // --- GESTION DE L’AFFICHAGE DU MOT DE PASSE ---
+        // Gestion du clic sur l'icône d'oeil pour afficher/masquer le mot de passe
         oeilIcon.setOnClickListener {
             passwordVisible = !passwordVisible
             passwordInput.inputType = if (passwordVisible)
@@ -63,6 +86,7 @@ class InscriptionFragment : Fragment() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
+        // Gestion du clic sur l'icône d'oeil pour afficher/masquer le mot de passe de confirmation
         oeilVerifIcon.setOnClickListener {
             passwordVerifVisible = !passwordVerifVisible
             passwordVerifInput.inputType = if (passwordVerifVisible)
@@ -73,6 +97,7 @@ class InscriptionFragment : Fragment() {
         }
 
         // --- ACTION DU BOUTON D’INSCRIPTION ---
+        // Gestion du clic sur le bouton d'inscription
         inscriptionButton.setOnClickListener {
             val nom = nomInput.text.toString().trim()
             val prenom = prenomInput.text.toString().trim()
@@ -129,6 +154,7 @@ class InscriptionFragment : Fragment() {
         }
 
         // --- LIEN "DÉJÀ UN COMPTE ? SE CONNECTER" ---
+        // Gestion du clic sur le lien "déjà un compte ? se connecter"
         connexionLien.setOnClickListener {
             (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
         }
