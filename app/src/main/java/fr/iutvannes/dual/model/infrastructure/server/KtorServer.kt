@@ -193,7 +193,7 @@ fun Application.module(appContext: Context) {
                 val resultats = DatabaseProvider.db.resultatDao().getAllResultats()
 
                 //Construction du contenu CSV
-                val csv = StringBuilder("prenom;nom;cibles touchees\n")
+                val csv = StringBuilder("prenom;nom;genre;cibles_touchees\n")
 
                 resultats.forEach { res ->
                     val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
