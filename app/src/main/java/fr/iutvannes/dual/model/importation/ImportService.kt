@@ -6,7 +6,13 @@ import java.io.InputStream
 
 
 /**
- * Rapport concis d' l'import
+ * Rapport concis de l'import
+ *
+ * @param total nombre d'élèves dans le fichier
+ * @param created nombre d'élèves créés
+ * @param skipped nombre d'élèves ignorés (doublons)
+ * @param errorCount nombre d'erreurs
+ * @param errors liste des erreurs
  */
 data class ImportReport(
     val total: Int,
@@ -23,6 +29,13 @@ data class ImportReport(
  * 2 - Appel du reader adéquat
  * 3 - Validation des données
  * 4 - Ajout en DB
+ *
+ * @see Eleve
+ * @see EleveDAO
+ * @see StudentReader
+ *
+ * @param readers liste des readers connus
+ * @param eleveDao DAO des élèves
  */
 class ImportService(
     private val readers: List<StudentReader>,
@@ -31,9 +44,12 @@ class ImportService(
 
     /**
      * Import d’un fichier d’élèves.
+     *
      * @param input flux du fichier (CSV/XLS)
      * @param fileName nom du fichier (pour l’extension)
      * @param mimeType type MIME si connu (sinon null)
+     * @param classeNom nom de la classe si connue (sinon null)
+     * @return rapport de l’import
      */
     suspend fun import(
         input: InputStream,
@@ -123,7 +139,11 @@ class ImportService(
     }
 
     /**
-     * Choisit le premier reader qui supporte l fichier.
+     * Choisit le premier reader qui supporte le fichier.
+     *
+     * @param mimeType type MIME du fichier
+     * @param fileName nom du fichier
+     * @return reader correspondant
      */
     private fun pickReader(mimeType: String?, fileName: String): StudentReader =
         readers.firstOrNull { it.supports(mimeType, fileName) }

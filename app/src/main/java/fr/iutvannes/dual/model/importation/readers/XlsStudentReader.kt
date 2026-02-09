@@ -1,7 +1,6 @@
 package fr.iutvannes.dual.model.importation.readers
 
 import fr.iutvannes.dual.model.importation.StudentDraft
-import fr.iutvannes.dual.model.importation.readers.StudentReader
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import java.io.InputStream
@@ -10,8 +9,18 @@ import kotlin.math.max
 
 /**
  * Classe de lecture de tableur d'extension .xls / .xlsx (Excel) pour l'importation des élèves
+ *
+ * @see StudentReader
  */
 class XlsStudentReader : StudentReader {
+
+    /**
+     * Vérifie si le fichier peut être lu par ce lecteur
+     *
+     * @param mimeType le type MIME du fichier
+     * @param fileName le nom du fichier
+     * @return vrai si le fichier peut être lu
+     */
     override fun supports(mimeType: String?, fileName: String): Boolean {
         val n = fileName.lowercase()
         val mime = mimeType?.lowercase().orEmpty()
@@ -21,6 +30,12 @@ class XlsStudentReader : StudentReader {
                 || mime.contains("excel") // mimeType correspondant à un tableur excel
     }
 
+    /**
+     * Méthode de lecture du fichier
+     *
+     * @param input le flux d'entrée
+     * @return la liste des brouillons à importer
+     */
     override fun read(input: InputStream): List<StudentDraft> {
         WorkbookFactory.create(input).use { wb ->
             val sheet = wb.getSheetAt(0) ?: return emptyList()
@@ -76,6 +91,9 @@ class XlsStudentReader : StudentReader {
     /**
      * Lis les en-tête du fichier et construit une table de correspondance
      * Position de la colonne (Int) : nom de l'en-tête normalisé (String)
+     *
+     * @param row la ligne d'en-tête
+     * @return la table de correspondance
      */
     private fun readHeader(row: Row): Map<Int, String> {
         val map = mutableMapOf<Int, String>()
@@ -91,12 +109,19 @@ class XlsStudentReader : StudentReader {
 
     /**
      * Normalisation du texte (ex : Prénom --> prenom)
+     *
+     * @param cell la cellule à normaliser
+     * @return le texte normalisé
      */
     private fun rawHeader(cell: Cell): String =
         normalizeAscii(cell.toString())
 
     /**
      * Trouver la position de colonne correspondant à un alias
+     *
+     * @param headerByIndex la table de correspondance
+     * @param aliases les aliases à rechercher
+     * @return la position de la colonne ou null si pas trouvé
      */
     private fun findColumnIndex(headerByIndex: Map<Int, String>, aliases: Set<String>): Int? {
         val normalized = aliases.map { normalizeAscii(it) }.toSet()
@@ -105,6 +130,10 @@ class XlsStudentReader : StudentReader {
 
     /**
      * Renvoie les cellules en chaine de caractère
+     *
+     * @param cell la cellule à convertir
+     * @param formatter le formatteur de données
+     * @return la chaine de caractère formattée
      */
     private fun cellString(cell: Cell?, formatter: DataFormatter): String {
         if (cell == null) return ""
@@ -115,6 +144,9 @@ class XlsStudentReader : StudentReader {
     /**
      * Normalisation du texte :
      * minuscule, sans accent, espace classique
+     *
+     * @param s la chaine à normaliser
+     * @return la chaine normalisée
      */
     private fun normalizeAscii(s: String): String {
         // trim + lowercase + enlever accents + compacter les espaces
@@ -126,6 +158,9 @@ class XlsStudentReader : StudentReader {
 
     /**
      * Convertit les entrées Xls (homme, garçon, M, femme, etc.) en "M" ou "F"
+     *
+     * @param s la chaine à convertir
+     * @return "M" ou "F"
      */
     private fun mapToGenderCode(s: String): String {
         val clean = s.trim().uppercase()
