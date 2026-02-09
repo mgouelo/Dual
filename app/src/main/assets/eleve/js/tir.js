@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const nombreDeTirs = 6;
     const btnEnvoyer = document.getElementById("btn-envoyer");
 
+    // Focus automatique sur le 1er input
+    const inputTir1 = document.getElementById("tir1");
+    setTimeout(() => inputTir1.focus(), 100); // Un léger délai assure que l'élément est visible
+
 
     //Fonction d'envoi JSON au serveur (tablette prof)
     async function envoyerResultatAuServeur(total, medaille) {
@@ -74,8 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             display.textContent = "Médaille : " + medaille;
             display.style.backgroundColor = couleur;
-            display.style.padding = "10px";
+            display.style.padding = "20px";
             display.style.borderRadius = "12px";
+            display.style.fontSize = "1.6rem";
 
             // Sauvegarde pour le bilan final
             localStorage.setItem("tir_total", total);
@@ -96,6 +101,14 @@ document.addEventListener("DOMContentLoaded", () => {
             display.style.backgroundColor = "transparent";
         }
     }
+
+    // Ecouteur pour la touche Entrée sur l'input (ergonomie)
+    const inputTir6eme = document.querySelector(".tir6eme");
+    inputTir6eme.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            calculerResultats();
+        }
+    });
 
     for (let i = 1; i <= nombreDeTirs; i++) {
         const inputTir = document.getElementById(`tir${i}`);

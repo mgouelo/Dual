@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-01-21T19:21:41.783761271Z">
+        <DropdownSelection timestamp="2026-02-09T19:59:08.752926230Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/home/lescop/.android/avd/Medium_Tablet_2.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=R52N50S85YN" />
             </handle>
           </Target>
         </DropdownSelection>

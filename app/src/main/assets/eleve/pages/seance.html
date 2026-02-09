@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Séance Biathlon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Séance Biathlon</title>
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
@@ -23,8 +22,10 @@
 
         <div class="mode-group">
             <p class="mode-title">Entraînement</p>
-            <button id="btn-tir" class="button" onclick="location.href='tir.html'">Tir</button>
-            <button class="button" onclick="location.href='course.html'">Course</button>
+            <div class="btn-group">
+                <button id="btn-tir" class="button" onclick="location.href='tir.html'">Tir</button>
+                <button class="button" onclick="location.href='course.html'">Course</button>
+            </div>
         </div>
 
         <hr class="separator">
@@ -37,7 +38,7 @@
     </div>
 
     <footer>
-        <button class="button btn-back" onclick="location.href='../pages/choix_niveau.html'">Retour choix niveau</button>
+        <button class="button btn-back" onclick="location.href='../pages/choix_niveau.html'">Changer de niveau</button>
     </footer>
 
 </div>
