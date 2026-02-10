@@ -12,6 +12,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:background="@android:color/transparent"
+        android:contentDescription="@string/retour_la_page_precedente"
         android:src="@drawable/ic_fleche_retour"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -27,7 +28,22 @@
         app:layout_constraintStart_toEndOf="@id/arrow_back_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/arrow_back_button"
-        app:layout_constraintBottom_toBottomOf="@id/arrow_back_button"/>
+        app:layout_constraintBottom_toBottomOf="@id/arrow_back_button"
+        tools:ignore="RtlSymmetry" />
+
+    <TextView
+        android:id="@+id/result_titre"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingStart="8dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintTop_toBottomOf="@+id/result_eleve"
+        app:layout_constraintStart_toStartOf="@+id/arrow_back_button"
+        app:layout_constraintEnd_toEndOf="@+id/result_eleve"
+        tools:ignore="RtlSymmetry" />
 
 
 
@@ -36,7 +52,7 @@
         android:layout_width="0dp"
         android:layout_height="750dp"
         android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/result_eleve"
+        app:layout_constraintTop_toBottomOf="@id/result_titre"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -59,6 +75,7 @@
 
     <LinearLayout
         android:id="@+id/footer_layout"
+        style="?android:attr/buttonBarStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -74,7 +91,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Tirs"
+            android:text="@string/tirs"
             android:layout_marginEnd="8dp" />
 
         <Button
@@ -82,7 +99,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Course"
+            android:text="@string/course"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp" />
 
@@ -91,7 +108,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Examen"
+            android:text="@string/examen"
             android:layout_marginStart="8dp" />
 
     </LinearLayout>

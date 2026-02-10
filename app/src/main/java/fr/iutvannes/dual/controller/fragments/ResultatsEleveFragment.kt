@@ -1,11 +1,11 @@
 package fr.iutvannes.dual.controller.fragments
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -15,7 +15,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
+/**
+ * Affichage des résultats de l'élève
+ * Récupération de l'identifiant de l'élève depuis ElevesFragment
+ *
+ * @see GraphView
+ */
 class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
 
@@ -24,6 +29,12 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
     val db = DatabaseProvider.db
 
+    /**
+     * Méthode appelée lors de la création du fragment
+     * Récupération de l'identifiant de l'élève depuis ElevesFragment
+     *
+     * @param savedInstanceState Bundle contenant l'état de l'interface
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -31,12 +42,21 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
         eleveId = arguments?.getInt("eleveId", -1) ?: -1
     }
 
+    /**
+     * Méthode appelée lors de la création de la vue du fragment
+     * Affichage des résultats de l'élève
+     *
+     * @param view Vue du fragment
+     * @param savedInstanceState Bundle contenant l'état de l'interface
+     */
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val titre = view.findViewById<TextView>(R.id.result_eleve)
         val resultGraph = view.findViewById<GraphView>(R.id.resultGraph)
         val resultExamen = view.findViewById<TextView>(R.id.examenResult)
+        val resultTitre = view.findViewById<TextView>(R.id.result_titre)
         val btnTirs = view.findViewById<Button>(R.id.btnTirs)
         val btnCourse = view.findViewById<Button>(R.id.btnCourse)
         val btnExamen = view.findViewById<Button>(R.id.btnExamen)
@@ -44,6 +64,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
         if (eleveId != -1) {
 
+            // Ouverture d'une coroutine dans le thread IO pour effectuer les tâches de base de données
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 val eleveExist = db.EleveDao().getEleveById(eleveId)
                 val resultatExist = db.resultatDao().getResultatsByEleve(eleveId)
@@ -77,8 +98,9 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             Pair("Séance du $date", temps)
                         }
 
-
+                        // Affichage des résultats de l'élève dans la catégorie "Tirs"
                         btnTirs.setOnClickListener {
+                            resultTitre.text = "Progression de tirs"
                             if (dataTirs.isEmpty()) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
@@ -96,7 +118,9 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             }
                         }
 
+                        // Affichage des résultats de l'élève dans la catégorie "Course"
                         btnCourse.setOnClickListener {
+                            resultTitre.text = "Progression de course"
                             if (dataCourse.isEmpty()) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
@@ -114,26 +138,36 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             }
                         }
 
+                        // Affichage des résultats de l'élève à l'examen
                         btnExamen.setOnClickListener {
+                            resultTitre.text = "Résultat de l'exament"
                             if (resultatExist.isEmpty() || resultatExist[0].note_finale == 0F) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
                                 resultExamen.text = "Pas de données à afficher"
                                 return@setOnClickListener
+                            } else {
+                                resultExamen.visibility = View.VISIBLE
+                                resultGraph.visibility = View.GONE
+                                resultExamen.text = "Note finale : ${resultatExist[0].note_finale}"
                             }
-                            resultExamen.visibility = View.VISIBLE
-                            resultGraph.visibility = View.GONE
                         }
                     }
                 }
             }
 
+            // Retour à la page précédente
             btnBack.setOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
         }
     }
 
+    /**
+     * Méthode statique pour créer un fragment ResultatsEleveFragment
+     *
+     * @return Fragment ResultatsEleveFragment
+     */
     companion object {
         /**
          * Méthode utilitaire pour créer un fragment ResultatsEleveFragment
