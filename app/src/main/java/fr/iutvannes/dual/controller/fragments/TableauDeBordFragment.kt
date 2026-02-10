@@ -19,10 +19,13 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.viewmodel.SessionViewModel
+import fr.iutvannes.dual.infrastructure.server.KtorServer
 import fr.iutvannes.dual.model.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Cette classe représente le fragment du tableau de bord.
@@ -43,10 +46,28 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val sessionBtn = view.findViewById<Button>(R.id.launchASession)
         sessionBtn.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
+                val idGenere = withContext(Dispatchers.IO) {
+                    //On récupère l'ID du prof
+                    val profId = DatabaseProvider.db.profDAO().getProfId()
+
+                    val nouvelleSeance = fr.iutvannes.dual.model.persistence.Seance(
+                        date = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE).format(java.util.Date()),
+                        id_prof = profId
+                    )
+
+                    //On insère et on récupère l'ID auto-incrémenté
+                    DatabaseProvider.db.seanceDao().insert(nouvelleSeance)
+                }
+
+                //Mise à jour du backend (KtorServer)
+
+                KtorServer.idSeanceActuelle = idGenere.toInt()
+
                 countInitial = withContext(Dispatchers.IO) {
                     DatabaseProvider.db.resultatDao().getCount()
                 }
-                //On lance la session
+
+                //On lance le serveur Ktor
                 sessionViewModel.startSession(requireContext())
             }
         }

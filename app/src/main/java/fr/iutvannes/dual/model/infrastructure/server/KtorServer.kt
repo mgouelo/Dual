@@ -41,6 +41,8 @@ data class EventDTO(
  * Injecte les dépendances dans les routes
  */
 object KtorServer {
+
+    var idSeanceActuelle: Int = 0
     private var engine: EmbeddedServer<*, *>? = null
     private lateinit var appContext: Context
 
@@ -142,7 +144,7 @@ fun Application.module(appContext: Context) {
                         if (eleve != null) {
                             val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
                                 id_eleve = eleve.id_eleve,
-                                id_seance = 1,
+                                id_seance = KtorServer.idSeanceActuelle,
                                 cibles_touchees = scoreInt,
                                 temp_course = 0F
                             )
@@ -207,40 +209,41 @@ fun Application.module(appContext: Context) {
         // Route d'export CSV pour le professeur
         get("/api/admin/export") {
             try {
-                //Récupération des données depuis la base Room
-                val resultats = DatabaseProvider.db.resultatDao().getAllResultats()
+                //Récupération de la séance actuelle en base pour avoir la date
+                val idActuel = KtorServer.idSeanceActuelle
+                val seance = DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
 
-                //Construction du contenu CSV
-                val csv = StringBuilder("prenom;nom;genre;cibles_touchees;vma\n")
+                //Formatage de la date pour le nom du fichier
+                val dateSession = seance?.date?.replace("/", "_")?.replace(" ", "_") ?: "inconnue"
+                val nomFichier = "resultats_seance_$dateSession.csv"
+
+                //Récupération des résultats uniquement pour cette séance
+                val resultats = DatabaseProvider.db.resultatDao().getResultatsBySeance(idActuel)
+
+                //Construction du CSV
+                val csv = StringBuilder("Séance du: ${seance?.date ?: "Inconnue"}\n")
+                csv.append("prenom;nom;genre;cibles_touchees;vma\n")
 
                 resultats.forEach { res ->
                     val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
                     if (eleve != null) {
-                        val prenom = eleve.prenom
-                        val nom = eleve.nom.uppercase()
-                        val genre = eleve.genre
-                        val score = res.cibles_touchees
-                        val vma = eleve.vma
-
-
-                        csv.append("$prenom;$nom;$genre;$score;$vma\n")
+                        csv.append("${eleve.prenom};${eleve.nom.uppercase()};${eleve.genre};${res.cibles_touchees};${eleve.vma}\n")
                     }
                 }
 
-                //Configuration des Headers pour déclencher le téléchargement
+                //Envoi du fichier avec le nom dynamique
                 call.response.header(
                     HttpHeaders.ContentDisposition,
                     ContentDisposition.Attachment.withParameter(
-                        ContentDisposition.Parameters.FileName, "resultats_biathlon.csv"
+                        ContentDisposition.Parameters.FileName, nomFichier
                     ).toString()
                 )
 
-                //Envoi de la réponse
                 call.respondText(csv.toString(), ContentType.Text.CSV)
 
             } catch (e: Exception) {
                 Log.e("KtorServer", "Erreur Export CSV: ${e.message}")
-                call.respond(HttpStatusCode.InternalServerError, "Erreur lors de la génération du fichier")
+                call.respond(HttpStatusCode.InternalServerError, "Erreur lors de la génération")
             }
         }
     }

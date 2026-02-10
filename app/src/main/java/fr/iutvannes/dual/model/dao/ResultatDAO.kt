@@ -23,4 +23,8 @@ interface ResultatDAO {
 
     @Query("SELECT COUNT(*) FROM Resultat")
     fun getCount(): Int
+
+    @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
+    fun getResultatsBySeance(idSeance: Int): List<Resultat>
+
 }

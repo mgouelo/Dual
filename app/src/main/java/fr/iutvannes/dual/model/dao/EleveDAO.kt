@@ -45,4 +45,5 @@ interface EleveDAO {
 
     @Query("DELETE FROM Eleve WHERE classe = :nomClasse")
     suspend fun deleteElevesByClasse(nomClasse: String)
+
 }
