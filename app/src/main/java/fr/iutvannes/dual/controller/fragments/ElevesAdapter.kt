@@ -11,7 +11,8 @@ import fr.iutvannes.dual.R
 
 class ElevesAdapter(
     private val onEdit: (Eleve) -> Unit,
-    private val onDelete: (Eleve) -> Unit
+    private val onDelete: (Eleve) -> Unit,
+    private val onResult: (Eleve) -> Unit
 ) : RecyclerView.Adapter<ElevesAdapter.VH>() {
 
     private var items: List<Eleve> = emptyList()
@@ -26,6 +27,7 @@ class ElevesAdapter(
         val tvGenre: TextView = view.findViewById(R.id.tvGenre)
         val btnEdit: View = view.findViewById(R.id.btnEdit)
         val btnDelete: View = view.findViewById(R.id.btnDelete)
+        val btnResult: View = view.findViewById(R.id.btnResult)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -43,6 +45,7 @@ class ElevesAdapter(
 
         holder.btnEdit.setOnClickListener { onEdit(eleve) }
         holder.btnDelete.setOnClickListener { onDelete(eleve) }
+        holder.btnResult.setOnClickListener { onResult(eleve) }
     }
 
     override fun getItemCount(): Int = items.size

@@ -13,6 +13,7 @@ constraintlayout = "2.2.1"
 ktor = "3.0.0"
 filamentAndroid = "1.17.1"
 material = "1.13.0"
+uiGraphics = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +42,7 @@ ktor-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-j
 ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
 filament-android = { group = "com.google.ar.sceneform", name = "filament-android", version.ref = "filamentAndroid" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

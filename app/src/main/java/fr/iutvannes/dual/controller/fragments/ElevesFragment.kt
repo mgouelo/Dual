@@ -73,6 +73,10 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                         chargerEleves()
                     }
                 }
+            },
+            onResult = { eleve ->
+                val fragment = ResultatsEleveFragment.newInstance(eleve.id_eleve)
+                (activity as MainActivity).showFragment(fragment, true, true)
             }
         )
         recyclerViewEleves.adapter = adapter

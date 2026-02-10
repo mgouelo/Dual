@@ -18,6 +18,10 @@ interface ResultatDAO {
     @Query("SELECT * FROM Resultat WHERE id_resultat = :idResultat")
     suspend fun getResultatById(idResultat: Int): Resultat?
 
+    @Query("SELECT * FROM Resultat WHERE id_eleve = :idEleve")
+    suspend fun getResultatsByEleve(idEleve: Int): List<Resultat>
+
+
     @Update
     suspend fun update(resultat: Resultat): Int
 
