@@ -60,8 +60,8 @@
 
     <ImageView
         android:id="@+id/profileImage"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
         android:layout_marginBottom="-70dp"
         android:src="@drawable/pfp"
         android:background="@drawable/rounded_pfp_circle_white"
@@ -223,7 +223,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/changer_mdp"
-                android:textSize="35sp"
+                android:textSize="20sp"
                 android:textColor="@color/noir"
                 android:layout_marginTop="16dp"
                 android:gravity="center"/>
