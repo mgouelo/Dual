@@ -77,6 +77,7 @@ footer .info {
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #202122;
 }
 
 /* Effet de survol pour les boutons */
@@ -85,18 +86,36 @@ footer .info {
     transform: translateY(-3px);
 }
 
+.btn-eval {
+    background-color: #2ecc71;
+    font-weight: bold;
+
+}
+.btn-eval:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px);
+}
+
 /* Conteneur pour les boutons d'action */
-#buttons {
+#buttonTraining {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
     width: 100%;
 }
 
-#buttons .button:nth-child(3) {
+#buttonTraining .button:nth-child(3) {
     grid-column: span 2;
     width: 100%;
     max-width: none; /* Pour annuler ton max-width de 300px */
+}
+
+/* Conteneur pour les boutons d'action */
+#buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
 }
 
 /* On crée une barre d'action qui utilise le même Grid que les boutons de tir */
@@ -348,12 +367,12 @@ footer .info {
 
 /* Bouton vert pour l'épreuve finale */
 .btn-eval {
-    background-color: #2ecc71 !important;
+    background-color: #2ecc71;
     font-weight: bold;
     box-shadow: 0 4px 0 #27ae60;
 }
 .btn-eval:hover {
-    background-color: #27ae60 !important;
+    background-color: #27ae60;
     transform: translateY(-2px);
 }
 
@@ -417,4 +436,87 @@ footer .info {
     max-width: 250px;
     padding: 15px 10px;
     font-size: 1.1rem;
+}
+
+/* Carte de profil haut de page */
+.profile-card {
+    background: var(--blue);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Contenu de la carte de profil */
+.profile-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Texte à gauche dans la carte de profil */
+.profile-text {
+    text-align: left;
+}
+
+/* Label de rôle */
+.role-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin: 0;
+    opacity: 0.8;
+    letter-spacing: 1px;
+}
+
+/* Informations de nom et genre */
+.name-info {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+/* Nom de l'élève */
+#current-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* Genre de l'élève */
+#current-gender {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Bouton d'inversion spécifique */
+.btn-switch {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    background: var(--blue);
+    margin: 0;
+    border: 3px solid rgba(255,255,255,0.4);
+}
+
+/* Effet de survol pour le bouton d'inversion */
+.btn-switch:hover {
+    background: #3f45ac;
+    transform: scale(1.02);
+}
+
+/* Classe utilitaire pour forcer l'empilement vertical propre */
+/* On utilise important pour s'assurer que ce style prévaut sur les autres règles de flexbox */
+.flex-column {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+    width: 100%;
+}
+
+/* On s'assure que les titres dans ce conteneur prennent toute la largeur */
+.flex-column h2 {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
 }

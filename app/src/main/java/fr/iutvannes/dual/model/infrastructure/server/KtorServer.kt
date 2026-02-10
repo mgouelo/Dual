@@ -110,12 +110,20 @@ fun Application.module(appContext: Context) {
             call.respond(nomsClasses)
         }
 
-        //Route pour envoyer les élèves d'UNE classe précise
+        // Route modifiée pour envoyer des objets élèves complets
         get("/api/eleves/par-classe/{nomClasse}") {
             val nomClasse = call.parameters["nomClasse"] ?: ""
             val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
-            val nomsComplets = eleves.map { "${it.prenom} ${it.nom.uppercase()}" }
-            call.respond(nomsComplets)
+
+            // On renvoie une liste d'objets avec nom, prenom, genre et vma
+            val dataEleves = eleves.map {
+                mapOf(
+                    "nomComplet" to "${it.prenom} ${it.nom.uppercase()}",
+                    "genre" to it.genre, // "F" ou "G"
+//                    "vma" to it.vma // Pour charger la VMA si déjà connue
+                )
+            }
+            call.respond(dataEleves)
         }
 
         //Reçoit les événements des élèves

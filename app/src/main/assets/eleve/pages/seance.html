@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Séance Biathlon</title>
     <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 <div id="container">
@@ -12,6 +13,21 @@
         <h1 id="titre-session">Session Biathlon</h1>
         <p id="info-classe">Préparation de l'épreuve</p>
     </header>
+
+    <div id="active-profile-card" class="profile-card">
+        <div class="profile-content">
+            <div class="profile-text">
+                <p class="role-label">Coureur Actif</p>
+                <div class="name-info">
+                    <strong id="current-name">Chargement...</strong>
+                    <span id="current-gender">(-)</span>
+                </div>
+            </div>
+            <button class="button btn-switch" onclick="inverserRoles()">
+                <i class="fa-solid fa-arrows-rotate"></i> Inverser
+            </button>
+        </div>
+    </div>
 
     <div class="hub-sections">
 
