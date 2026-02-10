@@ -111,11 +111,6 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                                 resultGraph.lineColor = ContextCompat.getColor(requireContext(), R.color.rouge)
                                 resultGraph.data = dataCourse
                                 resultGraph.invalidate()
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Pas de données à afficher",
-                                    Toast.LENGTH_SHORT
-                                ).show()
                             }
                         }
 
