@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/top_bar_background_with_border"
     android:paddingTop="@dimen/default_margin"
-    android:paddingBottom="@dimen/default_margin"
+
     android:paddingStart="@dimen/default_margin"
     android:paddingEnd="@dimen/default_margin"
     android:clipToPadding="false">
@@ -17,6 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -40,16 +41,27 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Image de profil (partie droite) -->
-    <ImageButton
-        android:id="@+id/profileImage"
-        android:layout_width="82dp"
-        android:layout_height="82dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:scaleType="centerCrop"
-        android:src="@drawable/pfp"
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/bleu"
+        app:strokeWidth="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Image de profil (partie droite) -->
+        <ImageButton
+            android:id="@+id/profileImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerCrop"
+            android:src="@drawable/pfp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
