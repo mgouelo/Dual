@@ -70,33 +70,26 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                 val resultatExist = db.resultatDao().getResultatsByEleve(eleveId)
 
                 if (eleveExist != null) {
-                    withContext(Dispatchers.Main) {
-                        titre.text =
-                            "Résultats de ${eleveExist.nom.uppercase()} ${eleveExist.prenom}"
+                    val dataTirs = resultatExist.map { resultat ->
+                        val temps = resultat.cibles_touchees
+                        val date = db.seanceDao()
+                            .getSeanceById(resultat.id_seance)
+                            ?.date ?: "Inconnu"
+                        Pair("Séance du $date", temps.toFloat())
+                    }
+
+                    val dataCourse = resultatExist.map { resultat ->
+                        val temps = resultat.temp_course
+                        val date = db.seanceDao()
+                            .getSeanceById(resultat.id_seance)
+                            ?.date ?: "Inconnu"
+                        Pair("Séance du $date", temps)
                     }
 
                     withContext(Dispatchers.Main) {
+                        titre.text =
+                            "Résultats de ${eleveExist.nom.uppercase()} ${eleveExist.prenom}"
                         resultExamen.text = "Sélectionnez une catégorie"
-
-                        val dataTirs = resultatExist.map { resultat ->
-                            val temps = resultat.cibles_touchees
-
-                            val date = db.seanceDao()
-                                .getSeanceById(resultat.id_seance)
-                                ?.date ?: "Inconnu"
-
-                            Pair("Séance du $date", temps.toFloat())
-                        }
-
-                        val dataCourse = resultatExist.map { resultat ->
-                            val temps = resultat.temp_course
-
-                            val date = db.seanceDao()
-                                .getSeanceById(resultat.id_seance)
-                                ?.date ?: "Inconnu"
-
-                            Pair("Séance du $date", temps)
-                        }
 
                         // Affichage des résultats de l'élève dans la catégorie "Tirs"
                         btnTirs.setOnClickListener {
