@@ -75,21 +75,30 @@ class GraphView(
         gridPaint.color = gridColor
 
         // Distance entre de point du graphe avec une marge
-        val widthStep = (width.toFloat() - 200) / (data.size - 1)
+        var widthStep = width.toFloat() - 200f
+        if (data.size > 1) {
+            widthStep /=  (data.size - 1)
+        }
         val heightRange = yMax - yMin
-        val heightStep = height - 100
+        val heightStep = height - 100f
 
         // Tracer la grille horizontale
         for (i in 0..heightRange) {
             val y = heightStep - (i / heightRange.toFloat()) * heightStep + 50f // Ajout de la marge
-            canvas.drawLine(15f, y, width.toFloat(), y, gridPaint)
+            canvas.drawLine(35f, y, width.toFloat(), y, gridPaint)
         }
 
         // Placer les points
         for ((i, pair) in data.withIndex()) {
-            val x = i * widthStep + 100
-            val y = heightStep - ((pair.second - yMin) / heightRange) * heightStep + 50f // Ajout de la marge
-            canvas.drawCircle(x, y, 8f, pointPaint) // rayon = 8px
+            if (data.size == 1) {
+                val x = width / 2
+                val y = heightStep - ((pair.second - yMin) / heightRange) * heightStep + 50f // Ajout de la marge
+                canvas.drawCircle(x.toFloat(), y, 8f, pointPaint) // rayon = 8px
+            } else {
+                val x = i * widthStep + 100f
+                val y = heightStep - ((pair.second - yMin) / heightRange) * heightStep + 50f // Ajout de la marge
+                canvas.drawCircle(x, y, 8f, pointPaint) // rayon = 8px
+            }
         }
 
         // Tracer la ligne
@@ -105,9 +114,18 @@ class GraphView(
         // Labels X
         // Le withIndex() permet de donner une pair (index, pair)
         for ((i, pair) in data.withIndex()) {
-            val x = i * widthStep + 50 // Ajout de la marge
-            // .first permet de récupérer le label de la paire
-            canvas.drawText(pair.first, x, height.toFloat() - 10f, textPaint)
+            if (data.size == 1) {
+                val text = pair.first
+                val textWidth = textPaint.measureText(text)
+                val x = width / 2f - textWidth / 2f
+                // .first permet de récupérer le label de la paire
+                canvas.drawText(pair.first, x, height.toFloat() - 10f, textPaint)
+            } else {
+                val text = pair.first
+                val textWidth = textPaint.measureText(text)
+                val x = i * widthStep - textWidth / 2f + 100f // Ajout de la marge
+                canvas.drawText(pair.first, x, height.toFloat() - 10f, textPaint)
+            }
         }
 
         // Labels Y
