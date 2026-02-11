@@ -520,3 +520,68 @@ footer .info {
     text-align: center;
     margin-bottom: 10px;
 }
+
+/* Conteneur de la carte de résultat */
+.vma-card {
+    background: #ffffff; /* Fond blanc */
+    border-radius: 20px;
+    padding: 25px;
+    margin: 25px auto;
+    max-width: 450px;
+    text-align: center;
+    border: 2px solid var(--grey);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Texte "VMA réelle" */
+.vma-label {
+    margin: 0;
+    color: var(--black);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Chiffre de la VMA arrondie (élément central) */
+.vma-main-val {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--blue);
+    margin: 10px 0;
+}
+
+/* Badge de parcours */
+.parcours-badge {
+    padding: 12px;
+    border-radius: 10px;
+    color: black;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Classes de couleurs dynamiques */
+.bg-jaune { background-color: #f1c40f; }
+.bg-vert  { background-color: #2ecc71; }
+.bg-bleu  { background-color: #3498db; }
+.bg-rouge { background-color: #e74c3c; }
+.bg-noir  { background-color: #2d3436; }
+
+/* Conteneur du bouton de sauvegarde */
+#zone-actions-vma {
+    text-align: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Bouton vert pour l'épreuve finale */
+#btn-save-vma {
+    display: none; /* Caché par défaut, activé par le JS */
+    background-color: #2ecc71;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #27ae60;
+}
+#btn-save-vma:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px);
+}

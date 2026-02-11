@@ -45,6 +45,7 @@ async function chargerElevesDeLaClasse(nomClasse) {
     try {
         const response = await fetch(`/api/eleves/par-classe/${nomClasse}`);
         const eleves = await response.json();
+
         btnRetourBinomes.style.display = "block"; // Afficher le bouton de retour du binôme
 
         // On vide le conteneur pour afficher les élèves

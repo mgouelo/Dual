@@ -35,4 +35,7 @@ interface EleveDAO {
 
     @Query("SELECT * FROM Eleve WHERE LOWER(prenom) = LOWER(:prenom) AND LOWER(nom) = LOWER(:nom) LIMIT 1")
     fun findByName(prenom: String, nom: String): Eleve?
+
+    @Query("UPDATE Eleve SET vma = :vma WHERE id_eleve = :id")
+    suspend fun updateVma(id: Int, vma: Float): Int
 }

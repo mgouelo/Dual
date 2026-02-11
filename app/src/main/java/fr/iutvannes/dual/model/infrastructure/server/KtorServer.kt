@@ -17,9 +17,11 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -34,6 +36,16 @@ data class EventDTO(
     val type: String,
     val studentId: String? = null,
     val payload: JsonObject? = null
+)
+@Serializable
+data class VmaUpdate(val id: Int, val vma: Float)
+
+@Serializable
+data class EleveDTO(
+    val id_eleve: Int,
+    val nomComplet: String,
+    val genre: String,
+    val vma: Float
 )
 
 /**
@@ -110,20 +122,44 @@ fun Application.module(appContext: Context) {
             call.respond(nomsClasses)
         }
 
-        // Route modifiée pour envoyer des objets élèves complets
+        // Route pour envoyer les élèves d'une classe donnée (paramètre dans l'URL)
         get("/api/eleves/par-classe/{nomClasse}") {
-            val nomClasse = call.parameters["nomClasse"] ?: ""
-            val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
+            val nom = call.parameters["nomClasse"] ?: ""
+            Log.d("KtorDebug", "Requête reçue pour la classe : $nom") // Log de début
 
-            // On renvoie une liste d'objets avec nom, prenom, genre et vma
-            val dataEleves = eleves.map {
-                mapOf(
-                    "nomComplet" to "${it.prenom} ${it.nom.uppercase()}",
-                    "genre" to it.genre, // "F" ou "G"
-//                    "vma" to it.vma // Pour charger la VMA si déjà connue
-                )
+            try {
+                val eleves = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.EleveDao().getElevesByClasse(nom)
+                }
+
+                Log.d("KtorDebug", "Nombre d'élèves trouvés en BDD : ${eleves.size}") // Vérifie si la BDD est vide
+
+                val dataEleves = eleves.map {
+                    Log.d("KtorDebug", "Traitement de : ${it.prenom} (VMA: ${it.vma})") // Vérifie les valeurs individuelles
+                    EleveDTO(
+                        id_eleve = it.id_eleve,
+                        nomComplet = "${it.prenom} ${it.nom.uppercase()}",
+                        genre = it.genre,
+                        vma = it.vma
+                    )
+                }
+                call.respond(dataEleves)
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur critique route event : ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError)
             }
-            call.respond(dataEleves)
+        }
+
+        post("/api/eleves/update-vma") {
+            val req = call.receive<VmaUpdate>() // Ktor convertit le JSON direct en objet
+
+            val rows = DatabaseProvider.db.EleveDao().updateVma(req.id, req.vma)
+
+            if (rows > 0) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
 
         //Reçoit les événements des élèves
@@ -233,3 +269,4 @@ fun Application.module(appContext: Context) {
         }
     }
 }
+
