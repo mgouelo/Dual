@@ -1,8 +1,8 @@
 package fr.iutvannes.dual.infrastructure.persistence
 
 /**
- * Composant tampon entre le serveur HTTP & la base de données
- * Enregistre temporairement tous les évènements reçu
+ * Buffer component between the HTTP server and the database
+ * Temporarily logs all received events
  */
 class EventRepository {
 

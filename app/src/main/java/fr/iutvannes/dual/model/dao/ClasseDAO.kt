@@ -6,8 +6,8 @@ import androidx.room.Query
 import fr.iutvannes.dual.model.persistence.Classe
 
 /**
- * Interface DAO pour l'entité Classe.
- * Elle définit les méthodes d'accès aux données pour l'entité Classe.
+ * DAO interface for the Class entity.
+ * It defines the data access methods for the Class entity.
  *
  * @see Classe
  */
@@ -16,42 +16,42 @@ interface ClasseDAO {
 
 
     /**
-     * Insère une nouvelle classe dans la base de données.
+     * Inserts a new class into the database.
      *
-     * @param classe La classe à insérer.
+     * @param classe The class to insert.
      */
     @Insert
     suspend fun insert(classe: Classe): Long
 
     /**
-     * Supprime une classe existante dans la base de données.
+     * Deletes an existing class from the database.
      *
-     * @param idClasse L'identifiant de la classe à supprimer.
+     * @param idClasse The identifier of the class to delete.
      */
     @Query("DELETE FROM Classe WHERE id_classe = :idClasse")
     suspend fun delete(idClasse: Int): Int
 
     /**
-     * Récupère une classe par son nom.
+     * Retrieves a class by its name.
      *
-     * @param nomClasse Le nom de la classe à rechercher.
-     * @return La classe trouvée, ou null si aucune classe n'est trouvée.
+     * @param nomClasse The name of the class to search for.
+     * @return The found class, or null if no class is found.
      */
     @Query("SELECT * FROM Classe WHERE nom = :nomClasse")
     suspend fun getClasseByName(nomClasse: String): Classe?
 
     /**
-     * Récupère tous les noms de classes existantes dans la base de données.
+     * Retrieves all existing class names from the database.
      *
-     * @return Une liste de chaînes de caractères contenant les noms de classes.
+     * @return A list of strings containing the class names.
      */
     @Query("SELECT nom FROM Classe")
     suspend fun getClasses(): List<String>
 
     /**
-     * Récupère toutes les classes existantes dans la base de données.
+     * Retrieves all existing classes from the database.
      *
-     * @return Une liste de classes contenant toutes les classes existantes
+     * @return A class list containing all existing classes
      */
     @Query("SELECT * FROM Classe")
     fun getAllClasses(): List<Classe>

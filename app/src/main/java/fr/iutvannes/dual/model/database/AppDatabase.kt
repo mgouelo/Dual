@@ -14,7 +14,7 @@ import fr.iutvannes.dual.model.dao.SeanceDAO
 import fr.iutvannes.dual.model.persistence.Classe
 
 /**
- * Classe abstraite qui représente la base de données de l'application.
+ * An abstract class that represents the application's database.
  *
  * @see ClasseDAO
  * @see EleveDAO
@@ -35,35 +35,35 @@ import fr.iutvannes.dual.model.persistence.Classe
 abstract class AppDatabase : RoomDatabase() {
 
     /**
-     * Méthode abstraite qui retourne un objet de type [ClasseDAO].
+     * Abstract method that returns an object of type [ClasseDAO].
      *
      * @return [ClasseDAO]
      */
     abstract fun EleveDao(): EleveDAO
 
     /**
-     * Méthode abstraite qui retourne un objet de type [ProfDAO].
+     * Abstract method that returns an object of type [ProfDAO].
      *
      * @return [ProfDAO]
      */
     abstract fun profDAO() : ProfDAO
 
     /**
-     * Méthode abstraite qui retourne un objet de type [ResultatDAO].
+     * Abstract method that returns an object of type [ResultatDAO].
      *
      * @return [ResultatDAO]
      */
     abstract fun resultatDao(): ResultatDAO
 
     /**
-     * Méthode abstraite qui retourne un objet de type [SeanceDAO].
+     * Abstract method that returns an object of type [SeanceDAO].
      *
      * @return [SeanceDAO]
      */
     abstract fun seanceDao(): SeanceDAO
 
     /**
-     * Méthode abstraite qui retourne un objet de type [ClasseDAO].
+     * Abstract method that returns an object of type [ClasseDAO].
      *
      * @return [ClasseDAO]
      */

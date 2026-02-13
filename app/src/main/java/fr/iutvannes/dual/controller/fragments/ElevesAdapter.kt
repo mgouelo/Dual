@@ -9,25 +9,25 @@ import fr.iutvannes.dual.model.persistence.Eleve
 import fr.iutvannes.dual.R
 
 /**
- * Adapter pour la liste des élèves.
+ * Adapter for the student list.
  *
  * @see Eleve
  * @see R.layout.item_eleve
  *
- * @param onEdit Fonction appelée lorsque l'utilisateur clique sur le bouton "Modifier"
- * @param onDelete Fonction appelée lorsque l'utilisateur clique sur le bouton "Supprimer"
- * @return Adapter pour la liste des élèves
+ * @param onEdit Function called when the user clicks the "Edit" button
+ * @param onDelete Function called when the user clicks the "Delete" button
+ * @return Adapter for the student list
  */
 class ElevesAdapter(
     private val onEdit: (Eleve) -> Unit,
     private val onDelete: (Eleve) -> Unit
 ) : RecyclerView.Adapter<ElevesAdapter.VH>() {
 
-    /* Variable contenant la liste des élèves à afficher */
+    /* Variable containing the list of students to display */
     private var items: List<Eleve> = emptyList()
 
     /**
-     * Envoie la liste des élèves à afficher à l'adapter.
+     * Send the list of students to be displayed for adaptation.
      */
     fun submitList(newItems: List<Eleve>) {
         items = newItems
@@ -35,10 +35,10 @@ class ElevesAdapter(
     }
 
     /**
-     * Classe interne qui représente un élément de la liste.
+     * An internal class that represents an element of the list.
      *
-     * @param view Vue du layout item_eleve.xml
-     * @return ViewHolder contenant la vue de l'élément
+     * @param view View of the item_eleve.xml layout
+     * @return ViewHolder containing the view of the element
      */
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
         val tvNomPrenom: TextView = view.findViewById(R.id.tvNomPrenom)
@@ -48,11 +48,11 @@ class ElevesAdapter(
     }
 
     /**
-     * Création de la vue d'un élément de la liste.
+     * Creating a view of a list item.
      *
-     * @param parent Vue parent
-     * @param viewType Type de vue
-     * @return ViewHolder contenant la vue de l'élément
+     * @param parent Parent view
+     * @param viewType View type
+     * @return ViewHolder containing the view of the element
      */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val view = LayoutInflater.from(parent.context)
@@ -61,11 +61,11 @@ class ElevesAdapter(
     }
 
     /**
-     * Modification de la vue d'un élément de la liste.
+     * Modifying the view of a list item.
      *
-     * @param holder ViewHolder contenant la vue de l'élément
-     * @param position Position de l'élément dans la liste
-     * @return ViewHolder contenant la vue de l'élément
+     * @param holder ViewHolder containing the item's view
+     * @param position Item's position in the list
+     * @return ViewHolder containing the item's view
      */
     override fun onBindViewHolder(holder: VH, position: Int) {
         val eleve = items[position]
@@ -79,9 +79,9 @@ class ElevesAdapter(
     }
 
     /**
-     * Retourne la taille de la liste.
+     * Returns the size of the list.
      *
-     * @return Taille de la liste
+     * @return List Size
      */
     override fun getItemCount(): Int = items.size
 }

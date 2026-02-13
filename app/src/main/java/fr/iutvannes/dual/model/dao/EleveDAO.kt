@@ -4,8 +4,8 @@ import androidx.room.*
 import fr.iutvannes.dual.model.persistence.Eleve
 
 /**
- * Interface DAO pour l'entité Eleve.
- * Elle définit les méthodes d'accès aux données pour l'entité Eleve.
+ * DAO interface for the Student entity.
+ * It defines the data access methods for the Student entity.
  *
  * @see Eleve
  */
@@ -13,74 +13,74 @@ import fr.iutvannes.dual.model.persistence.Eleve
 interface EleveDAO {
 
     /**
-     * Insère un nouveau élève dans la base de données.
+     * Inserts a new student into the database.
      *
-     * @param eleve L'élève à insérer
+     * @param eleve The student to be inserted
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(eleve: Eleve): Long
 
     /**
-     * Supprime un élève de la base de données.
+     * Deletes a student from the database.
      *
-     * @param idEleve L'ID de l'élève à supprimer
+     * @param idEleve The student ID to be deleted
      */
     @Query("DELETE FROM Eleve WHERE id_eleve = :idEleve")
     suspend fun delete(idEleve: Int): Int
 
     /**
-     * Récupère tous les élèves de la base de données.
+     * Retrieves all students from the database.
      *
-     * @return Une liste de tous les élèves
+     * @return A list of all students
      */
     @Query("SELECT * FROM Eleve")
     suspend fun getAll(): List<Eleve>
 
     /**
-     * Récupère un élève par son ID.
+     * Retrieves a student by their ID.
      *
-     * @param idEleve L'ID de l'élève à récupérer
-     * @return L'élève correspondant à l'ID
+     * @param idEleve The student ID to be deleted
+     * @return The student corresponding to the ID
      */
     @Query("SELECT * FROM Eleve WHERE id_eleve = :idEleve")
     suspend fun getEleveById(idEleve: Int): Eleve?
 
     /**
-     * Met à jour un élève dans la base de données.
+     * Updates a student in the database.
      *
-     * @param eleve L'élève à mettre à jour
+     * @param eleve The student to update
      */
     @Update
     suspend fun update(eleve: Eleve): Int
 
-    //WARNING : A REVOIR AVEC L'EQUIPE CAR METHODE INNUTILE
+    // WARNING: REVIEW WITH THE TEAM AS THIS METHOD IS USELESS
     @Query("SELECT DISTINCT classe FROM Eleve")
     fun getClasses(): List<String>
 
     /**
-     * Récupère tous les élèves d'une classe spécifique.
+     * Retrieves all students from a specific class.
      *
-     * @param classe Le nom de la classe à rechercher
+     * @param classe The name of the class to search for
      */
     @Query("SELECT * FROM Eleve WHERE classe = :classe")
     fun getElevesByClasse(classe: String): List<Eleve>
 
     /**
-     * Supprime tous les élèves de la table.
+     * Remove all students from the table.
      */
     @Query("DELETE FROM Eleve")
     fun clearTable()
 
-    //WARNING METHODE DEJA EXISTANT CE NOMMANT getAll
+    // WARNING: METHOD ALREADY EXISTS, THIS IS NAMED getAll
     @Query("SELECT * FROM Eleve")
     fun getAllEleves(): List<Eleve>
 
     /**
-     * Récupère un élève par son prénom et nom.
+     * Retrieve a student by their first and last name.
      *
-     * @param prenom Le prénom de l'élève à rechercher
-     * @param nom Le nom de l'élève à rechercher
-     * @return L'élève correspondant au prénom et nom
+     * @param prenom The first name of the student to search for
+     * @param nom The name of the student to search for
+     * @return The student corresponding to the first and last name
      */
     @Query("SELECT * FROM Eleve WHERE LOWER(prenom) = LOWER(:prenom) AND LOWER(nom) = LOWER(:nom) LIMIT 1")
     fun findByName(prenom: String, nom: String): Eleve?

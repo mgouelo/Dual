@@ -4,8 +4,8 @@ import androidx.room.*
 import fr.iutvannes.dual.model.persistence.Seance
 
 /**
- * Interface DAO pour l'entité Seance.
- * Elle définit les méthodes d'accès aux données pour l'entité Seance.
+ * DAO interface for the Session entity.
+ * It defines the data access methods for the Session entity.
  *
  * @see Seance
  */
@@ -13,42 +13,42 @@ import fr.iutvannes.dual.model.persistence.Seance
 interface SeanceDAO {
 
     /**
-     * Insère une nouvelle séance dans la base de données.
+     * Inserts a new session into the database.
      *
-     * @param seance La séance à insérer.
+     * @param seance The session to be inserted.
      */
     @Insert
     suspend fun insert(seance: Seance): Long
 
     /**
-     * Supprime une séance de la base de données.
+     * Deletes a session from the database.
      *
-     * @param idSeance L'identifiant de la séance à supprimer.
+     * @param idSeance The session ID to be deleted.
      */
     @Query("DELETE FROM Seance WHERE id_seance = :idSeance")
     suspend fun delete(idSeance: Int): Int
 
     /**
-     * Récupère toutes les séances de la base de données.
+     * Retrieves all sessions from the database.
      *
-     * @return Une liste de toutes les séances de la base de données.
+     * @return A list of all sessions from the database.
      */
     @Query("SELECT * FROM Seance")
     suspend fun getAll(): List<Seance>
 
     /**
-     * Récupère une séance par son identifiant.
+     * Retrieve a session using its identifier.
      *
-     * @param idSeance L'identifiant de la séance à récupérer.
-     * @return La séance correspondante ou null si elle n'existe pas.
+     * @param idSeance The session ID to retrieve.
+     * @return The corresponding session, or null if it does not exist.
      */
     @Query("SELECT * FROM Seance WHERE id_seance = :idSeance")
     suspend fun getSeanceById(idSeance: Int): Seance?
 
     /**
-     * Met à jour une séance dans la base de données.
+     * Updates a session in the database.
      *
-     * @param seance La séance à mettre à jour.
+     * @param seance The session needs updating.
      */
     @Update
     suspend fun update(seance: Seance): Int

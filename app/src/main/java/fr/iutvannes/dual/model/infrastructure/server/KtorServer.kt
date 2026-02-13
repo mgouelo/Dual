@@ -19,15 +19,13 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Event test eleve -> server
+ * Event test student -> server
  */
 @Serializable
 data class EventDTO(
@@ -37,13 +35,24 @@ data class EventDTO(
 )
 
 /**
- * Démarre/arrête le serveur Ktor (HTTP) et installe les plugins json, logs, cors...
- * Injecte les dépendances dans les routes
+ * Starts/stops the Ktor server (HTTP) and installs the JSON, logs, CORS plugins...
+ * Injects dependencies into routes
  */
 object KtorServer {
+
+    /* Variable for the server engine */
     private var engine: EmbeddedServer<*, *>? = null
+
+    /* Variable for the application context */
     private lateinit var appContext: Context
 
+    /**
+     * Starts the server
+     *
+     * @param context the application context
+     * @param port the port to listen on
+     * @param wait if true, the server will block the current thread
+     */
     fun start(context: Context, port: Int = 8080, wait: Boolean = false) {
         if (engine != null) {
             return
@@ -54,6 +63,9 @@ object KtorServer {
         }.also { it.start(wait = wait) }
     }
 
+    /**
+     * Stops the server
+     */
     fun stop() {
         engine?.stop()
         engine = null
@@ -61,6 +73,12 @@ object KtorServer {
 }
 
 // helper MIME
+/**
+ * Returns the content type for the given path
+ *
+ * @param path the path to analyze
+ * @return the content type
+ */
 private fun contentTypeFor(path: String): ContentType = when (path.substringAfterLast('.', "")) {
     "html" -> ContentType.Text.Html
     "css"  -> ContentType("text", "css")
@@ -75,6 +93,8 @@ private fun contentTypeFor(path: String): ContentType = when (path.substringAfte
 
 /**
  * Modules Ktor
+ *
+ * @param appContext the application context
  */
 fun Application.module(appContext: Context) {
 
@@ -89,13 +109,14 @@ fun Application.module(appContext: Context) {
     }
     install(Compression) { gzip() }
 
-    // bus d'évènement pour le temps réel
+    // Event bus for real time
     val liveBus = MutableSharedFlow<EventDTO>(extraBufferCapacity = 64)
 
     routing {
+        // Route to check if the server is running
         get("/ping") { call.respond(mapOf("status" to "ok")) }
 
-        // URL à mettre dans le QR
+        // URL to put in the QR code
         get("/qr-url") {
             val host = call.request.host()
             val port = call.request.port()
@@ -103,14 +124,14 @@ fun Application.module(appContext: Context) {
             call.respond(mapOf("join" to base))
         }
 
-        //Route pour envoyer toutes les classes existantes
+        // Route to send all existing classes
         get("/api/classes/all") {
             val classes = DatabaseProvider.db.classeDao().getAllClasses()
             val nomsClasses = classes.map { it.nom }
             call.respond(nomsClasses)
         }
 
-        //Route pour envoyer les élèves d'UNE classe précise
+        // Route to send students from ONE specific class
         get("/api/eleves/par-classe/{nomClasse}") {
             val nomClasse = call.parameters["nomClasse"] ?: ""
             val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
@@ -118,32 +139,32 @@ fun Application.module(appContext: Context) {
             call.respond(nomsComplets)
         }
 
-        //Reçoit les événements des élèves
+        // Receives student events
         post("/event") {
             try {
-                //On reçoit le texte brut pour éviter les erreurs de Serializer
+                // We receive the raw text to avoid Serializer errors
                 val body = call.receiveText()
                 Log.d("KtorServer", "Texte brut reçu : $body")
 
-                //Analyse manuelle du JSON
+                // Manual analysis of the JSON
                 val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
                 val jsonElement = jsonParser.parseToJsonElement(body).jsonObject
 
                 val type = jsonElement["type"]?.jsonPrimitive?.content ?: ""
                 val studentId = jsonElement["studentId"]?.jsonPrimitive?.content ?: ""
 
-                //Logique métier : On traite le tir
+                // Business logic: We process the shot
                 if (type == "TIR_RESULTAT_6EME") {
                     val payload = jsonElement["payload"]?.jsonObject
                     val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
                     val scoreInt = scoreRaw.toIntOrNull() ?: 0
 
-                    //On sépare Prénom et Nom
+                    // We separate First Name and Last Name
                     val parts = studentId.split(" ")
                     val prenom = parts.getOrNull(0) ?: ""
                     val nom = parts.getOrNull(1) ?: ""
 
-                    //Insertion bdd
+                    // Database insertion
                     val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
                     if (eleve != null) {
                         val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
@@ -167,11 +188,13 @@ fun Application.module(appContext: Context) {
             }
         }
 
+        // Route to send real time events
         get("/") {
             val bytes = appContext.assets.open("eleve/index.html").use { it.readBytes() }
             call.respondBytes(bytes, contentType = ContentType.Text.Html)
         }
 
+        // Route to send real time events
         get("/{path...}") {
             val segments = call.parameters.getAll("path") ?: emptyList()
             val rest = segments.joinToString("/")
@@ -186,13 +209,13 @@ fun Application.module(appContext: Context) {
             }
         }
 
-        // Route d'export CSV pour le professeur
+        // CSV export route for the teacher
         get("/api/admin/export") {
             try {
-                //Récupération des données depuis la base Room
+                // Retrieving data from the Room database
                 val resultats = DatabaseProvider.db.resultatDao().getAllResultats()
 
-                //Construction du contenu CSV
+                // CSV Content Construction
                 val csv = StringBuilder("prenom;nom;genre;cibles_touchees\n")
 
                 resultats.forEach { res ->
@@ -207,7 +230,7 @@ fun Application.module(appContext: Context) {
                     }
                 }
 
-                //Configuration des Headers pour déclencher le téléchargement
+                // Configuring Headers to Trigger Download
                 call.response.header(
                     HttpHeaders.ContentDisposition,
                     ContentDisposition.Attachment.withParameter(
@@ -215,7 +238,7 @@ fun Application.module(appContext: Context) {
                     ).toString()
                 )
 
-                //Envoi de la réponse
+                // Sending the reply
                 call.respondText(csv.toString(), ContentType.Text.CSV)
 
             } catch (e: Exception) {

@@ -17,10 +17,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment pour ajouter ou modifier un élève.
- * Ce fragment est utilisé pour créer un nouvel élève ou pour modifier les informations d'un élève
- * existant en y précisant les informations utiles.
- * Le layout utilisé est celui de fragment_ajout_eleve.xml.
+ * Fragment for adding or modifying a student.
+ * This fragment is used to create a new student or to modify the information of an existing student.
+ * By specifying the necessary information.
+ * The layout used is that of fragment_ajout_eleve.xml.
  *
  * @see Eleve
  * @see AppDatabase
@@ -28,20 +28,20 @@ import kotlinx.coroutines.withContext
  */
 class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
-    /* Variable permettant de stocker le nom de la classe. */
+    /* Variable for storing the class name. */
     private var classeNom: String? = null
 
-    /* Variable permettant de stocker l'ID de l'élève. */
+    /* Variable used to store the student ID. */
     private var eleveID: Int = -1
 
     // init db via provider
     val db = DatabaseProvider.db
 
     /**
-     * Méthode appelée lorsque le fragment est créé.
-     * Récupère les données fournies lors de la création du fragment.
+     * Method called when the fragment is created.
+     * Retrieves the data provided during fragment creation.
      *
-     * @param savedInstanceState Les données sauvegardées du fragment.
+     * @param savedInstanceState The saved data of the fragment..
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,12 +50,12 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
     }
 
     /**
-     * Méthode appelée lorsque le fragment est créé.
-     * Gère l'ajout ou la modification d'un élève en fonction des données fournies.
-     * Ainsi que les clics sur les boutons de validation et de retour.
+     * Method called when the fragment is created.
+     * Handles adding or modifying a student based on the provided data.
+     * As well as clicks on the submit and back buttons.
      *
-     * @param view La vue du fragment
-     * @param savedInstanceState Les données sauvegardées du fragment.
+     * @param view The fragment view
+     * @param savedInstanceState The saved fragment data.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -66,14 +66,14 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
         val buttonBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
         val buttonValider = view.findViewById<Button>(R.id.btn_valider)
 
-        if (eleveID != -1) { // id différent de celui par défaut --> élève déjà existant --> mode édition
+        if (eleveID != -1) { // ID different from the default one --> student already exists edit mode
             buttonValider.text = "Enregistrer les modifications"
 
-            // Ouverture d'une coroutine sur le thread IO pour effectuer l'opération de lecture de l'élève
+            // Opening a coroutine on the IO thread to perform the student read operation
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                val eleveExist = db.EleveDao().getEleveById(eleveID) // sécruité : on vérifie quand même existence de l'élève
+                val eleveExist = db.EleveDao().getEleveById(eleveID) // Security: we still verify the student's existence.
                 if (eleveExist != null) {
-                    // Retour sur le thread principal pour mettre à jour l'interface utilisateur
+                    // Return to the main thread to update the user interface.
                     withContext(Dispatchers.Main) {
                         inputPrenom.setText(eleveExist.prenom)
                         inputNom.setText(eleveExist.nom)
@@ -88,23 +88,23 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
             }
         }
 
-        // Gestion du clic sur le bouton de retour
+        // Managing clicks on the back button
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // Gestion du clic sur le bouton de validation
+        // Managing the click on the validation button
         buttonValider.setOnClickListener {
 
             val prenom = inputPrenom.text.toString().trim()
             val nom = inputNom.text.toString().trim()
             val selectedId = groupSexe.checkedRadioButtonId
 
-            // Déterminer le genre en fonction de l'ID
+            // Determine the gender based on the ID
             val genre = when (selectedId) {
                 R.id.radio_homme -> "M"
                 R.id.radio_femme -> "F"
-                else -> "" // Rien n'est coché
+                else -> "" // Nothing is checked.
             }
 
             if (prenom.isEmpty() || nom.isEmpty() || genre.isEmpty()) {
@@ -112,7 +112,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
                 return@setOnClickListener
             }
 
-            // Ouverture d'une coroutine sur le thread IO pour effectuer l'opération d'insertion ou de modification de l'élève
+            // Opening a coroutine on the I/O thread to perform the student insertion or modification operation
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
                 val eleve = Eleve(
@@ -124,24 +124,24 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
 
                 if (eleveID != -1) {
                     eleve.id_eleve = eleveID
-                    // Modification de l'élève
+                    // Student modification
                     db.EleveDao().update(eleve)
 
-                    // Retour sur le thread principal pour afficher un message de succès de modification
+                    // Return to the main thread to display a successful edit message
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Elève modifié !", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    // Ajout d'un nouvel élève
+                    // Adding a new student
                     db.EleveDao().insert(eleve)
-                    // Retour sur le thread principal pour afficher un message de succès d'ajout
+                    // Return to the main thread to display a successful addition message
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Elève ajouté !", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 withContext(Dispatchers.Main) {
-                    //Retour à ElevesFragment (la liste des élèves)
+                    // Return to ElevesFragment (the list of students)
                     requireActivity().supportFragmentManager.popBackStack()
                 }
             }
@@ -149,16 +149,16 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
     }
 
     /**
-     * Méthode statique pour créer une nouvelle instance de ce fragment.
+     * A static method to create a new instance of this fragment.
      *
-     * @return Un nouvel objet AjoutFragment
+     * @return A new AddFragment object @return A new AddFragment object
      */
     companion object {
         /**
-         * Méthode statique pour créer une nouvelle instance de ce fragment.
+         * Static method to create a new instance of this fragment.
          *
-         * @param classeNom Le nom de la classe
-         * @return Un nouvel objet AjoutFragment
+         * @param classeNom The name of the class
+         * @return A new AddFragment object
          */
         fun newInstance(classeNom: String): AjoutFragment {
             val fragment = AjoutFragment()
@@ -169,11 +169,11 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
         }
 
         /**
-         * Méthode statique pour créer une nouvelle instance de ce fragment en mode édition.
+         * A static method to create a new instance of this fragment in edit mode.
          *
-         * @param classeNom Le nom de la classe
-         * @param eleveID L'ID de l'élève à modifier
-         * @return Un nouvel objet AjoutFragment en mode édition
+         * @param classeNom The name of the class
+         * @param eleveID The student ID to modify
+         * @return A new AddFragment object in edit mode
          */
         fun newInstanceForEdit(classeNom: String, eleveID: Int): AjoutFragment {
             val fragment = AjoutFragment()

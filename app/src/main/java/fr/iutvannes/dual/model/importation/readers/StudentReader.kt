@@ -5,26 +5,26 @@ import java.io.InputStream
 
 
 /**
- * Interface lecture des tableurs
+ * Spreadsheet reading interface
  *
  * @see StudentDraft
  */
 interface StudentReader {
 
     /**
-     * Vérifie si le fichier peut être lu par ce lecteur
+     * Checks if the file can be read by this reader
      *
-     * @param mimeType le type MIME du fichier
-     * @param fileName le nom du fichier
-     * @return vrai si le fichier peut être lu, faux sinon
+     * @param mimeType the MIME type of the file
+     * @param fileName the name of the file
+     * @return true if the file can be read, false otherwise
      */
     fun supports(mimeType: String?, fileName: String): Boolean
 
     /**
-     * Méthode de lecture du fichier
+     * File reading method
      *
-     * @param input le flux d'entrée
-     * @return la liste des brouillons à importer
+     * @param input the input stream
+     * @return the list of drafts to import
      */
     fun read(input: InputStream): List<StudentDraft>
 }

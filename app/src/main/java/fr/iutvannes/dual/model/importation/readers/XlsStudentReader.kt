@@ -8,18 +8,18 @@ import java.text.Normalizer
 import kotlin.math.max
 
 /**
- * Classe de lecture de tableur d'extension .xls / .xlsx (Excel) pour l'importation des élèves
+ * Classroom for reading spreadsheets with .xls / .xlsx (Excel) extensions for importing students
  *
  * @see StudentReader
  */
 class XlsStudentReader : StudentReader {
 
     /**
-     * Vérifie si le fichier peut être lu par ce lecteur
+     * Checks if the file can be read by this reader
      *
-     * @param mimeType le type MIME du fichier
-     * @param fileName le nom du fichier
-     * @return vrai si le fichier peut être lu
+     * @param mimeType the MIME type of the file
+     * @param fileName the name of the file
+     * @return true if the file can be read
      */
     override fun supports(mimeType: String?, fileName: String): Boolean {
         val n = fileName.lowercase()
@@ -31,34 +31,34 @@ class XlsStudentReader : StudentReader {
     }
 
     /**
-     * Méthode de lecture du fichier
+     * File reading method
      *
-     * @param input le flux d'entrée
-     * @return la liste des brouillons à importer
+     * @param input the input stream
+     * @return the list of drafts to import
      */
     override fun read(input: InputStream): List<StudentDraft> {
         WorkbookFactory.create(input).use { wb ->
             val sheet = wb.getSheetAt(0) ?: return emptyList()
 
-            // lecture de l'en-tête
+            // Reading the header
             val headerRowIndex = sheet.firstRowNum
             val headerRow = sheet.getRow(headerRowIndex)
                 ?: throw IllegalArgumentException("Erreur lecture : ligne d'en-tête introuvable ; la feuille est vide")
 
             val headerByIndex: Map<Int, String> = readHeader(headerRow)
 
-            // On cherche les colonnes Nom et Prénom
+            // We are looking for the columns Name and Surname
             val firstIdx = findColumnIndex(headerByIndex, setOf("prénom", "prenom", "first name", "firstname", "givenname"))
                 ?: throw IllegalArgumentException("Colonne 'Prénom' inexistente")
             val lastIdx  = findColumnIndex(headerByIndex, setOf("nom", "last name", "lastname", "surname"))
                 ?: throw IllegalArgumentException("Colonne 'Nom' inexistente")
             val classIdx = findColumnIndex(headerByIndex, setOf("classe", "class", "group")) // On essaye de chercher aussi une colonne classe
-            // Nouvelle détection pour le genre
+            // New detection for the genus
             val idxGenre = findColumnIndex(headerByIndex, setOf("genre", "sexe", "gender", "sex"))
 
-            // On parcours les lignes associées aux colones trouvées
+            // We iterate through the rows associated with the columns found.
             val out = mutableListOf<StudentDraft>()
-            val formatter = DataFormatter() // rend les nombres/dates en texte "humain"
+            val formatter = DataFormatter() // Renders numbers/dates as "human" text
             val lastRow = sheet.lastRowNum
             for (r in (headerRowIndex + 1)..lastRow) {
                 val row = sheet.getRow(r) ?: continue
@@ -67,11 +67,11 @@ class XlsStudentReader : StudentReader {
                 val last  = cellString(row.getCell(lastIdx),  formatter).trim()
                 val cls   = classIdx?.let { cellString(row.getCell(it), formatter).trim() }.orEmpty()
 
-                // Lecture du genre (on normalise pour avoir "M" ou "F")
+                // Gender reading (normalized to get "M" or "F")
                 val rawGenre = idxGenre?.let { cellString(row.getCell(it), formatter).trim() }.orEmpty()
                 val finalGenre = mapToGenderCode(rawGenre)
 
-                // on ignore les lignes vides
+                // Empty lines are ignored
                 if (first.isBlank() && last.isBlank()) {
                     continue
                 }
@@ -80,20 +80,20 @@ class XlsStudentReader : StudentReader {
                     firstName = first,
                     lastName  = last,
                     genre =  finalGenre,
-                    classe   = cls.ifBlank { null } // null si non trouvé
+                    classe   = cls.ifBlank { null } // null if not found
                 )
             }
             return out
         }
     }
 
-    // --- helpers : Permettent à l'import d'être tolérant et de fonctionner dans plusieurs cas de figure ---
+    // --- helpers : Allows the import to be tolerant and to function in several scenarios ---
     /**
-     * Lis les en-tête du fichier et construit une table de correspondance
-     * Position de la colonne (Int) : nom de l'en-tête normalisé (String)
+     * Read the file headers and build a lookup table
+     * Column position (Int): Normalized header name (String)
      *
-     * @param row la ligne d'en-tête
-     * @return la table de correspondance
+     * @param row the header row
+     * @return the lookup table
      */
     private fun readHeader(row: Row): Map<Int, String> {
         val map = mutableMapOf<Int, String>()
@@ -108,20 +108,20 @@ class XlsStudentReader : StudentReader {
     }
 
     /**
-     * Normalisation du texte (ex : Prénom --> prenom)
+     * Text normalization (e.g., First Name --> first name)
      *
-     * @param cell la cellule à normaliser
-     * @return le texte normalisé
+     * @param cell the cell to normalize
+     * @return the normalized text
      */
     private fun rawHeader(cell: Cell): String =
         normalizeAscii(cell.toString())
 
     /**
-     * Trouver la position de colonne correspondant à un alias
+     * Find the column position corresponding to an alias
      *
-     * @param headerByIndex la table de correspondance
-     * @param aliases les aliases à rechercher
-     * @return la position de la colonne ou null si pas trouvé
+     * @param headerByIndex the lookup table
+     * @param aliases the aliases to search for
+     * @return the column position or null if not found
      */
     private fun findColumnIndex(headerByIndex: Map<Int, String>, aliases: Set<String>): Int? {
         val normalized = aliases.map { normalizeAscii(it) }.toSet()
@@ -129,27 +129,27 @@ class XlsStudentReader : StudentReader {
     }
 
     /**
-     * Renvoie les cellules en chaine de caractère
+     * Returns the cells as a string
      *
-     * @param cell la cellule à convertir
-     * @param formatter le formatteur de données
-     * @return la chaine de caractère formattée
+     * @param cell the cell to convert
+     * @param formatter the data formatter
+     * @return the formatted string
      */
     private fun cellString(cell: Cell?, formatter: DataFormatter): String {
         if (cell == null) return ""
-        // DataFormatter gère les types (numérique, date, texte…) et applique le format Excel
+        // DataFormatter handles data types (numeric, date, text, etc.) and applies the Excel format.
         return formatter.formatCellValue(cell).orEmpty()
     }
 
     /**
-     * Normalisation du texte :
-     * minuscule, sans accent, espace classique
+     * Text normalization:
+     * lowercase, no accents, standard space
      *
-     * @param s la chaine à normaliser
-     * @return la chaine normalisée
+     * @param s the string to normalize
+     * @return the normalized string
      */
     private fun normalizeAscii(s: String): String {
-        // trim + lowercase + enlever accents + compacter les espaces
+        // trim + lowercase + remove accents + compact spaces
         val lowered = s.trim().lowercase()
         val noAccents = Normalizer.normalize(lowered, Normalizer.Form.NFD)
             .replace("\\p{Mn}+".toRegex(), "")
@@ -157,17 +157,17 @@ class XlsStudentReader : StudentReader {
     }
 
     /**
-     * Convertit les entrées Xls (homme, garçon, M, femme, etc.) en "M" ou "F"
+     * Converts XLS entries (male, boy, M, female, etc.) to "M" or "F"
      *
-     * @param s la chaine à convertir
-     * @return "M" ou "F"
+     * @param s the string to convert
+     * @return "M" or "F"
      */
     private fun mapToGenderCode(s: String): String {
         val clean = s.trim().uppercase()
         return when {
             clean.startsWith("H") || clean.startsWith("M") || clean.startsWith("G") -> "M"
             clean.startsWith("F") -> "F"
-            else -> "M" // Valeur par défaut
+            else -> "M" // Default value
         }
     }
 }

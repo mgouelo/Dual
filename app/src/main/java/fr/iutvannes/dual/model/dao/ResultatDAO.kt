@@ -4,8 +4,8 @@ import androidx.room.*
 import fr.iutvannes.dual.model.persistence.Resultat
 
 /**
- * Interface DAO pour l'entité Resultat.
- * Elle définit les méthodes d'accès aux données pour l'entité Resultat.
+ * DAO interface for the Result entity.
+ * It defines the data access methods for the Result entity.
  *
  * @see Resultat
  */
@@ -13,50 +13,50 @@ import fr.iutvannes.dual.model.persistence.Resultat
 interface ResultatDAO {
 
     /**
-     * Insère un nouveau résultat dans la base de données.
+     * Inserts a new result into the database.
      *
-     * @param resultat Le résultat à insérer
+     * @param resultat The result to be inserted
      */
     @Insert
     suspend fun insert(resultat: Resultat): Long
 
     /**
-     * Supprime un résultat de la base de données.
+     * Deletes a result from the database.
      *
-     * @param idResultat L'identifiant du résultat à supprimer
+     * @param idResultat The ID of the result to be deleted
      */
     @Query("DELETE FROM Resultat WHERE id_resultat = :idResultat")
     suspend fun delete(idResultat: Int): Int
 
     /**
-     * Récupère tous les résultats de la base de données.
+     * Retrieves all results from the database.
      *
-     * @return Une liste de tous les résultats
+     * @return A list of all results
      */
     @Query("SELECT * FROM Resultat")
     suspend fun getAllResultats(): List<Resultat>
 
     /**
-     * Récupère un résultat par son identifiant.
+     * Retrieves a result by its identifier.
      *
-     * @param idResultat L'identifiant du résultat à récupérer
-     * @return Le résultat correspondant à l'identifiant, ou null si aucun résultat n'est trouvé
+     * @param idResultat The ID of the result to retrieve
+     * @return The result corresponding to the identifier, or null if no result is found
      */
     @Query("SELECT * FROM Resultat WHERE id_resultat = :idResultat")
     suspend fun getResultatById(idResultat: Int): Resultat?
 
     /**
-     * Met à jour un résultat existant dans la base de données.
+     * Updates an existing result in the database.
      *
-     * @param resultat Le résultat à mettre à jour
+     * @param resultat The result to be updated
      */
     @Update
     suspend fun update(resultat: Resultat): Int
 
     /**
-     * Compte le nombre de résultats dans la base de données.
+     * Count the number of results in the database.
      *
-     * @return Le nombre de résultats
+     * @return The number of results
      */
     @Query("SELECT COUNT(*) FROM Resultat")
     fun getCount(): Int

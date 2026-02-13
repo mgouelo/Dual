@@ -2,50 +2,65 @@ package fr.iutvannes.dual.controller
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.View // Import pour gérer la visibilité (View.VISIBLE, View.GONE)
+import android.view.View // Import to manage visibility (View.VISIBLE, View.GONE)
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.fragments.ConnexionFragment
 import fr.iutvannes.dual.controller.fragments.ClassesFragment
-import fr.iutvannes.dual.controller.fragments.InscriptionFragment
 import fr.iutvannes.dual.controller.fragments.ProfilFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
 import fr.iutvannes.dual.model.database.AppDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.text.replace
 
+/**
+ * Activité principale de l'application.
+ *
+ * @see ConnexionFragment
+ * @see ClassesFragment
+ * @see ProfilFragment
+ * @see TableauDeBordFragment
+ * @see AppDatabase
+ * @see R.layout.activity_main
+ */
 class MainActivity : AppCompatActivity() {
 
-    // Vues pour la barre de navigation et son conteneur
+    // Views for the navigation bar and its container
+
+    /* Variable to manage the navigation bar */
     private lateinit var navBarContainer: ConstraintLayout
+
+    /* Variable to manage the navigation buttons */
     private lateinit var navHomeButton: LinearLayout
+
+    /* Variable to manage the navigation buttons */
     private lateinit var navClassesButton: LinearLayout
+
+    /* Variable to manage the top bar */
     private lateinit var topBarContainer: ConstraintLayout
 
-    /** SharedPreferences pour la connexion cela permet de garder l'email même après un redémarrage */
+    /* SharedPreferences for the connection allows you to keep your email even after a restart */
     private lateinit var sharedPref: SharedPreferences
-    /** Base de données */
+
+    /* Database */
     private lateinit var db: AppDatabase
 
-
+    /**
+     * Method called when the activity is created.
+     *
+     * @param savedInstanceState Saved state data
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Code pour le plein écran...
+        // Code for full screen...
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val insetsController = WindowInsetsControllerCompat(window, window.decorView)
         insetsController.hide(WindowInsetsCompat.Type.systemBars())
@@ -54,24 +69,23 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        // Listener pour le bouton de profil
+        // Listener for the profile button
         val profileButton = findViewById<ImageButton>(R.id.profileImage)
         profileButton.setOnClickListener {
             showFragment(ProfilFragment(), false, false)
         }
 
-        // --- GESTION DE LA NAVIGATION ---
-
-        // Récupérer les vues globales de la barre de navigation
+        // --- NAVIGATION MANAGEMENT ---
+        // Retrieve global views of the navigation bar
         navBarContainer = findViewById(R.id.bottomNav)
         navHomeButton = findViewById(R.id.nav_home_button)
         navClassesButton = findViewById(R.id.nav_classes_button)
 
-        // --- GESTION DU PROFIL ---
+        // --- PROFILE MANAGEMENT ---
         topBarContainer = findViewById(R.id.topBar)
 
 
-        // Définir les actions des clics
+        // Define the actions of clicks
         navHomeButton.setOnClickListener {
             if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) !is TableauDeBordFragment) {
                 showFragment(TableauDeBordFragment(), true, true)
@@ -83,11 +97,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Initialiser la base
+        // Initialize the database
         DatabaseProvider.init(this)
         db = DatabaseProvider.db
 
-        // Récupère les SharedPreferences sécurisées
+        // Retrieve secure SharedPreferences
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
@@ -101,10 +115,10 @@ class MainActivity : AppCompatActivity() {
         )
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
-        // Premier essai de chargement
+        // First loading test
         chargerUtilisateur()
 
-        // --- ÉTAT INITIAL ---
+        // --- INITIAL STATE ---
         if (savedInstanceState == null) {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
@@ -116,48 +130,48 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Remplace le fragment actuel ET gère la visibilité de la barre de navigation.
+     * Replaces the current fragment AND manages the visibility of the navigation bar.
      */
     fun showFragment(fragment: Fragment, withNavigation: Boolean, withTopBar: Boolean) {
 
-        // Gérer la visibilité de la barre de navigation
+        // Manage the visibility of the navigation bar
         findViewById<View>(R.id.bottomNav)?.apply {
             visibility = if (withNavigation) View.VISIBLE else View.GONE
         }
 
-        // Gérer la visibilité de la top bar
+        // Manage the visibility of the top bar
         findViewById<View>(R.id.topBar)?.apply {
             visibility = if (withTopBar) View.VISIBLE else View.GONE
         }
 
-        // --- Met à jour la sélection du bouton de navigation ---
+        // --- Updates the navigation button selection ---
         when (fragment) {
             is TableauDeBordFragment -> selectNavItem(navHomeButton)
             is ClassesFragment -> selectNavItem(navClassesButton)
             else -> {
-                // aucun bouton sélectionné (profil, connexion, etc.)
+                // No button selected (profile, login, etc.)
                 navHomeButton.isSelected = false
                 navClassesButton.isSelected = false
             }
         }
 
-        // Afficher le fragment
+        // Show fragment
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
-                R.anim.slide_in_right, // entrée
-                R.anim.fade_out,       // sortie
-                R.anim.fade_in,        // retour
-                R.anim.slide_out_right // retour inverse
+                R.anim.slide_in_right, // entrance
+                R.anim.fade_out,       // exit
+                R.anim.fade_in,        // back
+                R.anim.slide_out_right // reverse back
             )
             .replace(R.id.fragmentContainer, fragment)
-            .addToBackStack(null) // Permet le retour avec le bouton retour
+            .addToBackStack(null) // Allows return using the return button
             .commit()
     }
 
     /**
-     * Gère la sélection visuelle des boutons (change la couleur).
-     * Met les boutons à false et le bouton passé en paramètre à true afin d'éviter les problèmes de couleur.
-     * Ensuite on affiche la configuration actuelle avec itemToSelect à true (le bouton selectionner change de couleur).
+     * Manages the visual selection of buttons (changes the color).
+     * Sets the buttons to false and the button passed as a parameter to true to avoid color issues.
+     * Then displays the current configuration with itemToSelect set to true (the select button changes color).
      */
     private fun selectNavItem(itemToSelect: LinearLayout) {
         navHomeButton.isSelected = false
@@ -166,7 +180,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Charge l'utilisateur depuis la base de données et met à jour la top bar.
+     * Loads the user from the database and updates the top bar.
      */
     fun chargerUtilisateur() {
         val email = sharedPref.getString("email", null)

@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment pour gérer la réinitialisation du mot de passe oublié.
- * Le layout associé est R.layout.fragment_forgotten_password.
+ * Fragment for handling forgotten password resets.
+ * The associated layout is R.layout.fragment_forgotten_password.
  *
  * @see AppDatabase
  * @see MainActivity
@@ -31,28 +31,28 @@ import kotlinx.coroutines.withContext
 class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password) {
 
     /**
-     * Cette fonction est appelée lorsque la vue du fragment est créée.
-     * Elle initialise les interactions avec les vues.
+     * This function is called when the fragment view is created.
+     * It initializes interactions with views.
      *
-     * @param view La vue du fragment.
-     * @param savedInstanceState Les données conservées lors de l'état de l'activité.
+     * @param view The fragment view.
+     * @param savedInstanceState The data saved during the activity's state.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Récupération des vues
+        // Retrieving views
         val emailInput = view.findViewById<EditText>(R.id.Email)
         val lienButton = view.findViewById<Button>(R.id.lienButton)
         val inscriptionLien = view.findViewById<TextView>(R.id.inscriptionLien)
 
-        // Accès à la base de données
+        // Access to the database
         val db = Room.databaseBuilder(
             requireContext(),
             AppDatabase::class.java,
             "dual.db"
         ).build()
 
-        // Gestion du clic sur le bouton de réinitialisation
+        // Managing clicks on the reset button
         lienButton.setOnClickListener {
             // Verification de l'email
             val email = emailInput.text.toString().trim()
@@ -61,9 +61,9 @@ class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password)
                 return@setOnClickListener
             }
 
-            // Lancer une coroutine (code asynchrone) pour les opérations de base de données et d'email
+            // Launch a coroutine (asynchronous code) for database and email operations
             lifecycleScope.launch {
-                // Vérifier si l'email existe dans la base de données
+                // Check if the email address exists in the database
                 val prof = withContext(Dispatchers.IO) {
                     db.profDAO().getProfByEmail(email)
                 }
@@ -72,20 +72,20 @@ class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password)
                     Toast.makeText(requireContext(), "Aucun compte associé à cet email", Toast.LENGTH_SHORT).show()
                 } else {
 
-                    // Générer un nouveau mot de passe temporaire
+                    // Generate a new temporary password
                     val newPassword = generateTempPassword()
                     val hashedPassword = PasswordUtils.hashPassword(newPassword)
 
-                    // Mettre à jour en base de données
+                    // Update database
                     withContext(Dispatchers.IO) {
                         prof.password = hashedPassword
                         db.profDAO().update(prof)
                     }
 
-                    // Envoyer l'email avec le nouveau mot de passe avec EmailService
+                    // Send the email with the new password using EmailService
                     val emailSent = EmailService.sendPasswordResetEmail(email, newPassword)
 
-                    // Informer l'utilisateur du résultat
+                    // Inform the user of the result
                     if (emailSent) {
                         Toast.makeText(requireContext(), "Email envoyé avec succès", Toast.LENGTH_LONG).show()
                         (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
@@ -96,16 +96,16 @@ class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password)
             }
         }
 
-        // Gestion du clic sur le lien d'inscription
+        // Managing clicks on the registration link
         inscriptionLien.setOnClickListener {
             (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
         }
     }
 
     /**
-     * Génère un mot de passe temporaire aléatoire de 10 caractères.
+     * Generates a random 10-character temporary password.
      *
-     * @return Le mot de passe temporaire généré.
+     * @return The generated temporary password.
      */
     private fun generateTempPassword(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

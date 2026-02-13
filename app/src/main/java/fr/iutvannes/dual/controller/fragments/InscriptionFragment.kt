@@ -31,19 +31,19 @@ import kotlinx.coroutines.withContext
  */
 class InscriptionFragment : Fragment() {
 
-    /* Variables de visibilté pour le mot de passe */
+    /* Visibility variables for the password */
     private var passwordVisible = false
 
-    /* Variables de visibilté pour le mot de passe de confirmation */
+    /* Visibility variables for the confirmation password */
     private var passwordVerifVisible = false
 
     /**
-     * Méthode appelée lors de la création de la vue du fragment.
+     * Method called when the fragment view is created.
      *
-     * @param inflater L'inflatreur utilisé pour infler le layout du fragment.
-     * @param container Le conteneur parent du fragment.
-     * @param savedInstanceState Les données sauvegardées du fragment.
-     * @return La vue du fragment.
+     * @param inflater The inflator used to inflate the fragment layout.
+     * @param container The fragment's parent container.
+     * @param savedInstanceState The fragment's saved data.
+     * @return The fragment view.
      */
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,10 +51,10 @@ class InscriptionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        // On utilise le layout de l’inscription
+        // We use the registration layout
         val view = inflater.inflate(R.layout.fragment_creation, container, false)
 
-        // --- RÉCUPÉRATION DES VUES ---
+        // --- VIEW RECOVERY ---
         val nomInput = view.findViewById<EditText>(R.id.Nom)
         val prenomInput = view.findViewById<EditText>(R.id.Prenom)
         val emailInput = view.findViewById<EditText>(R.id.Email)
@@ -65,18 +65,18 @@ class InscriptionFragment : Fragment() {
         val inscriptionButton = view.findViewById<Button>(R.id.inscriptionButton)
         val connexionLien = view.findViewById<TextView>(R.id.connexionLien)
 
-        // --- BASE DE DONNÉES ROOM ---
+        // --- ROOM DATABASE ---
         val db = Room.databaseBuilder(
             requireContext(),
             AppDatabase::class.java,
             "dual.db"
         )
-            .fallbackToDestructiveMigration() // supprime et recrée la DB si le schéma change
+            .fallbackToDestructiveMigration() // Deletes and recreates the database if the schema changes
             .build()
         val dao = db.profDAO()
 
-        // --- GESTION DE L’AFFICHAGE DU MOT DE PASSE ---
-        // Gestion du clic sur l'icône d'oeil pour afficher/masquer le mot de passe
+        // --- PASSWORD DISPLAY MANAGEMENT ---
+        // Managing the click on the eye icon to show/hide the password
         oeilIcon.setOnClickListener {
             passwordVisible = !passwordVisible
             passwordInput.inputType = if (passwordVisible)
@@ -86,7 +86,7 @@ class InscriptionFragment : Fragment() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
-        // Gestion du clic sur l'icône d'oeil pour afficher/masquer le mot de passe de confirmation
+        // Managing the click on the eye icon to show/hide the confirmation password
         oeilVerifIcon.setOnClickListener {
             passwordVerifVisible = !passwordVerifVisible
             passwordVerifInput.inputType = if (passwordVerifVisible)
@@ -96,8 +96,8 @@ class InscriptionFragment : Fragment() {
             passwordVerifInput.setSelection(passwordVerifInput.text.length)
         }
 
-        // --- ACTION DU BOUTON D’INSCRIPTION ---
-        // Gestion du clic sur le bouton d'inscription
+        // --- REGISTRATION BUTTON ACTION ---
+        // Managing the registration button click
         inscriptionButton.setOnClickListener {
             val nom = nomInput.text.toString().trim()
             val prenom = prenomInput.text.toString().trim()
@@ -105,7 +105,7 @@ class InscriptionFragment : Fragment() {
             val password = passwordInput.text.toString().trim()
             val passwordVerif = passwordVerifInput.text.toString().trim()
 
-            // Regex pour email simple
+            // Regex for simple email
             val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
 
             if (nom.isEmpty() || prenom.isEmpty() || email.isEmpty() || password.isEmpty() || passwordVerif.isEmpty()) {
@@ -124,7 +124,7 @@ class InscriptionFragment : Fragment() {
                 passwordInput.setText("")
                 passwordVerifInput.setText("")
             } else {
-                // --- SAUVEGARDE DANS LA BASE ---
+                //--- SAVE IN DATABASE ---
                 lifecycleScope.launch {
                     val existingProf = withContext(Dispatchers.IO) {
                         dao.getProfByEmail(email)
@@ -146,15 +146,15 @@ class InscriptionFragment : Fragment() {
 
                         Toast.makeText(requireContext(), "Inscription réussie", Toast.LENGTH_SHORT).show()
 
-                        // Retour vers la page de connexion
+                        // Return to the login page
                         (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
                     }
                 }
             }
         }
 
-        // --- LIEN "DÉJÀ UN COMPTE ? SE CONNECTER" ---
-        // Gestion du clic sur le lien "déjà un compte ? se connecter"
+        // --- "ALREADY HAVE AN ACCOUNT? LOG IN" LINK ---
+        // Managing clicks on the "Already have an account? Log in" link
         connexionLien.setOnClickListener {
             (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
         }

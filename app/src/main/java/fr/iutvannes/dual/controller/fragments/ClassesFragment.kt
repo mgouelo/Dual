@@ -17,9 +17,9 @@ import android.widget.Button
 import fr.iutvannes.dual.controller.MainActivity
 
 /**
- * Fragment pour afficher la liste des classes.
- * Ainsi que le bouton pour ajouter une nouvelle classe.
- * Le layout utilisé est fragment_classes.xml.
+ * Fragment to display the list of classes.
+ * As well as the button to add a new class.
+ * The layout used is fragment_classes.xml.
  *
  * @see AppDatabase
  * @see R.layout.fragment_classes
@@ -27,23 +27,23 @@ import fr.iutvannes.dual.controller.MainActivity
 class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
     /**
-     * Méthode appelée lorsque le fragment est créé.
-     * Ce fragment est utilisé pour afficher la liste des classes.
-     * Ainsi que le bouton pour ajouter une nouvelle classe.
+     * This method is called when the fragment is created.
+     * This fragment is used to display the list of classes.
+     * As well as the button to add a new class.
      *
-     * @param view La vue du fragment.
-     * @param savedInstanceState Les données sauvegardées du fragment.
+     * @param view The fragment view.
+     * @param savedInstanceState The fragment's saved data.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialisation des vues et des listeners
+        // Initializing views and listeners
         val container = view.findViewById<LinearLayout>(R.id.container_classes)
 
-        // Ouvertures d'une coroutine dans le thread IO pour effectuer des tâches en arrière-plan
+        // Opening a coroutine in the I/O thread to perform background tasks
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            //Connexion BDD
+            //Database connection
             val db = Room.databaseBuilder(
                 requireContext(),
                 AppDatabase::class.java, "dual.db"
@@ -55,13 +55,13 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
             val btn_ajoutClasse = view.findViewById<Button>(R.id.ajout_classe)
 
-            // Gestion du clic sur le bouton pour ajouter une nouvelle classe
+            // Handling the click on the button to add a new class
             btn_ajoutClasse.setOnClickListener {
                 val fragment = AjoutClasseFragment()
                 (activity as MainActivity).showFragment(fragment, true, true)
             }
 
-            // Retour sur le thread principale pour modification de l'interface graphique(UI)
+            // Returning to the main thread for modifying the graphical user interface (UI).
             withContext(Dispatchers.Main) {
 
                 container.removeAllViews()
@@ -81,7 +81,7 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
                             setPadding(8, 8, 8, 8)
                         }
 
-                        // Gestion du clic sur la classe pour afficher la liste des élèves
+                        // Managing clicks on the class to display the student list
                         button.setOnClickListener {
                             val fragment = ElevesFragment.newInstance(classe)
                             (activity as MainActivity).showFragment(fragment, true, true)

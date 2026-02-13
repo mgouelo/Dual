@@ -21,8 +21,8 @@ import kotlinx.coroutines.withContext
 import androidx.core.content.edit
 
 /**
- * Fragment pour la connexion
- * Ce fragment est utilisé pour se connecter à l'application.
+ * Connection fragment
+ * This fragment is used to connect to the application.
  *
  * @see MainActivity
  * @see AppDatabase
@@ -31,16 +31,16 @@ import androidx.core.content.edit
  */
 class ConnexionFragment : Fragment() {
 
-    /* Variable permettant de savoir si le mot de passe est visible ou non */
+    /* Variable that determines whether the password is visible or not */
     private var passwordVisible = false
 
     /**
-     * Méthode appelée lorsque le fragment est créé.
+     * Method called when the fragment is created.
      *
-     * @param inflater L'inflatreur utilisé pour infler le layout du fragment.
-     * @param container Le conteneur dans lequel le fragment sera affiché.
-     * @param savedInstanceState Les données sauvegardées du fragment.
-     * @return La vue du fragment.
+     * @param inflater The inflator used to inflate the fragment's layout.
+     * @param container The container in which the fragment will be displayed.
+     * @param savedInstanceState The saved fragment data.
+     * @return The fragment's view.
      */
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,12 +59,12 @@ class ConnexionFragment : Fragment() {
         val forgottenPassword = view.findViewById<TextView>(R.id.forgottenPassword)
 
 
-        // Création d'une clé secrète pour le stockage sécurisé des préférences
+        // Creating a secret key for secure storage of preferences
         val masterKey = MasterKey.Builder(requireContext())
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
 
-        // Création d'un objet de stockage sécurisé des préférences
+        // Creating a secure storage object for preferences
         val sharedPref = EncryptedSharedPreferences.create(
             requireContext(),
             "loginPrefs",
@@ -73,16 +73,16 @@ class ConnexionFragment : Fragment() {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        // Récupération des préférences de connexion
+        // Retrieving login preferences
         val editor = sharedPref.edit()
 
-        // Création ou ouverture de la base de données
+        // Creating or opening the database
         val db = Room.databaseBuilder(
             requireContext(),
             AppDatabase::class.java,
             "dual.db"
         )
-            .fallbackToDestructiveMigration() // supprime et recrée la DB si le schéma change
+            .fallbackToDestructiveMigration() // Deletes and recreates the database if the schema changes
             .build()
 
         val dao = db.profDAO()
@@ -91,14 +91,14 @@ class ConnexionFragment : Fragment() {
         val savedPassword = sharedPref.getString("password", "")
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
-        // Si les préférences de connexion existent, les charger
+        // If connection preferences exist, load them
         if (isRemembered) {
             emailInput.setText(savedEmail)
             passwordInput.setText(savedPassword)
             rememberMe.isChecked = true
         }
 
-        // Affichage du mot de passe
+        // Displaying the password
         oeilIcon.setOnClickListener {
             passwordVisible = !passwordVisible
             passwordInput.inputType = if (passwordVisible)
@@ -108,12 +108,12 @@ class ConnexionFragment : Fragment() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
-        // Gestion du clic sur le bouton de connexion
+        // Managing clicks on the login button
         connexionButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
 
-            // Regex simple pour email
+            // Simple regex for email
             val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
 
             if (email.isEmpty()) {
@@ -124,7 +124,7 @@ class ConnexionFragment : Fragment() {
                 Toast.makeText(requireContext(), "L'email n'est pas valide", Toast.LENGTH_SHORT).show()
                 emailInput.setText("")
             } else {
-                // On lance une coroutine pour accéder à la DB
+                // We launch a coroutine to access the database
                 lifecycleScope.launch {
                     val prof = withContext(Dispatchers.IO) {
                         dao.getProfByEmail(email)
@@ -144,15 +144,15 @@ class ConnexionFragment : Fragment() {
                             editor.putBoolean("rememberMe", true)
                             editor.apply()
                         } else {
-                            // On efface juste les champs inutiles, mais on garde l'email
+                            // We just delete the unnecessary fields, but we keep the email address.
                             editor.remove("password")
                             editor.putBoolean("rememberMe", false)
                             editor.apply()
                         }
 
-                        // Enregistrer l'email pour la top bar dans le tableau de bord
+                        // Save the email address for the top bar in the dashboard
                         sharedPref.edit { putString("email", email) }
-                        // Mettre à jour la top bar
+                        // Update the top bar
                         (activity as? MainActivity)?.chargerUtilisateur()
 
                         (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
@@ -161,12 +161,12 @@ class ConnexionFragment : Fragment() {
             }
         }
 
-        // Gestion du clic sur le lien d'inscription
+        // Managing clicks on the registration link
         inscriptionLien.setOnClickListener {
             (activity as? MainActivity)?.showFragment(InscriptionFragment(), false, false)
         }
 
-        // Gestion du clic sur le lien de mot de passe oublié
+        // Managing the click on the forgotten password link
         forgottenPassword.setOnClickListener {
             (activity as? MainActivity)?.showFragment(ForgottenPasswordFragment(), false, false)
         }

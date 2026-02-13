@@ -11,7 +11,7 @@ import fr.iutvannes.dual.model.importation.readers.XlsStudentReader
 import java.io.InputStream
 
 /**
- * Classe permettant d'importer des données depuis un fichier.
+ * Class allowing the import of data from a file.
  *
  * @see ImportService
  * @see ImportReport
@@ -21,15 +21,15 @@ import java.io.InputStream
  */
 class ImportViewModel(application: Application) : AndroidViewModel(application) {
 
-    /* Variable permettant de créer ou d'ouvrir la DB */
+    /* Variable used to create or open the database */
     private val db = Room.databaseBuilder(
         application,
         AppDatabase::class.java,
         "dual.db"
     ).build()
 
-    /* Variable permettant d'importer les données */
-    private val importService = ImportService( // on fournie à l'objet importService tous les readers et la DB pour que l'import puisse avoir lieu
+    /* Variable used to import data */
+    private val importService = ImportService( // The importService object is provided with all the readers and the database so that the import can take place.
         readers = listOf(
             CsvStudentReader(),
             XlsStudentReader(),
@@ -38,13 +38,13 @@ class ImportViewModel(application: Application) : AndroidViewModel(application) 
     )
 
     /**
-     * Méthode permettant d'importer des données depuis un fichier.
+     * Method for importing data from a file.
      *
-     * @param input [InputStream] contenant les données à importer
-     * @param fileName [String] contenant le nom du fichier
-     * @param mime [String] contenant le type de fichier
-     * @param classeNom [String] contenant le nom de la classe
-     * @return [ImportReport] contenant le rapport de l'import
+     * @param input [InputStream] containing the data to import
+     * @param fileName [String] containing the file name
+     * @param mime [String] containing the file type
+     * @param classeNom [String] containing the class name
+     * @return [ImportReport] containing the import report
      */
     suspend fun importer(
         input: InputStream,

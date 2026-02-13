@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment pour afficher le tableau de bord.
+ * Fragment to display the dashboard.
  *
  * @see SessionViewModel
  * @see AppDatabase
@@ -29,40 +29,40 @@ import kotlinx.coroutines.withContext
  */
 class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
-    /* Variable d'instance */
+    /* Variable to keep track of the initial count */
     private var countInitial = 0
 
-    /* Variable d'instance */
+    /* Variable for the SessionViewModel instance */
     private val sessionViewModel: SessionViewModel by activityViewModels()
 
     /**
-     * Cette fonction est appelée lorsque la vue du fragment est créée.
-     * Elle initialise les interactions avec les vues.
+     * This function is called when the fragment view is created.
+     * It initializes interactions with views.
      *
-     * @param view La vue du fragment.
-     * @param savedInstanceState Les données conservées lors de l'état de l'activité.
+     * @param view The fragment view.
+     * @param savedInstanceState The data saved during the activity's state.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val sessionBtn = view.findViewById<Button>(R.id.launchASession)
 
-        // Gestion du clic sur le bouton de démarrage de session
+        // Managing the click on the session start button
         sessionBtn.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
                 countInitial = withContext(Dispatchers.IO) {
                     DatabaseProvider.db.resultatDao().getCount()
                 }
-                //On lance la session
+                // We start the session
                 sessionViewModel.startSession(requireContext())
             }
         }
 
         val nbResultat = view.findViewById<TextView>(R.id.text_resultats_count)
 
-        val btnExport = view.findViewById<Button>(R.id.btn_download_excel) // L'ID de ton bouton XML
+        val btnExport = view.findViewById<Button>(R.id.btn_download_excel) // Your button's XML ID
 
-        // Ouverture d'une coroutine dans le thread IO pour compter les résultats
+        // Opening a coroutine in the I/O thread to count the results
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
                 if (sessionViewModel.running.value) {
@@ -79,7 +79,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val qrCode = view.findViewById<ImageView>(R.id.qrCodeView)
         qrCode.setBackgroundColor(Color.DKGRAY) // DEBUG
         val sessionUrl = view.findViewById<TextView>(R.id.textUrl)
-        // Ouverture d'une coroutine dans le thread IO pour générer le QR Code
+        // Opening a coroutine in the IO thread to generate the QR code
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.url.collect { url ->
                 if (url != null) {
@@ -93,21 +93,21 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                 }
             }
         }
-        // Ouverture d'une coroutine dans le thread IO pour gérer le bouton de démarrage de session
+        // Opening a coroutine in the I/O thread to handle the session start button
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.running.collect { running ->
-                sessionBtn.isEnabled = !running // si le serveur tourne on désactive le btn
+                sessionBtn.isEnabled = !running // If the server is running, we disable the button.
             }
         }
 
-        // Gestion du clic sur le bouton d'export
+        // Managing clicks on the export button
         btnExport.setOnClickListener {
             val currentUrl = sessionViewModel.url.value
             if (currentUrl != null) {
-                //On construit l'URL de téléchargement
+                // We construct the download URL
                 val downloadUrl = "$currentUrl/api/admin/export"
 
-                //On ouvre le navigateur de la tablette pour lancer le téléchargement
+                // We open the tablet's browser to start the download
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(downloadUrl))
                 startActivity(intent)
             } else {
@@ -117,9 +117,10 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
     }
 
     /**
-     * Génère un QR Code à partir d'un texte.
+     * Generates a QR code from text.
      *
-     * @param text Le texte à encoder dans le QR Code.
+     * @param text The text to encode in the QR code.
+     * @return The generated QR code as a Bitmap.
      */
     private fun genererQRCode(text: String): Bitmap {
         val writer = QRCodeWriter()

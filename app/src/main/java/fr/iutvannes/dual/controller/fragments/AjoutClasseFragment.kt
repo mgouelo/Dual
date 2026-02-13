@@ -17,12 +17,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment pour ajouter une nouvelle classe.
- * Ce fragment est utilisé pour créer une nouvelle classe dans la base de données en sélectionnant
- * un niveau et une lettre. Lors de la validation, le fragment vérifie si une classe existe ou
- * doit être créé.
- * Des Toasts sont présents pour informer l'utilisateur des différents résultats.
- * Le layout utilisé est fragment_ajout_classe.xml.
+ * Fragment for adding a new class.
+ * This fragment is used to create a new class in the database by selecting
+ * a level and a letter. During validation, the fragment checks if a class already exists or
+ * needs to be created.
+ * Toasts are displayed to inform the user of the different results.
+ * The layout used is fragment_ajout_classe.xml.
  *
  * @see AppDatabase
  * @see MainActivity
@@ -32,12 +32,12 @@ import kotlinx.coroutines.withContext
 class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
     /**
-     * Méthode appelée lorsque le fragment est créé.
-     * Gère les clics sur les boutons de retour et de validation.
-     * Créé une nouvelle classe en fonction du niveau et de la lettre sélectionnées.
+     * This method is called when the fragment is created.
+     * Handles clicks on the back and submit buttons.
+     * Creates a new class based on the selected level and letter.
      *
-     * @param view La vue du fragment.
-     * @param savedInstanceState Les données sauvegardées du fragment.
+     * @param view The fragment view.
+     * @param savedInstanceState The saved data of the fragment.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,12 +49,12 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
         val toogleLettre = view.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.toggle_group_lettre)
 
 
-        // Gestion du clic sur le bouton de retour
+        // Managing clicks on the back button
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // Gestion du clic sur le bouton de validation
+        // Managing the click on the validation button
         buttonValider.setOnClickListener {
             val idNiveau = toogleNiveau.checkedButtonId
             val idLettre = toogleLettre.checkedButtonId
@@ -73,7 +73,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
             val classeNom = "${niveau[0]}$lettre"
 
-            // Ouverture d'une coroutine sur le thread IO pour ajouter la classe à la base de données
+            // Opening a coroutine on the I/O thread to add the class to the database
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO){
                 // Création ou ouverture de la base de données
                 val db = Room.databaseBuilder(
@@ -90,7 +90,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
                 val existeDeja = db.classeDao().getClasseByName(classeNom) != null
 
-                // Affichage d'un message si la classe existe déjà par le Thread principal
+                // Displaying a message if the class already exists via the main thread
                 withContext(Dispatchers.Main){
                     if (existeDeja) {
                         Toast.makeText(requireContext(), "Cette classe existe déjà", Toast.LENGTH_SHORT).show()
@@ -98,10 +98,10 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 }
 
                 if(!existeDeja) {
-                    // Ajout de la classe à la base de données
+                    // Adding the class to the database
                     db.classeDao().insert(classe)
 
-                    // Affichage d'un message si la classe a été ajoutée par le Thread principal
+                    // A message is displayed if the class was added by the main thread.
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Classe ajoutée", Toast.LENGTH_SHORT).show()
 

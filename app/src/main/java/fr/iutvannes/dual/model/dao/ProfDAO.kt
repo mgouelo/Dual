@@ -5,8 +5,8 @@ import androidx.room.*
 import fr.iutvannes.dual.model.persistence.Prof
 
 /**
- * Interface DAO pour l'entité Prof.
- * Elle définit les méthodes d'accès aux données pour l'entité Prof.
+ * DAO interface for the Prof entity.
+ * It defines the data access methods for the Prof entity.
  *
  * @see Prof
  */
@@ -14,60 +14,60 @@ import fr.iutvannes.dual.model.persistence.Prof
 interface ProfDAO {
 
     /**
-     * Insère un nouveau Prof dans la base de données.
+     * Inserts a new Professor into the database.
      *
-     * @param prof Le Prof à insérer
+     * @param prof The Professor to Insert
      */
     @Insert
     suspend fun insert(prof: Prof): Long
 
     /**
-     * Supprime un Prof de la base de données.
+     * Delete a Professor from the database.
      *
-     * @param idProf L'identifiant du Prof à supprimer
+     * @param idProf The teacher's ID to be deleted
      */
     @Query("DELETE FROM Prof WHERE id_prof = :idProf")
     suspend fun delete(idProf: Int): Int
 
     /**
-     * Récupère tous les Prof de la base de données.
+     * Retrieves all the Profs from the database.
      *
-     * @return Une liste de tous les Prof
+     * @return A list of all the Professors
      */
     @Query("SELECT * FROM Prof")
     suspend fun getAll(): List<Prof>
 
     /**
-     * Récupère un Prof par son identifiant.
+     * Retrieve a teacher by their ID.
      *
-     * @param idProf L'identifiant du Prof à récupérer
-     * @return Le Prof
+     * @param idProf The teacher's ID to retrieve
+     * @return The Prof
      */
     @Query("SELECT * FROM Prof WHERE id_prof = :idProf")
     suspend fun getProfById(idProf: Int): Prof?
 
     /**
-     * Récupère un Prof par son email.
+     * Retrieve a teacher via their email.
      *
-     * @param email L'email du Prof à récupérer
-     * @return Le Prof
+     * @param email The Professor's email to retrieve
+     * @return The Prof
      */
     @Query("SELECT * FROM Prof WHERE email = :email")
     suspend fun getProfByEmail(email: String): Prof?
 
     /**
-     * Récupère un Prof par son email en utilisant LiveData.
+     * Retrieve a teacher via their email using LiveData.
      *
-     * @param email L'email du Prof à récupérer
-     * @return Un LiveData contenant le Prof
+     * @param email The Professor's email to retrieve
+     * @return A LiveData containing the Prof
      */
     @Query("SELECT * FROM Prof WHERE email = :email")
     fun getProfLive(email: String): LiveData<Prof?>
 
     /**
-     * Met à jour un Prof dans la base de données.
+     * Updates a Professor in the database.
      *
-     * @param prof Le Prof à mettre à jour
+     * @param prof The Professor needs updating
      */
     @Update
     suspend fun update(prof: Prof): Int
