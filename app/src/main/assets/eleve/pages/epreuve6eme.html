@@ -10,6 +10,65 @@
 </head>
 <body>
 
+    <div id="container">
+
+        <header>
+            <h1>Épreuve de 6eme</h1>
+            <p>Réaliser un tour de parcours puis un tir autant de fois que possible en 20 minutes.</p>
+        </header>
+
+        <div id="chrono">20:00:00</div>
+
+        <div id="buttonTraining">
+            <button id="reset" class="button">Reset</button>
+            <button id="stop" class="button">Arrêter</button>
+            <button id="start" class="button">Démarrer</button>
+        </div>
+
+        <div id="listeTours"></div>
+
+        <div id="modal-tir" class="modal" style="display:none">
+            <div class="modal-content tir-popup">
+                <h2 id="titre-tir">Tir après le Tour X</h2>
+                <p>Combien de cibles touchées ? (0 à 5)</p>
+                <div class="tir-inputs-row">
+                    <button class="btn-score" onclick="setScoreTir(0)">0</button>
+                    <button class="btn-score" onclick="setScoreTir(1)">1</button>
+                    <button class="btn-score" onclick="setScoreTir(2)">2</button>
+                    <button class="btn-score" onclick="setScoreTir(3)">3</button>
+                    <button class="btn-score" onclick="setScoreTir(4)">4</button>
+                    <button class="btn-score" onclick="setScoreTir(5)">5</button>
+                </div>
+                <input type="hidden" id="score-temporaire" value="0">
+                <input type="hidden" id="temps-tour-cache" value="">
+                <button id="valider-tir" class="button btn-start">VALIDER LE TOUR ET LE TIR</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button id="enregistrer" class="button">Enregistrer (+1 tour)</button>
+            <button id="supprimer" class="button">Supprimer (-1 tour)</button>
+        </div>
+
+        <div id="custom-confirm" class="modal">
+            <div class="modal-content">
+                <h3>Confirmation</h3>
+                <p id="confirm-message">Êtes-vous sûr ?</p>
+                <div class="modal-buttons">
+                    <button id="confirm-ok" class="btn-confirm">OK</button>
+                    <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+
+        <footer>
+            <p class="info">Connecté au serveur local</p>
+        </footer>
+
+    </div>
+
 <script src="../js/epreuve6eme.js"></script>
 </body>
 

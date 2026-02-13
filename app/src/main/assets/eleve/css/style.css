@@ -585,3 +585,35 @@ footer .info {
     background-color: #27ae60;
     transform: translateY(-2px);
 }
+
+/* --- Styles pour le Tir Efficience --- */
+.tir-popup {
+    text-align: center;
+    padding: 30px;
+    border: 4px solid #3498db;
+}
+
+/* Conteneur pour les inputs de tir */
+.tir-inputs-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* Boutons de score pour les tirs */
+.btn-score {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid var(--blue);
+    background: white;
+}
+
+/* Classe pour indiquer le score sélectionné (ex: 0, 1 ou 2 points) */
+.btn-score.selected {
+    background: var(--blue);
+    color: white;
+}
