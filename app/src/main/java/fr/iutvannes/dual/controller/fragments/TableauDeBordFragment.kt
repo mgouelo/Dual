@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -45,30 +46,33 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
         val sessionBtn = view.findViewById<Button>(R.id.launchASession)
         sessionBtn.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val idGenere = withContext(Dispatchers.IO) {
-                    //On récupère l'ID du prof
-                    val profId = DatabaseProvider.db.profDAO().getProfId()
+            //Si la séance est déjà en cours, on arrête la séance
+            if (sessionViewModel.running.value) {
+                //Arrêt de la séance
+                sessionViewModel.stopSession()
+                KtorServer.idSeanceActuelle = 0
+                Toast.makeText(requireContext(), "Séance arrêtée", Toast.LENGTH_SHORT).show()
 
-                    val nouvelleSeance = fr.iutvannes.dual.model.persistence.Seance(
-                        date = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE).format(java.util.Date()),
-                        id_prof = profId
-                    )
+            //Si la séance n'est pas en cours, on la lance
+            } else {
+                //Lancement de la séance
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val idGenere = withContext(Dispatchers.IO) {
+                        val nouvelleSeance = fr.iutvannes.dual.model.persistence.Seance(
+                            date = SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.FRANCE).format(java.util.Date()),
+                            id_prof = DatabaseProvider.db.profDAO().getProfId()
+                        )
+                        DatabaseProvider.db.seanceDao().insert(nouvelleSeance)
+                    }
 
-                    //On insère et on récupère l'ID auto-incrémenté
-                    DatabaseProvider.db.seanceDao().insert(nouvelleSeance)
+                    KtorServer.idSeanceActuelle = idGenere.toInt()
+
+                    countInitial = withContext(Dispatchers.IO) {
+                        DatabaseProvider.db.resultatDao().getCount()
+                    }
+
+                    sessionViewModel.startSession(requireContext())
                 }
-
-                //Mise à jour du backend (KtorServer)
-
-                KtorServer.idSeanceActuelle = idGenere.toInt()
-
-                countInitial = withContext(Dispatchers.IO) {
-                    DatabaseProvider.db.resultatDao().getCount()
-                }
-
-                //On lance le serveur Ktor
-                sessionViewModel.startSession(requireContext())
             }
         }
 
@@ -105,9 +109,20 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                 }
             }
         }
+
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.running.collect { running ->
-                sessionBtn.isEnabled = !running // si le serveur tourne on désactive le btn
+                if (running) {
+                    sessionBtn.text = "Arrêter la séance"
+                    val rougeClair = Color.parseColor("#ff6b6b")
+                    sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(rougeClair)
+                    qrCode.visibility = View.VISIBLE
+                } else {
+                    sessionBtn.text = "Lancer une séance"
+                    val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
+                    sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(couleurBleu)
+                    qrCode.visibility = View.GONE
+                }
             }
         }
 
