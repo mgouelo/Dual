@@ -78,7 +78,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
         val nbResultat = view.findViewById<TextView>(R.id.text_resultats_count)
 
-        val btnExport = view.findViewById<Button>(R.id.btn_download_excel) // L'ID de ton bouton XML
+        val btnExport = view.findViewById<Button>(R.id.btn_download_excel)
 
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
@@ -110,18 +110,27 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
             }
         }
 
+
+
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.running.collect { running ->
                 if (running) {
                     sessionBtn.text = "Arrêter la séance"
-                    val rougeClair = Color.parseColor("#ff6b6b")
-                    sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(rougeClair)
+                    val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
+                    sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(couleurBleu)
                     qrCode.visibility = View.VISIBLE
+
+                    //Mise à jour du texte du bouton export
+                    val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(java.util.Date())
+                    btnExport.text = "Télécharger les résultats (séance $dateAujourdhui)"
+
                 } else {
                     sessionBtn.text = "Lancer une séance"
                     val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
                     sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(couleurBleu)
                     qrCode.visibility = View.GONE
+                    sessionUrl.visibility = View.GONE
+                    nbResultat.visibility = View.GONE
                 }
             }
         }
