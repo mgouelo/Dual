@@ -3,7 +3,9 @@ package fr.iutvannes.dual.model.persistence
 import androidx.room.PrimaryKey
 import androidx.room.Entity
 import androidx.room.Index
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(
     indices = [Index(value = ["nom", "prenom", "classe"], unique = true)]
 )
