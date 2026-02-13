@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import fr.iutvannes.dual.R
-import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Eleve
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -1,6 +1,7 @@
 package fr.iutvannes.dual.model.dao
 
 import androidx.room.*
+import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
 
 /**
@@ -19,6 +20,9 @@ interface EleveDAO {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(eleve: Eleve): Long
+
+    @Delete
+    suspend fun delete(eleve: Eleve)
 
     /**
      * Deletes a student from the database.
@@ -65,6 +69,9 @@ interface EleveDAO {
     @Query("SELECT * FROM Eleve WHERE classe = :classe")
     fun getElevesByClasse(classe: String): List<Eleve>
 
+    @Query("SELECT COUNT(*) FROM Eleve WHERE classe = :nomClasse")
+    fun countElevesByClasse(nomClasse: String): Int
+
     /**
      * Remove all students from the table.
      */
@@ -84,4 +91,10 @@ interface EleveDAO {
      */
     @Query("SELECT * FROM Eleve WHERE LOWER(prenom) = LOWER(:prenom) AND LOWER(nom) = LOWER(:nom) LIMIT 1")
     fun findByName(prenom: String, nom: String): Eleve?
+
+    @Query("UPDATE Eleve SET classe = :nouveauNom WHERE classe = :ancienNom")
+    suspend fun updateClasseEleves(ancienNom: String, nouveauNom: String)
+
+    @Query("DELETE FROM Eleve WHERE classe = :nomClasse")
+    suspend fun deleteElevesByClasse(nomClasse: String)
 }

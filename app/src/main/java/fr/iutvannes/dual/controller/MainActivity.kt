@@ -1,25 +1,37 @@
 package fr.iutvannes.dual.controller
 
+import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
-import android.view.View // Import to manage visibility (View.VISIBLE, View.GONE)
+import android.view.View // Import pour gérer la visibilité (View.VISIBLE, View.GONE)
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.bumptech.glide.Glide
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.fragments.ConnexionFragment
 import fr.iutvannes.dual.controller.fragments.ClassesFragment
+import fr.iutvannes.dual.controller.fragments.InscriptionFragment
 import fr.iutvannes.dual.controller.fragments.ProfilFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
 import fr.iutvannes.dual.model.database.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.text.replace
 
 /**
  * Activité principale de l'application.
@@ -69,11 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        // Listener for the profile button
-        val profileButton = findViewById<ImageButton>(R.id.profileImage)
-        profileButton.setOnClickListener {
-            showFragment(ProfilFragment(), false, false)
-        }
+
 
         // --- NAVIGATION MANAGEMENT ---
         // Retrieve global views of the navigation bar
@@ -118,7 +126,13 @@ class MainActivity : AppCompatActivity() {
         // First loading test
         chargerUtilisateur()
 
-        // --- INITIAL STATE ---
+        // Listener pour le bouton de profil
+        val profileButton = findViewById<ImageButton>(R.id.profileImage)
+        profileButton.setOnClickListener {
+            showFragment(ProfilFragment(), false, false)
+        }
+
+        // --- ÉTAT INITIAL ---
         if (savedInstanceState == null) {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
@@ -185,12 +199,47 @@ class MainActivity : AppCompatActivity() {
     fun chargerUtilisateur() {
         val email = sharedPref.getString("email", null)
         val prenomLabel = findViewById<TextView>(R.id.prenomLabel)
+        val profileButton = findViewById<ImageButton>(R.id.profileImage)
 
         if (email != null) {
             db.profDAO().getProfLive(email).observe(this) { prof ->
-                prenomLabel.text = prof?.prenom ?: ""
+                if (prof != null) {
+                    prenomLabel.text = prof.prenom
+
+                    chargerPhotoProfil(
+                        context = this,
+                        pdp = profileButton,
+                        nom = prof.nom,
+                        prenom = prof.prenom,
+                        photoUri = prof.photoUri // Room renvoie le chemin ou null
+                    )
+                } else {
+                    prenomLabel.setText(" ")
+                    profileButton.setImageResource(R.drawable.pfp)
+                }
             }
         }
+    }
+
+
+    fun chargerPhotoProfil(context: Context, pdp: ImageButton, nom: String, prenom: String, photoUri: String?) {
+
+        //
+        val imageACharger: Any = if (photoUri != null) {
+            // l'utilisateur a une photo perso alors on prend l'uri
+            Uri.parse(photoUri)
+        } else {
+            // pas de photo alors on génère l'url de la pfp par défaut pour l'appel API
+            "https://ui-avatars.com/api/?name=$prenom+$nom&background=random&color=fff&size=128&bold=true"
+        }
+
+        // Le plugin glide s'occupe de l'affichage de la photo
+        Glide.with(context)
+            .load(imageACharger)
+            .circleCrop() // format circulaire
+            .placeholder(R.drawable.pfp) // image pendant le chargement
+            .error(R.drawable.pfp)       // image si erreur
+            .into(pdp)
     }
 }
 

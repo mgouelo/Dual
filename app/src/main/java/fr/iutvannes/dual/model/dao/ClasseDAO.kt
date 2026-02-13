@@ -1,8 +1,10 @@
 package fr.iutvannes.dual.model.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import fr.iutvannes.dual.model.persistence.Classe
 
 /**
@@ -23,6 +25,9 @@ interface ClasseDAO {
     @Insert
     suspend fun insert(classe: Classe): Long
 
+    @Delete
+    suspend fun delete(classe: Classe)
+
     /**
      * Deletes an existing class from the database.
      *
@@ -40,6 +45,9 @@ interface ClasseDAO {
     @Query("SELECT * FROM Classe WHERE nom = :nomClasse")
     suspend fun getClasseByName(nomClasse: String): Classe?
 
+    @Query("SELECT * FROM Classe")
+    suspend fun getClasses(): List<Classe>
+
     /**
      * Retrieves all existing class names from the database.
      *
@@ -55,4 +63,10 @@ interface ClasseDAO {
      */
     @Query("SELECT * FROM Classe")
     fun getAllClasses(): List<Classe>
+
+    @Update
+    suspend fun update(classe: Classe)
+
+    @Query("UPDATE Classe SET nom = :nouveauNom WHERE nom = :ancienNom")
+    suspend fun updateNomClasse(ancienNom: String, nouveauNom: String)
 }

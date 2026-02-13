@@ -22,5 +22,6 @@ data class Prof(
     var nom: String = "",
     var prenom: String = "",
     var email: String = "",
-    var password: String = ""
+    var password: String = "",
+    val photoUri: String? = null
 )

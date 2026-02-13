@@ -3,18 +3,19 @@ package fr.iutvannes.dual.controller.fragments
 // Imports nécessaires
 import android.os.Bundle
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.R
-import fr.iutvannes.dual.model.database.AppDatabase
+import fr.iutvannes.dual.controller.MainActivity
+import fr.iutvannes.dual.model.persistence.Classe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.widget.Button
-import fr.iutvannes.dual.controller.MainActivity
 
 /**
  * Fragment to display the list of classes.
@@ -25,6 +26,11 @@ import fr.iutvannes.dual.controller.MainActivity
  * @see R.layout.fragment_classes
  */
 class ClassesFragment : Fragment(R.layout.fragment_classes) {
+
+    // on déclare l'adapter en varaible de classe pour pouvoir l'utiliser partout
+    private lateinit var adapter: ClasseAdapter
+
+    private val db = DatabaseProvider.db
 
     /**
      * This method is called when the fragment is created.
@@ -37,61 +43,102 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initializing views and listeners
-        val container = view.findViewById<LinearLayout>(R.id.container_classes)
+        // recupération des vues
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewClasses)
+        val btnAjout = view.findViewById<Button>(R.id.ajout_classe)
+        val tvEmpty = view.findViewById<TextView>(R.id.tvEmpty)
 
-        // Opening a coroutine in the I/O thread to perform background tasks
+        // configuration de l'adapter
+        adapter = ClasseAdapter(
+            items = emptyList(), // Liste vide au démarrage
+            onClick = { classe ->
+                // Ouverture de la vue avec la liste des élèves
+                val fragment = ElevesFragment.newInstance(classe.nom)
+                (activity as MainActivity).showFragment(fragment, true, true)
+            },
+            onEdit = { classe ->
+                // Ouvre le fragment d'ajout en mode édition (bouton bleu)
+                val fragment = AjoutClasseFragment.newInstanceForEdit(classe.nom)
+                (activity as MainActivity).showFragment(fragment, true, true)
+            },
+            onDelete = { classe ->
+                // confirmation avant suppression
+                afficherConfirmationSuppression(classe)
+            }
+        )
+
+        // Branche l'adapter au recyclerview qui va permettre un affichage optimisé des classes
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(context)
+
+        // Handling the click on the button to add a new class
+        btnAjout.setOnClickListener {
+            val fragment = AjoutClasseFragment.newInstance()
+            (activity as MainActivity).showFragment(fragment, true, true)
+        }
+
+        // chargement des classes
+        chargerClasses()
+    }
+
+    private fun chargerClasses() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            //Database connection
-            val db = Room.databaseBuilder(
-                requireContext(),
-                AppDatabase::class.java, "dual.db"
-            )
-                .fallbackToDestructiveMigration()
-                .build()
+            // on récupère la liste des classes
+            val rawClasses = db.classeDao().getClasses()
 
-            val classes = db.classeDao().getClasses()
-
-            val btn_ajoutClasse = view.findViewById<Button>(R.id.ajout_classe)
-
-            // Handling the click on the button to add a new class
-            btn_ajoutClasse.setOnClickListener {
-                val fragment = AjoutClasseFragment()
-                (activity as MainActivity).showFragment(fragment, true, true)
+            // transforme chaque Classe en ClasseUI + compteur d'élèves
+            val uiList = rawClasses.map { classe ->
+                val count = db.EleveDao().countElevesByClasse(classe.nom)
+                ClasseUI(classe, count)
             }
 
-            // Returning to the main thread for modifying the graphical user interface (UI).
+            // MAJ de l'interface sur le thread principal
             withContext(Dispatchers.Main) {
+                adapter.updateList(uiList)
 
-                container.removeAllViews()
-
-                if (classes.isEmpty()) {
-                    val emptyText = TextView(requireContext()).apply {
-                        text = "Aucune classe enregistrée"
-                        textSize = 18f
-                        setPadding(8, 8, 8, 8)
-                    }
-                    container.addView(emptyText)
+                // affichage au cas où aucune classe
+                val tvEmpty = view?.findViewById<TextView>(R.id.tvEmpty)
+                if (uiList.isEmpty()) {
+                    tvEmpty?.visibility = View.VISIBLE
                 } else {
-                    for (classe in classes) {
-                        val button = Button(requireContext()).apply {
-                            text = classe
-                            textSize = 18f
-                            setPadding(8, 8, 8, 8)
-                        }
-
-                        // Managing clicks on the class to display the student list
-                        button.setOnClickListener {
-                            val fragment = ElevesFragment.newInstance(classe)
-                            (activity as MainActivity).showFragment(fragment, true, true)
-
-                        }
-
-                        container.addView(button)
-                    }
+                    tvEmpty?.visibility = View.GONE
                 }
             }
         }
+    }
+
+    private fun supprimerClasse(classe: Classe) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+
+            // suppression au préalable des élèves
+            db.EleveDao().deleteElevesByClasse(classe.nom)
+
+            // suppression de la classe
+            db.classeDao().delete(classe)
+
+            // rechargement de la liste
+            chargerClasses()
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Classe ${classe.nom} supprimée", Toast.LENGTH_SHORT).show() // feedback utilisateur
+            }
+        }
+    }
+
+    /**
+     * Affiche une boite de dialogue demandant à l'utilisateur de confirmer la suppression
+     */
+    private fun afficherConfirmationSuppression(classe: Classe) {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Supprimer la classe ?")
+            .setMessage("Attention, vous êtes sur le point de supprimer la classe \"${classe.nom}\" ainsi que tous les élèves qui y sont associés.\n\nCette action est irréversible.")
+            .setNegativeButton("Annuler") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Supprimer") { _, _ ->
+                supprimerClasse(classe)
+            }
+            .show()
     }
 }
