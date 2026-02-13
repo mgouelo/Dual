@@ -21,10 +21,16 @@ interface ClasseDAO {
      * Inserts a new class into the database.
      *
      * @param classe The class to insert.
+     * @return The identifier of the inserted class.
      */
     @Insert
     suspend fun insert(classe: Classe): Long
 
+    /**
+     * Deletes an existing class from the database.
+     *
+     * @param classe The class to delete.
+     */
     @Delete
     suspend fun delete(classe: Classe)
 
@@ -32,6 +38,7 @@ interface ClasseDAO {
      * Deletes an existing class from the database.
      *
      * @param idClasse The identifier of the class to delete.
+     * @return The number of rows deleted.
      */
     @Query("DELETE FROM Classe WHERE id_classe = :idClasse")
     suspend fun delete(idClasse: Int): Int
@@ -45,17 +52,16 @@ interface ClasseDAO {
     @Query("SELECT * FROM Classe WHERE nom = :nomClasse")
     suspend fun getClasseByName(nomClasse: String): Classe?
 
+    /**
+     * Retrieves all existing classes from the database.
+     *
+     * @return A list of classes containing the classes.
+     */
     @Query("SELECT * FROM Classe")
     suspend fun getClasses(): List<Classe>
 
-    /**
-     * Retrieves all existing class names from the database.
-     *
-     * @return A list of strings containing the class names.
-     */
-    @Query("SELECT nom FROM Classe")
-    suspend fun getClasses(): List<String>
 
+    // WARNING: METHOD ALREADY EXISTS, THIS IS NAMED getAll
     /**
      * Retrieves all existing classes from the database.
      *
@@ -64,9 +70,20 @@ interface ClasseDAO {
     @Query("SELECT * FROM Classe")
     fun getAllClasses(): List<Classe>
 
+    /**
+     * Updates an existing class in the database.
+     *
+     * @param classe The class to update.
+     */
     @Update
     suspend fun update(classe: Classe)
 
+    /**
+     * Updates the name of a class in the database.
+     *
+     * @param ancienNom The old name of the class.
+     * @param nouveauNom The new name of the class.
+     */
     @Query("UPDATE Classe SET nom = :nouveauNom WHERE nom = :ancienNom")
     suspend fun updateNomClasse(ancienNom: String, nouveauNom: String)
 }

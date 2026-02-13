@@ -41,9 +41,17 @@ class ElevesAdapter(
      * @return ViewHolder containing the view of the element
      */
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
+
+        /* Variable for the text view displaying the student name */
         val tvNomPrenom: TextView = view.findViewById(R.id.tvNomPrenom)
+
+        /* Variable for the text view displaying the student gender */
         val tvGenre: TextView = view.findViewById(R.id.tvGenre)
+
+        /* Variable for the edit button */
         val btnEdit: View = view.findViewById(R.id.btnEdit)
+
+        /* Variable for the delete button */
         val btnDelete: View = view.findViewById(R.id.btnDelete)
     }
 
@@ -70,7 +78,7 @@ class ElevesAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val eleve = items[position]
 
-        // texte du textView dans item_eleve.xml
+        // Text of the textView in item_eleve.xml
         holder.tvNomPrenom.text = "${eleve.nom} ${eleve.prenom}"
         holder.tvGenre.text = eleve.genre ?: "—"
 

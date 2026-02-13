@@ -1,6 +1,6 @@
 package fr.iutvannes.dual.controller.fragments
 
-// Imports nécessaires
+// Necessary imports
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -22,14 +22,16 @@ import kotlinx.coroutines.withContext
  * As well as the button to add a new class.
  * The layout used is fragment_classes.xml.
  *
- * @see AppDatabase
+ * @see MainActivity
+ * @see Classe
  * @see R.layout.fragment_classes
  */
 class ClassesFragment : Fragment(R.layout.fragment_classes) {
 
-    // on déclare l'adapter en varaible de classe pour pouvoir l'utiliser partout
+    /* Variable for the adapter to use all the classes */
     private lateinit var adapter: ClasseAdapter
 
+    /* Variable for the database */
     private val db = DatabaseProvider.db
 
     /**
@@ -43,31 +45,31 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // recupération des vues
+        // View retrieval
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewClasses)
         val btnAjout = view.findViewById<Button>(R.id.ajout_classe)
         val tvEmpty = view.findViewById<TextView>(R.id.tvEmpty)
 
-        // configuration de l'adapter
+        // Adapter configuration
         adapter = ClasseAdapter(
-            items = emptyList(), // Liste vide au démarrage
+            items = emptyList(), // Empty list at startup
             onClick = { classe ->
-                // Ouverture de la vue avec la liste des élèves
+                // Opening view with the list of students
                 val fragment = ElevesFragment.newInstance(classe.nom)
                 (activity as MainActivity).showFragment(fragment, true, true)
             },
             onEdit = { classe ->
-                // Ouvre le fragment d'ajout en mode édition (bouton bleu)
+                // Open the added fragment in edit mode (blue button)
                 val fragment = AjoutClasseFragment.newInstanceForEdit(classe.nom)
                 (activity as MainActivity).showFragment(fragment, true, true)
             },
             onDelete = { classe ->
-                // confirmation avant suppression
+                // Confirmation before deletion
                 afficherConfirmationSuppression(classe)
             }
         )
 
-        // Branche l'adapter au recyclerview qui va permettre un affichage optimisé des classes
+        // Branch it adapts to the recyclerview which will allow an optimized display of the classes
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -77,27 +79,30 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
             (activity as MainActivity).showFragment(fragment, true, true)
         }
 
-        // chargement des classes
+        // Loading classes
         chargerClasses()
     }
 
+    /**
+     * Loads the classes from the database and displays them in the adapter.
+     */
     private fun chargerClasses() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            // on récupère la liste des classes
+            // We retrieve the list of classes
             val rawClasses = db.classeDao().getClasses()
 
-            // transforme chaque Classe en ClasseUI + compteur d'élèves
+            // Transforms each Class into a ClassUI + student counter
             val uiList = rawClasses.map { classe ->
                 val count = db.EleveDao().countElevesByClasse(classe.nom)
                 ClasseUI(classe, count)
             }
 
-            // MAJ de l'interface sur le thread principal
+            // Update the interface on the main thread
             withContext(Dispatchers.Main) {
                 adapter.updateList(uiList)
 
-                // affichage au cas où aucune classe
+                // Display in case no class
                 val tvEmpty = view?.findViewById<TextView>(R.id.tvEmpty)
                 if (uiList.isEmpty()) {
                     tvEmpty?.visibility = View.VISIBLE
@@ -108,16 +113,21 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
         }
     }
 
+    /**
+     * Deletes a class from the database.
+     *
+     * @param classe The class to delete
+     */
     private fun supprimerClasse(classe: Classe) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            // suppression au préalable des élèves
+            // Prior removal of students
             db.EleveDao().deleteElevesByClasse(classe.nom)
 
-            // suppression de la classe
+            // Deletion of class
             db.classeDao().delete(classe)
 
-            // rechargement de la liste
+            // Reloading the list
             chargerClasses()
 
             withContext(Dispatchers.Main) {
@@ -127,7 +137,9 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
     }
 
     /**
-     * Affiche une boite de dialogue demandant à l'utilisateur de confirmer la suppression
+     * Displays a dialog box asking the user to confirm the deletion
+     *
+     * @param classe The class to delete
      */
     private fun afficherConfirmationSuppression(classe: Classe) {
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())

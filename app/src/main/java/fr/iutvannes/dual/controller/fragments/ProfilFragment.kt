@@ -2,6 +2,9 @@
 package fr.iutvannes.dual.controller.fragments
 
 // Imports nécessaires
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -15,7 +18,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import fr.iutvannes.dual.R
@@ -40,21 +42,23 @@ import fr.iutvannes.dual.model.persistence.Prof
  */
 class ProfilFragment : Fragment(R.layout.fragment_profil) {
 
-    // On "promet" au compilateur qu'on initialisera cette variable avant tout appel
+    // We "promise" the compiler that we will initialize this variable before any call
+    /* Variable to display the user's profile picture */
     private lateinit var pdp: ImageView
 
+    /* Variable to store the currently connected teacher */
     private var profConnecte: Prof? = null
 
-    // Initialisation du callback permettant de gérer la nouvelle photo de profil choisi par l'utilisateur
+    // Initializing the callback to manage the new profile picture chosen by the user
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             Log.d("PhotoPicker", "Photo sélectionnée : $uri") // debug
 
-            // on rend l'accès à ce fichier permanent pour avoir le droit de lecture même au redémarrage de l'app
+            // We make access to this file permanent so that we have read permission even after restarting the app.
             val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
             requireContext().contentResolver.takePersistableUriPermission(uri, flag)
 
-            // affichage avec glide
+            // Display with slide
             Glide.with(this)
                 .load(uri)
                 .circleCrop()
@@ -79,7 +83,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Photo de profil (pdp)
+        // Profile picture (PDP)
         pdp = view.findViewById<ImageView>(R.id.profileImage)
 
         // --- REFERENCES TO TEXT FIELDS ---
@@ -130,7 +134,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
                 }
             }
 
-            // Si on a trouvé le prof (!= null), on remplit les champs
+            // If we have found the teacher (!= null), we fill in the fields
             profConnecte?.let { prof ->
                 userProfilTxt.setText(prof.prenom)
                 nomField.setText(prof.nom)
@@ -142,7 +146,7 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
                     pdp,
                     prof.nom,
                     prof.prenom,
-                    prof.photoUri // room renvoie null ou le chemin de la pp
+                    prof.photoUri // Room returns null or the path to the pp
                 )
             }
         }
@@ -359,45 +363,54 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
     }
 
     /**
-     * Initialise la photo de profile utilisateur
+     * Initializes the user profile picture
+     *
+     * @param context The context of the application
+     * @param imageView The ImageView to display the profile picture
+     * @param nom The last name of the user
+     * @param prenom The first name of the user
+     * @param photoUri The URI of the user's profile picture
      */
     fun chargerPhotoProfil(context: Context, imageView: ImageView, nom: String, prenom: String, photoUri: String?) {
 
         //
         val imageACharger: Any = if (photoUri != null) {
-            // l'utilisateur a une photo perso alors on prend l'uri
+            // The user has a personal photo, so we take the URI.
             Uri.parse(photoUri)
         } else {
-            // pas de photo alors on génère l'url de la pfp par défaut pour l'appel API
+            // No photo, so we generate the default PFP URL for the API call.
             "https://ui-avatars.com/api/?name=$prenom+$nom&background=random&color=fff&size=128&bold=true"
         }
 
-        // Le plugin glide s'occupe de l'affichage de la photo
+        // The glide plugin handles the display of the photo.
         Glide.with(context)
             .load(imageACharger)
             .circleCrop() // format circulaire
-            .placeholder(R.drawable.pfp) // image pendant le chargement
-            .error(R.drawable.pfp)       // image si erreur
+            .placeholder(R.drawable.pfp) // Image while loadingimage while loading
+            .error(R.drawable.pfp)       // Image if error
             .into(imageView)
     }
 
     /**
-     * Permet de sauvegardé la photo de profil sélectionné par l'utilisateur en BDD
+     * Allows saving the user's selected profile picture to the database
+     *
+     * @param uriString The URI of the selected profile picture
+     * @param profConnecte The connected teacher
      */
     private fun sauvegarderPhotoEnBase(uriString: String, profConnecte: Prof) {
 
 
-        // LOG DE VÉRIFICATION
+        // VERIFICATION LOG
         Log.d("DEBUG_PROF", "Tentative de sauvegarde. ID=${profConnecte.id_prof} - URI=$uriString")
-        // Récupère ton utilisateur actuel (supposons qu'il est dans une variable 'currentUser')
-        // Modifie juste le champ photoUri
+        // Retrieve your current user (assuming it's in a variable 'currentUser')
+        // Just modify the photoUri field
         val updated = profConnecte.copy(photoUri = uriString)
 
-        // MAJ de la pdp dans une coroutine
+        // PDP update in a coroutine
         val db = DatabaseProvider.db
         lifecycleScope.launch {
             db.profDAO().update(updated)
-            // feedback utilisateur
+            // User feedback
             Toast.makeText(context, "Photo de profil mise à jour !", Toast.LENGTH_SHORT).show()
         }
     }

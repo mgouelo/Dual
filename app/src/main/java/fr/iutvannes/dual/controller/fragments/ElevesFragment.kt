@@ -18,7 +18,6 @@ import androidx.fragment.app.viewModels
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
-import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
 
 /**
@@ -32,7 +31,7 @@ import fr.iutvannes.dual.model.persistence.Eleve
  */
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
-    // init db
+    // Init db
     private val db = DatabaseProvider.db
 
     /* Variable used to retrieve the class name */
@@ -233,24 +232,31 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         }
     }
 
+    /**
+     * Deletes an element from the database.
+     *
+     * @param eleve The element to delete
+     */
     private fun supprimerEleve(eleve: Eleve) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            // suppression au préalable des élèves
+            // Prior removal of students
             db.EleveDao().delete(eleve)
 
-            // rechargement de la liste
+            // Reloading the list
             chargerEleves()
 
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Eleve ${eleve.nom} supprimée", Toast.LENGTH_SHORT).show() // feedback utilisateur
+                Toast.makeText(context, "Eleve ${eleve.nom} supprimée", Toast.LENGTH_SHORT).show() // User feedback
             }
         }
     }
 
 
     /**
-     * Affiche une boite de dialogue demandant à l'utilisateur de confirmer la suppression
+     * Displays a confirmation dialog before deleting an element.
+     *
+     * @param eleve The element to delete
      */
     private fun afficherConfirmationSuppression(eleve: Eleve) {
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
