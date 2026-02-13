@@ -19,7 +19,7 @@ import org.json.JSONObject
 object EmailService {
 
     /** Clé API Brevo (à ne jamais exposer dans un code client en production !) */
-    private const val API_KEY = BuildConfig.MY_API_KEY
+    private const val API_KEY = "MY_API_KEY"
     /** Adresse de l'expéditeur vérifiée sur Brevo */
     private const val SENDER_EMAIL = "biathlon.dual@outlook.fr"
 

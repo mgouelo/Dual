@@ -198,32 +198,32 @@ const afficherResultatVMA = () => {
         badgeClass = "bg-jaune";
         texteParcours = coupellesJaunes;
 
-    // Plots verts : 10.5 ou 11
+        // Plots verts : 10.5 ou 11
     } else if (vmaTemporaire === 10.5 || vmaTemporaire === 11) {
         badgeClass = "bg-vert";
         texteParcours = plotsVerts;
 
-    // Coupelles bleues : 11.5 ou 12
+        // Coupelles bleues : 11.5 ou 12
     } else if (vmaTemporaire === 11.5 || vmaTemporaire === 12) {
         badgeClass = "bg-bleu";
         texteParcours = coupellesBleues;
 
-    // Plots bleus : 12.5 ou 13
+        // Plots bleus : 12.5 ou 13
     } else if (vmaTemporaire === 12.5 || vmaTemporaire === 13) {
         badgeClass = "bg-bleu";
         texteParcours = plotsBleus;
 
-    // Coupelles rouges : 13.5 ou 14
+        // Coupelles rouges : 13.5 ou 14
     } else if (vmaTemporaire === 13.5 || vmaTemporaire === 14) {
         badgeClass = "bg-rouge";
         texteParcours = coupellesRouges;
 
-    // Plots rouges : 14.5 ou 15
+        // Plots rouges : 14.5 ou 15
     } else if (vmaTemporaire === 14.5 || vmaTemporaire === 15) {
         badgeClass = "bg-rouge";
         texteParcours = plotsRouges;
 
-    // Grand tour : > 15
+        // Grand tour : > 15
     } else {
         badgeClass = "bg-noir";
         texteParcours = grandTour;
