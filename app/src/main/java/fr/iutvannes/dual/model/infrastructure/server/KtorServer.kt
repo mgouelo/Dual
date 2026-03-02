@@ -113,9 +113,22 @@ fun Application.module(appContext: Context) {
         //Route pour envoyer les élèves d'UNE classe précise
         get("/api/eleves/par-classe/{nomClasse}") {
             val nomClasse = call.parameters["nomClasse"] ?: ""
-            val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
-            val nomsComplets = eleves.map { "${it.prenom} ${it.nom.uppercase()}" }
-            call.respond(nomsComplets)
+
+            try {
+                val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
+
+                // On renvoie une liste d'objets json
+                val elevesJson = eleves.map { eleve ->
+                    mapOf(
+                        "prenom" to eleve.prenom,
+                        "nom" to eleve.nom
+                    )
+                }
+                call.respond(elevesJson)
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur BDD eleves/par-classe: ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Erreur serveur"))
+            }
         }
 
         //Reçoit les événements des élèves
