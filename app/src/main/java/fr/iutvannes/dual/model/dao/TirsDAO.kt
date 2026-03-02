@@ -17,7 +17,7 @@ interface TirsDAO {
     suspend fun delete(tirs: Tirs)
 
     @Query("SELECT * FROM Tirs WHERE id_eleve = :idEleve")
-    suspend fun getTirsByIdEleve(idEleve: Int): Tirs?
+    suspend fun getTirsByIdEleve(idEleve: Int): List<Tirs>
 
     @Query("SELECT * FROM Tirs")
     suspend fun getTirs(): List<Tirs>
