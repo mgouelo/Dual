@@ -27,4 +27,7 @@ interface ResultatDAO {
     @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
     fun getResultatsBySeance(idSeance: Int): List<Resultat>
 
+
+    @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
+    fun getBySeance(idSeance: Int): List<Resultat>
 }

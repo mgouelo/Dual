@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     /** Base de données */
     private lateinit var db: AppDatabase
 
+    var countInitialSession: Int = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

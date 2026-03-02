@@ -2,82 +2,141 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
 
     <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <Button
+            android:id="@+id/launchASession"
+            android:layout_width="400dp"
+            android:layout_height="160dp"
+            android:text="@string/home_launch_session_button"
+            android:textSize="36sp"
+            android:textColor="@color/blanc"
+            android:layout_gravity="center"
+            android:background="@drawable/rounded_button_background"
+            android:elevation="8dp"
+            android:stateListAnimator="@null">
+        </Button>
+
+        <ImageView
+            android:id="@+id/qrCodeView"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_marginTop="32dp"
+            android:padding="8dp"
+            android:background="@android:color/white"
+            android:elevation="2dp"
+            android:visibility="gone"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/layoutUrl"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/badge_background_light"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
             android:gravity="center"
-            android:padding="24dp">
-
-            <Button
-                android:id="@+id/launchASession"
-                android:layout_width="400dp"
-                android:layout_height="160dp"
-                android:text="@string/home_launch_session_button"
-                android:textSize="40sp"
-                android:textColor="@color/blanc"
-                android:layout_gravity="center"
-                android:background="@drawable/rounded_button_background"
-                android:elevation="4dp">
-            </Button>
+            android:visibility="gone">
 
             <ImageView
-                android:id="@+id/qrCodeView"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
-                android:layout_marginTop="24dp"
-                android:visibility="gone"/>
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_share"
+                app:tint="#7F8C8D" />
 
             <TextView
                 android:id="@+id/textUrl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textSize="16sp"
-                android:visibility="gone"/>
-
-            <TextView
-                android:id="@+id/text_resultats_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Résultats reçus : 0"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#2C3E50"
-                android:layout_marginTop="20dp"
-                android:visibility="gone"/>
-
-            <Button
-                android:id="@+id/btn_download_excel"
-                style="@style/Widget.MaterialComponents.Button.Icon"
-                android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginHorizontal="40dp"
-                app:cornerRadius="16dp"
-                android:backgroundTint="#27ae60"
-                app:icon="@android:drawable/ic_menu_save"
-                app:iconGravity="textStart"
-                app:iconPadding="12dp"
-                app:iconTint="#FFFFFF"
-                android:text="Télécharger le bilan (Excel)"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:elevation="4dp"
-                android:visibility="gone" />
-
+                android:layout_marginStart="8dp"
+                android:text="http://0.0.0.0:8080"
+                android:textColor="#7F8C8D"
+                android:textSize="14sp"
+                android:fontFamily="monospace" />
         </LinearLayout>
 
-    </ScrollView>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardResultats"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E0E0E0"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SESSION EN DIRECT"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#E74C3C"
+                    android:letterSpacing="0.1" />
+
+                <TextView
+                    android:id="@+id/text_resultats_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="56sp"
+                    android:textColor="#2C3E50"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="performances enregistrées"
+                    android:textSize="14sp"
+                    android:textColor="#95A5A6" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <Button
+            android:id="@+id/btn_download_excel"
+            style="@style/Widget.MaterialComponents.Button.Icon"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginHorizontal="40dp"
+            app:cornerRadius="18dp"
+            android:backgroundTint="#27ae60"
+            app:icon="@android:drawable/stat_sys_download"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconTint="#FFFFFF"
+            android:text="Télécharger le bilan (Excel)"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:elevation="6dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

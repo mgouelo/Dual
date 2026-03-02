@@ -28,6 +28,9 @@ interface ProfDAO {
     @Query("SELECT * FROM Prof WHERE email = :email")
     fun getProfLive(email: String): LiveData<Prof?>
 
+    @Query("SELECT email FROM Prof")
+    suspend fun getProfEmail(): String
+
     @Update
     suspend fun update(prof: Prof): Int
 }
