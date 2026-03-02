@@ -26,6 +26,9 @@ class GraphView(
     /* Valeur des ordonnées maximale */
     var yMax: Int = 10
 
+    /* Labels personnalisés pour l'axe Y */
+    var yLabels: List<Float>? = null
+
     // Couleurs
     /* Couleur pour la ligne */
     var lineColor: Int = Color.BLUE
@@ -79,7 +82,7 @@ class GraphView(
         if (data.size > 1) {
             widthStep /=  (data.size - 1)
         }
-        val heightRange = yMax - yMin
+        val heightRange = if (yMax != yMin) yMax - yMin else 1
         val heightStep = height - 100f
 
         // Tracer la grille horizontale
@@ -103,10 +106,10 @@ class GraphView(
 
         // Tracer la ligne
         for (i in 0 until data.size - 1) {
-            val x1 = i * widthStep + 100 // Ajout de la marge
+            val x1 = i * widthStep + 100f // Ajout de la marge
             // .second permet de récupérer la valeur de la paire
             val y1 = heightStep - ((data[i].second - yMin) / heightRange) * heightStep + 50f // Ajout de la marge
-            val x2 = (i + 1) * widthStep + 100 // Ajout de la marge
+            val x2 = (i + 1) * widthStep + 100f // Ajout de la marge
             val y2 = heightStep - ((data[i + 1].second - yMin) / heightRange) * heightStep + 50f // Ajout de la marge
             canvas.drawLine(x1, y1, x2, y2, linePaint)
         }
@@ -129,9 +132,19 @@ class GraphView(
         }
 
         // Labels Y
-        for (i in 0..heightRange) {
-            val y = heightStep - (i / heightRange.toFloat()) * heightStep + 50f // Ajout de la marge
-            canvas.drawText(i.toString(), 0f, y, textPaint)
+        if (yLabels == null) {
+            for (i in 0..heightRange) {
+                val y = heightStep - (i / heightRange.toFloat()) * heightStep + 50f // Ajout de la marge
+                canvas.drawText(i.toString(), 0f, y, textPaint)
+            }
+        } else {
+            val labels = yLabels ?: (yMin..yMax).map { it.toFloat() }
+            val labelCount = labels.size
+            val stepDivider = if (labelCount > 1) (labelCount - 1).toFloat() else 1f
+            for ((i, value) in labels.withIndex()) {
+                val y = heightStep - (i / stepDivider) * heightStep + 50f
+                canvas.drawText(value.toString(), 0f, y, textPaint)
+            }
         }
     }
 }

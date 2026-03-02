@@ -6,11 +6,16 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.model.components.GraphView
+import fr.iutvannes.dual.model.persistence.Classe
+import fr.iutvannes.dual.model.persistence.Courses
+import fr.iutvannes.dual.model.persistence.Eleve
+import fr.iutvannes.dual.model.persistence.Seance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,12 +67,19 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
         val btnExamen = view.findViewById<Button>(R.id.btnExamen)
         val btnBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
 
+        Toast(requireContext()).apply {
+            setText("Identifiant de l'élève : $eleveId")
+            show()
+        }
+
         if (eleveId != -1) {
 
             // Ouverture d'une coroutine dans le thread IO pour effectuer les tâches de base de données
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 val eleveExist = db.EleveDao().getEleveById(eleveId)
                 val resultatExist = db.resultatDao().getResultatsByEleve(eleveId)
+                val tirsExist = db.tirsDao().getTirsByIdEleve(eleveId)
+                val coursesExist = db.coursesDao().getCoursesByIdEleve(eleveId)
 
                 if (eleveExist != null) {
                     val dataTirs = resultatExist.map { resultat ->
@@ -78,12 +90,22 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                         Pair("Séance du $date", temps.toFloat())
                     }
 
-                    val dataCourse = resultatExist.map { resultat ->
-                        val temps = resultat.temp_course
-                        val date = db.seanceDao()
-                            .getSeanceById(resultat.id_seance)
-                            ?.date ?: "Inconnu"
-                        Pair("Séance du $date", temps)
+                    val dataCourse = coursesExist.map { course ->
+                        val seance = db.seanceDao().getSeanceById(course.id_seance)
+                        val date = seance?.date ?: "Inconnu"
+
+                        // Calcul de la moyenne du temps au tour
+                        val moyenneTemps = if (course.temps_au_tour.isNotEmpty())
+                            course.temps_au_tour.average().toFloat()
+                        else 0f
+
+                        // VMA de la séance
+                        val vma = 10f // éviter division par zéro
+
+                        // Pourcentage VMA
+                        val pourcentageVMA = (moyenneTemps / vma) * 100
+
+                        Pair("Séance du $date", pourcentageVMA)
                     }
 
                     withContext(Dispatchers.Main) {
@@ -103,8 +125,8 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             } else {
                                 resultExamen.visibility = View.GONE
                                 resultGraph.visibility = View.VISIBLE
-                                resultGraph.yMax = 30
                                 resultGraph.yMin = 0
+                                resultGraph.yMax = 5
                                 resultGraph.lineColor = ContextCompat.getColor(requireContext(), R.color.vert)
                                 resultGraph.data = dataTirs
                                 resultGraph.invalidate()
@@ -123,8 +145,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             } else {
                                 resultExamen.visibility = View.GONE
                                 resultGraph.visibility = View.VISIBLE
-                                resultGraph.yMax = 30
-                                resultGraph.yMin = 0
+                                resultGraph.yLabels = listOf(50f, 60f, 70f, 80f, 90f, 100f, 110f, 120f, 130f)
                                 resultGraph.lineColor = ContextCompat.getColor(requireContext(), R.color.rouge)
                                 resultGraph.data = dataCourse
                                 resultGraph.invalidate()

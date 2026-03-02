@@ -2,6 +2,9 @@ package fr.iutvannes.dual.infrastructure.server
 
 import android.content.Context
 import android.util.Log
+import fr.iutvannes.dual.model.persistence.Courses
+import fr.iutvannes.dual.model.persistence.Seance
+import fr.iutvannes.dual.model.persistence.Tirs
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -17,12 +20,17 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -34,6 +42,22 @@ data class EventDTO(
     val type: String,
     val studentId: String? = null,
     val payload: JsonObject? = null
+)
+
+/**
+ * Données du biathlon
+ */
+@Serializable
+data class BiathlonRequest(
+    val prenom: String,
+    val nom: String,
+    val dateSeance: String,
+    val nbTours: Int,
+    val nbCibles: Int,
+    val nbTirsReussi: List<Int>,
+    val tempsAuPasDeTir: List<Int>,
+    val vitesse: Double,
+    val tempsAuTour: List<Int>
 )
 
 /**
@@ -167,11 +191,87 @@ fun Application.module(appContext: Context) {
             }
         }
 
+        post("/api/biathlon") {
+
+            try {
+
+                val body = call.receiveText()
+                val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                val jsonElement = jsonParser.parseToJsonElement(body).jsonObject
+
+                val prenom = jsonElement["prenom"]?.jsonPrimitive?.content ?: ""
+                val nom = jsonElement["nom"]?.jsonPrimitive?.content ?: ""
+                val dateSeance = jsonElement["dateSeance"]?.jsonPrimitive?.content ?: ""
+                val nbTours = jsonElement["nbTours"]?.jsonPrimitive?.int ?: 0
+                val nbCibles = jsonElement["nbCibles"]?.jsonPrimitive?.int ?: 0
+                val nbTirsReussi = jsonElement["nbTirsReussi"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
+                val tempsAuPasDeTir = jsonElement["tempsAuPasDeTir"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
+                val vitesse = jsonElement["vitesse"]?.jsonPrimitive?.double ?: 0.0
+                val tempsAuTour = jsonElement["tempsAuTour"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
+
+                val eleve = DatabaseProvider.db
+                    .EleveDao()
+                    .findByName(prenom, nom.uppercase())
+
+                if (eleve == null) {
+                    call.respond(HttpStatusCode.NotFound, "Élève introuvable")
+                    return@post
+                }
+
+                withContext(Dispatchers.IO) {
+
+                    val seance = Seance(
+                        date = dateSeance,
+                        nb_tours = nbTours,
+                        nb_cibles = nbCibles,
+                        id_prof = 1
+                    )
+
+                    val seanceId = DatabaseProvider.db
+                        .seanceDao()
+                        .insert(seance)
+                        .toInt()
+
+                    val tirs = Tirs(
+                        id_seance = seanceId,
+                        id_eleve = eleve.id_eleve,
+                        nb_tirs_reussi = nbTirsReussi,
+                        temps_au_pas_de_tir = tempsAuPasDeTir
+                    )
+
+                    DatabaseProvider.db.tirsDao().insert(tirs)
+
+                    val course = Courses(
+                        id_seance = seanceId,
+                        id_eleve = eleve.id_eleve,
+                        vitesse = vitesse,
+                        temps_au_tour = tempsAuTour
+                    )
+
+                    DatabaseProvider.db.coursesDao().insert(course)
+                }
+
+                call.respond(HttpStatusCode.Created)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf(
+                        "error" to (e.message ?: "Erreur inconnue"),
+                        "type" to e::class.simpleName
+                    )
+                )
+            }
+        }
+
+        // Route pour les pages statiques
         get("/") {
             val bytes = appContext.assets.open("eleve/index.html").use { it.readBytes() }
             call.respondBytes(bytes, contentType = ContentType.Text.Html)
         }
 
+        // Route pour les fichiers statiques
         get("/{path...}") {
             val segments = call.parameters.getAll("path") ?: emptyList()
             val rest = segments.joinToString("/")
@@ -220,7 +320,10 @@ fun Application.module(appContext: Context) {
 
             } catch (e: Exception) {
                 Log.e("KtorServer", "Erreur Export CSV: ${e.message}")
-                call.respond(HttpStatusCode.InternalServerError, "Erreur lors de la génération du fichier")
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    "Erreur lors de la génération du fichier"
+                )
             }
         }
     }

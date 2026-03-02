@@ -3,6 +3,7 @@ let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
 let startBtn = document.getElementById("start");
 let enregistrerBtn = document.getElementById("enregistrer");
+let enregistrerSessionBtn = document.getElementById("enregistrer-session");
 const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
@@ -129,3 +130,42 @@ startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
 resetBtn.addEventListener("click", reset);
 enregistrerBtn.addEventListener("click", enregistrer);
+enregistrerSessionBtn.addEventListener("click", async () => {
+    await envoyerCourseAuServeur();
+    alert("Session complète envoyée au serveur !");
+});
+
+async function envoyerCourseAuServeur() {
+    const identite = localStorage.getItem("eleve_identite");
+    const [prenom, nom] = identite.split(" ");
+    const dateSeance = new Date().toISOString(); // ou la date choisie
+    const listeTours = document.querySelectorAll("#listeTours span");
+    const tempsAuTour = Array.from(listeTours).map(span => {
+        const texte = span.textContent.split(": ")[1]; // "mm:ss:ms"
+        const [m, s, ms] = texte.split(":").map(Number);
+        return m * 60000 + s * 1000 + ms * 10; // convertir en ms ou garder en int selon serveur
+    });
+
+    const request = {
+        prenom,
+        nom,
+        dateSeance,
+        nbTours: tempsAuTour.length,
+        nbCibles: 0,
+        nbTirsReussi: [],       // non utilisé ici
+        tempsAuPasDeTir: [],    // non utilisé ici
+        vitesse: 0,             // optionnel, ou calculé si souhaité
+        tempsAuTour
+    };
+
+    try {
+        const response = await fetch("/api/biathlon", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(request)
+        });
+        setTimeout(() => { window.location.href = "seance.html"; }, 1500);
+    } catch (e) {
+        console.error("Erreur fetch course :", e);
+    }
+}

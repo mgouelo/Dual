@@ -2,6 +2,7 @@ package fr.iutvannes.dual.model.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Courses
 import fr.iutvannes.dual.model.persistence.Eleve
@@ -9,6 +10,7 @@ import fr.iutvannes.dual.model.persistence.Prof
 import fr.iutvannes.dual.model.persistence.Resultat
 import fr.iutvannes.dual.model.persistence.Seance
 import fr.iutvannes.dual.model.persistence.Tirs
+import fr.iutvannes.dual.model.persistence.converters.Converters
 import fr.iutvannes.dual.model.dao.ClasseDAO
 import fr.iutvannes.dual.model.dao.CoursesDAO
 import fr.iutvannes.dual.model.dao.EleveDAO
@@ -22,6 +24,7 @@ import fr.iutvannes.dual.model.dao.TirsDAO
     version = 2,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun EleveDao(): EleveDAO
