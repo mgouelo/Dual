@@ -50,6 +50,53 @@
             <button id="supprimer" class="button">Supprimer (-1 tour)</button>
         </div>
 
+        <div class="terminerEpreuve">
+            <button id="terminer" class="button-green">Terminer l'épreuve</button>
+        </div>
+
+        <!-- Modal de bilan final -->
+        <div id="modal-bilan" class="modal">
+            <div class="modal-content bilan-content">
+                <h2>Bilan de l'Épreuve - 6ème</h2>
+
+                <!-- Les Performances du 6eme -->
+                <div class="resultats-grid">
+                    <div class="resultat-card" id="card-perf">
+                        <h3>Performance</h3>
+                        <p class="valeur" id="res-tours">-</p>
+                        <p class="note" id="note-perf">/5</p>
+                        <div id="medaille-display-perf" class="medaille">Sans Médaille</div>
+                    </div>
+
+                    <!-- Les Régularités du 6eme -->
+                    <div class="resultat-card" id="card-regul">
+                        <h3>Régularité</h3>
+                        <p class="valeur" id="res-ecart">-</p>
+                        <p class="note" id="note-regul">/5</p>
+                        <div id="medaille-display-reg" class="medaille">Sans Médaille</div>
+                    </div>
+
+                    <!-- L"efficacité au tir du 6eme -->
+                    <div class="resultat-card" id="card-tir">
+                        <h3>Efficacité Tir</h3>
+                        <p class="valeur" id="res-tir">-</p>
+                        <p class="note" id="note-tir">/5</p>
+                        <div id="medaille-display-tir" class="medaille">Sans Médaille</div>
+                    </div>
+                </div>
+
+                <!-- La Note Finale du 6eme -->
+                <div class="total-final">
+                    Note Finale : <span id="note-totale">-</span> / 20
+                </div>
+
+                <div class="retourSeance">
+                    <button class="button" onclick="location.href='seance.html'">Retour séance</button>
+                </div>
+
+            </div>
+        </div>
+
         <div id="custom-confirm" class="modal">
             <div class="modal-content">
                 <h3>Confirmation</h3>
@@ -57,6 +104,16 @@
                 <div class="modal-buttons">
                     <button id="confirm-ok" class="btn-confirm">OK</button>
                     <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirm-normal" class="modal">
+            <div class="modal-content">
+                <h3>Attention !</h3>
+                <p id="confirm-message-normal">Êtes-vous sûr ?</p>
+                <div class="modal-buttons">
+                    <button id="confirm-ok-normal" class="btn-confirm">OK</button>
                 </div>
             </div>
         </div>

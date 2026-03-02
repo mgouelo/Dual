@@ -3,11 +3,17 @@ let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
 let startBtn = document.getElementById("start");
 const modal = document.getElementById("custom-confirm");
+const modalNormal = document.getElementById("confirm-normal");
 const confirmOk = document.getElementById("confirm-ok");
+const confirmOkNormal = document.getElementById("confirm-ok-normal");
 const confirmCancel = document.getElementById("confirm-cancel");
 let enregistrerBtn = document.getElementById("enregistrer");
 let supprimerBtn = document.getElementById("supprimer");
 const btnValiderTir = document.getElementById("valider-tir");
+const terminerBtn = document.getElementById("terminer");
+
+// Variable pour savoir quand l'élève a commencé à courir (initialement à 20:00:00)
+let tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
 
 let minutes = 20;
 let secondes = 0;
@@ -15,6 +21,10 @@ let millisecondes = 0;
 let timeout;
 let estArrete = true;
 let tourActuel = 1;
+
+// Stockage des données pour le bilan final
+let historiqueEpreuve = []; // Résultats de chaque tour (temps et score de tir)
+
 
 /* Cette fonction gère le déroulement du temps.
 Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arrêté. */
@@ -34,23 +44,22 @@ const defilerTemps = () => {
     }
 
     // Arrêt automatique à zéro
-    if (minutes <= 0 && secondes <= 0 && millisecondes <= 0) {
+    // Ajout d'une sécurité pour le chron afin de éviter les valeurs négatives en cas de bug ou de manipulation rapide des boutons
+    if (minutes < 0 || (minutes === 0 && secondes === 0 && millisecondes <= 0)) {
         minutes = 0;
         secondes = 0;
         millisecondes = 0;
         estArrete = true;
         clearTimeout(timeout);
         chrono.textContent = "00:00:00";
-        // Optionnel : déclencher le bilan final ici
         alert("Temps écoulé ! Fin de l'épreuve.");
         return;
     }
 
-    // Affichage formaté
-    let m = minutes < 10 ? "0" + minutes : minutes;
-    let s = secondes < 10 ? "0" + secondes : secondes;
-    let ms = Math.floor(millisecondes / 10);
-    if (ms < 10) ms = "0" + ms;
+    // Affichage formaté avec des zéros, padStart pemet de faire ça facilement en convertissant les nombres en chaînes de caractères et en ajoutant des zéros devant si nécessaire
+    let m = minutes.toString().padStart(2, '0');
+    let s = secondes.toString().padStart(2, '0');
+    let ms = Math.floor(millisecondes / 10).toString().padStart(2, '0');
 
     chrono.textContent = `${m}:${s}:${ms}`;
 
@@ -80,15 +89,22 @@ const reset = async() => {
     if (confirmation) {
         estArrete = true;
         clearTimeout(timeout);
-        minutes = secondes = millisecondes = 0;
+
+        // Remettre à la valeur de départ (20 minutes)
+        minutes = 20;
+        secondes = 0;
+        millisecondes = 0;
         chrono.textContent = "20:00:00";
     }
+
+    tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
+    historiqueEpreuve = [];
+    tourActuel = 1;
 
     // Réinitialiser les tours
     const listeTours = document.getElementById("listeTours");
     if (listeTours) {
         listeTours.innerHTML = "";
-        tourActuel = 1;
     }
 };
 
@@ -96,14 +112,17 @@ const reset = async() => {
 const enregistrer = () => {
     // On vérifie que le chrono a tourné et n'est pas à 20:00:00 (compte à rebours)
     if(chrono.textContent !== "20:00:00" && !estArrete) {
-        // On capture le temps actuel pour le tour
-        const tempsCapture = chrono.textContent;
 
-        // On prépare la modale de tir
+        // Calcul de la durée de course (Ref précédente - Chrono actuel)
+        let dureeCourse = (tempsDepartCourse.min * 60 + tempsDepartCourse.sec) - (minutes * 60 + secondes);
+        dureeCourse = Math.max(0, dureeCourse); // Sécurité pour éviter les valeurs négatives en cas de bug ou de manipulation rapide des boutons
+
+        // On stocke temporairement cette durée pour la valider plus tard
+        document.getElementById("temps-tour-cache").value = dureeCourse;
+        tempsDebutTir = { min: minutes, sec: secondes }; // On mémorise le moment où on a commencé à tirer
+
+        // On prépare la modale de tir et affiche la salve de tir (la modale)
         document.getElementById("titre-tir").textContent = `Score Tir - Tour ${tourActuel}`;
-        document.getElementById("temps-tour-cache").value = tempsCapture; // On stocke le temps
-
-        // On affiche la salve de tir (la modale)
         document.getElementById("modal-tir").style.display = "flex";
         document.getElementById("modal-tir").classList.add("show");
     }
@@ -127,38 +146,56 @@ function setScoreTir(valeur) {
     });
 }
 
-
-// Variable pour stocker les scores de tirs pour le bilan final
-let scoresTirs = [];
-
 /**
  * Valide le tour en cours en enregistrant le score de tir et le temps, puis met à jour l'affichage de la liste des tours.
  * Cette fonction est appelée lorsque l'utilisateur clique sur le bouton de validation dans la modale de tir.
  */
 const validerTourEtTir = () => {
+    // Vérification que l'utilisateur a bien sélectionné un score de tir avant de valider
+    let btnSelectionne = false; // Variable pour vérifier si un bouton a été sélectionné
+    document.querySelectorAll('.btn-score').forEach(button => {
+        // Vérification que il y a au moins un bouton de sélectionner
+        if (button.classList.contains('selected')) {
+            btnSelectionne = true;
+        }
+    });
+    if (!btnSelectionne) {
+        confirmation("Veuillez sélectionner un score de tir avant de valider.");
+        return;
+    }
+
     const score = parseInt(document.getElementById("score-temporaire").value);
-    const tempsTour = document.getElementById("temps-tour-cache").value;
-    const listeTours = document.getElementById("listeTours");
+    const dureeCourse = parseInt(document.getElementById("temps-tour-cache").value);
+
+    // Calcul de la durée de tir (Début du tir - Chrono actuel)
+    let dureeTir = (tempsDebutTir.min * 60 + tempsDebutTir.sec) - (minutes * 60 + secondes);
+
+    // Stockage de l'historique pour le bilan final
+    historiqueEpreuve.push({
+        tour: tourActuel,
+        course: dureeCourse,
+        tir: dureeTir,
+        totalTour: dureeCourse + dureeTir,
+        scoreTir: score,
+    });
+
+    // Preparation du tour suivant : on considère que le départ du prochain tour est à l'heure actuelle du chrono
+    tempsDepartCourse = { min: minutes, sec: secondes, ms: millisecondes };
 
     // Création de l'affichage dans la liste
+    const listeTours = document.getElementById("listeTours");
     const nouveauTour = document.createElement("div");
     nouveauTour.style.marginBottom = "10px";
     nouveauTour.innerHTML = `
-        <strong>Tour ${tourActuel}</strong> : ${tempsTour} 
-        <span class="badge-tir">${score}/5</span>
+        <strong>Tour ${tourActuel} :</strong> Course ${dureeCourse}s | Tir <span class="badge-tir">${score}/5</span>
     `;
-
     listeTours.appendChild(nouveauTour);
-
-    // Sauvegarde des données pour le calcul de la médaille
-    scoresTirs.push(score);
-    // Ici, tu pourrais aussi calculer l'écart pour la régularité
 
     // Fermeture de la modale et incrémentation
     document.getElementById("modal-tir").style.display = "none";
     tourActuel++;
 
-    // Reset de la sélection visuelle pour le prochain tour
+    // Reset de la sélection visuelle pour le prochain tour (les boutons de score)
     document.querySelectorAll('.btn-score').forEach(b => b.classList.remove('selected'));
 };
 
@@ -199,6 +236,156 @@ const demanderConfirmation = (message) => {
     });
 };
 
+/* Affiche une boîte de confirmation personnalisée et retourne une promesse qui se résout en fonction du choix de l'utilisateur. */
+const confirmation = (message) => {
+    document.getElementById("confirm-message-normal").textContent = message;
+
+    modalNormal.style.display = "flex";
+    // Petit timeout pour laisser le navigateur appliquer le display:flex
+    // avant de lancer l'animation CSS
+    setTimeout(() => {
+        modalNormal.classList.add("show");
+    }, 10);
+
+    return new Promise((resolve) => {
+        confirmOkNormal.onclick = () => {
+            modalNormal.classList.remove("show");
+            setTimeout(() => { modalNormal.style.display = "none"; }, 300);
+            resolve(true);
+        };
+    });
+};
+
+// Fonction asynchrone pour terminer l'épreuve, calculer les résultats et afficher le bilan final
+const terminerEpreuve = async() => {
+    const confirmationFin = await demanderConfirmation("Voulez-vous vraiment terminer l'épreuve et afficher le bilan ?");
+
+    if (confirmationFin) {
+        arreter(); // On stoppe le chrono
+
+        if (historiqueEpreuve.length === 0) {
+            confirmation("Aucune donnée enregistrée pour cette épreuve.");
+            return;
+        }
+
+        // Performance : Nombre de tours réalisés
+        // Barème : 7 tours = 5pts, 6 tours = 4pts, etc.
+        const nbTours = historiqueEpreuve.length;
+        let notePerf = 0;
+        if (nbTours >= 7) notePerf = 5;
+        else if (nbTours >= 6.5) notePerf = 4.5;
+        else if (nbTours >= 6) notePerf = 4;
+        else if (nbTours >= 5.5) notePerf = 3.5;
+        else if (nbTours >= 5) notePerf = 3;
+        else if (nbTours >= 4.5) notePerf = 2.5;
+        else if (nbTours >= 4) notePerf = 2;
+        else if (nbTours >= 3.5) notePerf = 1.5;
+        else if (nbTours >= 3) notePerf = 1;
+        else notePerf = 0.5;
+
+        // Régularité : Écart entre le meilleur et le pire temps de course
+        // On compare les temps de course uniquement
+        const tempsCourses = historiqueEpreuve.map(t => t.course);
+        const maxCourse = Math.max(...tempsCourses);
+        const minCourse = Math.min(...tempsCourses);
+        const ecartMax = maxCourse - minCourse;
+        let noteRegul = 0;
+        if (ecartMax < 10) noteRegul = 5;
+        else if (ecartMax <= 15) noteRegul = 4;
+        else if (ecartMax <= 20) noteRegul = 3;
+        else if (ecartMax <= 25) noteRegul = 2;
+        else noteRegul = 1;
+
+        // Tir : Total de points de tir sur tous les tours
+        // Somme de tous les scores de tir
+        const totalTir = historiqueEpreuve.reduce((sum, t) => sum + t.scoreTir, 0);
+        const pourcentageTir = (totalTir / (nbTours * 5)) * 100;
+        let noteTir = 0;
+        // Barème : 21 = 5pts, 19 = 4pts, etc.
+        if (totalTir >= 21) noteTir = 5;
+        else if (totalTir >= 20) noteTir = 4.5;
+        else if (totalTir >= 19) noteTir = 4;
+        else if (totalTir >= 18) noteTir = 3.5;
+        else if (totalTir >= 17) noteTir = 3;
+        else if (totalTir >= 16) noteTir = 2.5;
+        else if (totalTir >= 15) noteTir = 2;
+        else if (totalTir >= 14) noteTir = 1.5;
+        else if (totalTir >= 13) noteTir = 1;
+        else noteTir = 0.5;
+
+        let medaillePerf = nbTours >= 8 ? "DIAMANT" : nbTours >= 7 ? "PLATINE" : nbTours >= 6 ? "OR" : nbTours >= 5 ? "ARGENT" : "BRONZE";
+        let medailleRegul = ecartMax < 10 ? "DIAMANT" : ecartMax <= 15 ? "PLATINE" : ecartMax <= 20 ? "OR" : ecartMax <= 25 ? "ARGENT" : "BRONZE";
+        let medailleTir = pourcentageTir >= 85 ? "DIAMANT" : pourcentageTir >= 75 ? "PLATINE" : pourcentageTir >= 65 ? "OR" : pourcentageTir >= 55 ? "ARGENT" : "BRONZE";
+
+        afficherResultatsFinaux(nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir);
+    }
+};
+
+const afficherResultatsFinaux = (nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir) => {
+    // Calcul de la note totale sur 15
+    const noteFinale = (parseFloat(notePerf) + parseFloat(noteRegul) + parseFloat(noteTir)).toFixed(1);
+
+    // fonction utilitaire pour mettre à jour le texte d'un élément par son ID
+    const majTexte = (id, texte) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = texte;
+    };
+
+    // Performance : Nombre de tours parcourus
+    majTexte("res-tours", `<strong>Nombre de tours : </strong>${nbTours} tours`);
+    majTexte("note-perf", `<strong>Note de la performance : </strong> <span>${notePerf} / 5</span>`);
+
+    // Régularité : Écart maximal entre chaque tour de course
+    majTexte("res-ecart", `<strong>Écart maximal de course : </strong>${ecartMax}s`);
+    majTexte("note-regul", `<strong>Note de la régularité : </strong> <span>${noteRegul} / 5</span>`);
+
+    // Efficacité Tir : Somme des réussites sur l'ensemble de l'épreuve
+    majTexte("res-tir", `<strong>Total des réussites tir : </strong>${totalTir} / ${nbTours * 5}`);
+    majTexte("note-tir", `<strong>Note du tir : </strong><span>${noteTir} / 5</span>`);
+
+    // Note Finale sur 20
+    const elNoteTotale = document.getElementById("note-totale");
+    if (elNoteTotale) elNoteTotale.textContent = noteFinale;
+
+    // Gestion de la médaille
+    // Couleurs associées à chaque médaille pour un affichage plus visuel
+    const couleurs = { "diamant": "#1456DB", "platine": "#b9f2ff", "or": "#ffd700", "argent": "#c0c0c0", "bronze": "#cd7f32" };
+    const mDisplayReg = document.getElementById("medaille-display-reg");
+    if (mDisplayReg && medailleRegul) {
+        mDisplayReg.textContent = "Médaille : " + medailleRegul;
+        mDisplayReg.style.backgroundColor = couleurs[medailleRegul.toLowerCase()] || "#ccc";
+        mDisplayReg.style.padding = "20px";
+        mDisplayReg.style.borderRadius = "12px";
+        mDisplayReg.style.fontSize = "1.4rem";
+    }
+    const mDisplayTir = document.getElementById("medaille-display-tir");
+    if (mDisplayTir && medailleTir) {
+        mDisplayTir.textContent = "Médaille : " + medailleTir;
+        mDisplayTir.style.backgroundColor = couleurs[medailleTir.toLowerCase()] || "#ccc";
+        mDisplayTir.style.padding = "20px";
+        mDisplayTir.style.borderRadius = "12px";
+        mDisplayTir.style.fontSize = "1.4rem";
+    }
+    const mDisplayPerf = document.getElementById("medaille-display-perf");
+    if (mDisplayPerf && medaillePerf) {
+        mDisplayPerf.textContent = "Médaille : " + medaillePerf;
+        mDisplayPerf.style.backgroundColor = couleurs[medaillePerf.toLowerCase()] || "#ccc";
+        mDisplayPerf.style.padding = "20px";
+        mDisplayPerf.style.borderRadius = "12px";
+        mDisplayPerf.style.fontSize = "1.4rem";
+    }
+
+    // Affichage de la modale
+    const modalBilan = document.getElementById("modal-bilan");
+    if (modalBilan) {
+        modalBilan.style.display = "flex";
+        setTimeout(() => modalBilan.classList.add("show"), 10);
+    } else {
+        // Si la modale n'existe pas encore, on utilise une alerte de secours pour voir les résultats
+        alert(`Bilan : Perf ${notePerf}/5, Régul ${noteRegul}/5, Tir ${noteTir}/5. Total : ${noteFinale}/15`);
+    }
+};
+
 /* Ajout des écouteurs d'événements pour les boutons. */
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
@@ -206,3 +393,4 @@ resetBtn.addEventListener("click", reset);
 enregistrerBtn.addEventListener("click", enregistrer);
 supprimerBtn.addEventListener("click", supprimer);
 btnValiderTir.addEventListener("click", validerTourEtTir);
+terminerBtn.addEventListener("click", terminerEpreuve);

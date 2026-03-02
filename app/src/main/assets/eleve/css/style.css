@@ -5,6 +5,7 @@
     --blue: #303586;
     --night-blue: #1c1e4e;
     --white: #e5e5e5;
+    --green: #2ecc71;
 }
 
 /* Style global */
@@ -157,7 +158,6 @@ footer .info {
     text-align: center;
     padding: 10px;
     border-radius: 10px;
-    font-weight: bold;
     background: rgba(0,0,0,0.05); /* Un léger fond pour structurer l'espace */
 }
 
@@ -616,4 +616,105 @@ footer .info {
 .btn-score.selected {
     background: var(--blue);
     color: white;
+}
+
+/* Boutons principaux */
+.button-green {
+    background: var(--green);
+    width: 100%;
+    max-width: 300px;
+    border: none;
+    border-radius: 12px;
+    padding: 25px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #202122;
+}
+
+/* Effet de survol pour les boutons */
+.button-green:hover {
+    background: #27ae60;
+    transform: translateY(-3px);
+}
+
+/* Conteneur pour le bouton de validation de l'épreuve */
+.terminerEpreuve {
+    display: flex;
+    justify-content: center;
+    margin-top: 10vh;
+    margin-bottom: 5vh;
+}
+
+/* Conteneur pour les résultats détaillés du Tir Efficience */
+.resultats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+/* Carte individuelle pour chaque tir */
+.resultat-card {
+    background: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--grey);
+    text-align: left;
+}
+
+/* titre pour chaque partie  */
+.resultat-card h3 {
+    font-size: 1.2rem;
+    color: var(--blue);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+}
+
+/* Détails pour chaque catégorie */
+.valeur {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+.note {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+/* Affichage de la note finale */
+.note span {
+    color: var(--green);
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Style pour les médailles  */
+.medaille {
+    display: block;
+    color: white;
+    text-align: center;
+    margin: 8px 0 0 0;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Couleurs spécifiques pour les médailles */
+.total-final {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin: 15px 0;
+}
+
+/* Conteneur pour le bouton de retour après l'épreuve */
+.retourSeance {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
 }
