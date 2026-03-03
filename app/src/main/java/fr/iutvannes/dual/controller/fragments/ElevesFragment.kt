@@ -123,7 +123,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
             arrayOf(
                 "text/csv",
                 "text/comma-separated-values",
-                "text/plain", // Ajout crucial : certains CSV sont vus comme du texte brut
+                "text/plain",
                 "application/csv",
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

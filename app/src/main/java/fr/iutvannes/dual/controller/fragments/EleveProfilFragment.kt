@@ -33,7 +33,7 @@ class EleveProfilFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // On récupère l'ID passé depuis la liste (via Navigation Component ou Arguments)
+        // On récupère l'ID passé depuis la liste
         arguments?.let {
             eleveId = it.getInt("eleve_id", -1)
         }
@@ -91,7 +91,7 @@ class EleveProfilFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 if (eleve != null) {
                     currentEleve = eleve
-                    // Remplissage de l'UI
+                    // remplissage de l'UI
                     tvNomPrenom.text = "${eleve.nom} ${eleve.prenom}"
                     tvClasse.text = "Classe : ${eleve.classe}"
 
@@ -124,7 +124,7 @@ class EleveProfilFragment : Fragment() {
         val nouvelleVmaString = etVma.text.toString()
         val nouvelleVma = nouvelleVmaString.toFloatOrNull()
 
-        // 1. GESTION DE L'INTERFACE (Main Thread - Autorisé)
+        // gestion de l'interface
         if (nouvelleVma == null) {
             // Le champ est vide, on met à jour l'affichage
             if (::currentEleve.isInitialized && currentEleve.vma != null) {
@@ -136,12 +136,12 @@ class EleveProfilFragment : Fragment() {
             }
 
             Toast.makeText(requireContext(), "Aucune modification enregistrée", Toast.LENGTH_SHORT).show()
-            requireActivity().onBackPressedDispatcher.onBackPressed() // On rentre à la liste
+            requireActivity().onBackPressedDispatcher.onBackPressed() // On retourne à la liste d'élève
 
             return
         }
 
-        // 2. SAUVEGARDE EN BASE DE DONNÉES (Background Thread - Dispatchers.IO)
+        // sauvegarde en base
         // Si le code arrive ici, c'est que nouvelleVma n'est pas null.
         val dao = DatabaseProvider.db.EleveDao()
 
@@ -151,9 +151,8 @@ class EleveProfilFragment : Fragment() {
             // Sauvegarde des données
             dao.updateVma(eleveId, nouvelleVma)
             dao.updateParcours(eleveId, nouveauParcours)
-            // dao.updateParcours(eleveId, nouveauParcours) // Si ton DAO a cette fonction
 
-            // 3. RETOUR SUR L'INTERFACE POUR CONFIRMER (Main Thread)
+            // retour sur l'UI pour faire un feedback utilisateur
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "VMA et parcours mis à jour", Toast.LENGTH_SHORT).show()
                 requireActivity().onBackPressedDispatcher.onBackPressed() // Retour à la liste
@@ -184,12 +183,12 @@ class EleveProfilFragment : Fragment() {
             "Coupelles jaunes" -> R.color.jaune
             "Plots verts" -> R.color.vert
             "Coupelles bleues", "Plots bleus" -> R.color.bleu
-            "Coupelles rouges", "Plots rouges" -> R.color.rouge // Tu peux utiliser ton rouge de base
+            "Coupelles rouges", "Plots rouges" -> R.color.rouge
             "Grand tour" -> R.color.noir
-            else -> R.color.gris // Pour "À déterminer"
+            else -> R.color.gris
         }
 
-        // 2. On applique la couleur au TextView
+        // applique la couleur au textview
         tvParcours.setTextColor(ContextCompat.getColor(requireContext(), couleurId))
     }
 
