@@ -11,6 +11,7 @@ let enregistrerBtn = document.getElementById("enregistrer");
 let supprimerBtn = document.getElementById("supprimer");
 const btnValiderTir = document.getElementById("valider-tir");
 const terminerBtn = document.getElementById("terminer");
+const btnVoirBilan = document.getElementById("btnVoirBilan");
 
 // Variable pour savoir quand l'élève a commencé à courir (initialement à 20:00:00)
 let tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
@@ -24,6 +25,7 @@ let tourActuel = 1;
 
 // Stockage des données pour le bilan final
 let historiqueEpreuve = []; // Résultats de chaque tour (temps et score de tir)
+let autoEval = {intensite: "", durer: "", lucidite: ""};
 
 
 /* Cette fonction gère le déroulement du temps.
@@ -257,67 +259,110 @@ const confirmation = (message) => {
 };
 
 // Fonction asynchrone pour terminer l'épreuve, calculer les résultats et afficher le bilan final
-const terminerEpreuve = async() => {
-    const confirmationFin = await demanderConfirmation("Voulez-vous vraiment terminer l'épreuve et afficher le bilan ?");
+const terminerEpreuve = ()=> {
+    // Performance : Nombre de tours réalisés
+    // Barème : 7 tours = 5pts, 6 tours = 4pts, etc.
+    const nbTours = historiqueEpreuve.length;
+    let notePerf = 0;
+    if (nbTours >= 7) notePerf = 5;
+    else if (nbTours >= 6.5) notePerf = 4.5;
+    else if (nbTours >= 6) notePerf = 4;
+    else if (nbTours >= 5.5) notePerf = 3.5;
+    else if (nbTours >= 5) notePerf = 3;
+    else if (nbTours >= 4.5) notePerf = 2.5;
+    else if (nbTours >= 4) notePerf = 2;
+    else if (nbTours >= 3.5) notePerf = 1.5;
+    else if (nbTours >= 3) notePerf = 1;
+    else notePerf = 0.5;
+
+    // Régularité : Écart entre le meilleur et le pire temps de course
+    // On compare les temps de course uniquement
+    const tempsCourses = historiqueEpreuve.map(t => t.course);
+    const maxCourse = Math.max(...tempsCourses);
+    const minCourse = Math.min(...tempsCourses);
+    const ecartMax = maxCourse - minCourse;
+    let noteRegul = 0;
+    if (ecartMax < 10) noteRegul = 5;
+    else if (ecartMax <= 15) noteRegul = 4;
+    else if (ecartMax <= 20) noteRegul = 3;
+    else if (ecartMax <= 25) noteRegul = 2;
+    else noteRegul = 1;
+
+    // Tir : Total de points de tir sur tous les tours
+    // Somme de tous les scores de tir
+    const totalTir = historiqueEpreuve.reduce((sum, t) => sum + t.scoreTir, 0);
+    const pourcentageTir = (totalTir / (nbTours * 5)) * 100;
+    let noteTir = 0;
+    // Barème : 21 = 5pts, 19 = 4pts, etc.
+    if (totalTir >= 21) noteTir = 5;
+    else if (totalTir >= 20) noteTir = 4.5;
+    else if (totalTir >= 19) noteTir = 4;
+    else if (totalTir >= 18) noteTir = 3.5;
+    else if (totalTir >= 17) noteTir = 3;
+    else if (totalTir >= 16) noteTir = 2.5;
+    else if (totalTir >= 15) noteTir = 2;
+    else if (totalTir >= 14) noteTir = 1.5;
+    else if (totalTir >= 13) noteTir = 1;
+    else noteTir = 0.5;
+
+    let medaillePerf = nbTours >= 8 ? "DIAMANT" : nbTours >= 7 ? "PLATINE" : nbTours >= 6 ? "OR" : nbTours >= 5 ? "ARGENT" : "BRONZE";
+    let medailleRegul = ecartMax < 10 ? "DIAMANT" : ecartMax <= 15 ? "PLATINE" : ecartMax <= 20 ? "OR" : ecartMax <= 25 ? "ARGENT" : "BRONZE";
+    let medailleTir = pourcentageTir >= 85 ? "DIAMANT" : pourcentageTir >= 75 ? "PLATINE" : pourcentageTir >= 65 ? "OR" : pourcentageTir >= 55 ? "ARGENT" : "BRONZE";
+
+    afficherResultatsFinaux(nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir);
+};
+
+/**
+ * Enregistre le choix de l'élève pour l'auto-évaluation
+ * @param {HTMLElement} element - Le bouton cliqué
+ * @param {string} categorie - 'intensite', 'durer' ou 'lucidite'
+ * @param {string} valeur - Le texte du ressenti
+ */
+function selectAudit(element, categorie, valeur) {
+    // Désélectionner les boutons du même groupe
+    const parent = element.parentElement;
+    parent.querySelectorAll('.btn-audit').forEach(btn => btn.classList.remove('selected'));
+
+    // Sélectionner le bouton cliqué
+    element.classList.add('selected');
+
+    // Stocker la valeur dans l'objet global
+    autoEval[categorie] = valeur;
+}
+
+// Fonction déclenchée par le bouton "Voir mon Bilan"
+const validerRessentis = async() => {
+    // Vérifier que tous les ressentis ont été sélectionnés
+    if (!autoEval.intensite || !autoEval.durer || !autoEval.lucidite) {
+        confirmation("Veuillez répondre aux 3 questions de ressenti avant de voir le bilan.");
+        return;
+    }
+
+    // Fermer la modale des ressentis
+    const modalRessenti = document.getElementById("modal-ressenti");
+    modalRessenti.style.display = "none";
+    modalRessenti.classList.remove("show");
+
+    terminerEpreuve();
+};
+
+// Fonction déclenchée par le bouton "Terminer l'épreuve"
+const declencherFinEpreuve = async () => {
+    // On demande confirmation d'abord
+    const confirmationFin = await demanderConfirmation("Voulez-vous vraiment terminer l'épreuve ?");
 
     if (confirmationFin) {
-        arreter(); // On stoppe le chrono
+        arreter(); // On stoppe le chrono immédiatement
 
         if (historiqueEpreuve.length === 0) {
             confirmation("Aucune donnée enregistrée pour cette épreuve.");
             return;
         }
 
-        // Performance : Nombre de tours réalisés
-        // Barème : 7 tours = 5pts, 6 tours = 4pts, etc.
-        const nbTours = historiqueEpreuve.length;
-        let notePerf = 0;
-        if (nbTours >= 7) notePerf = 5;
-        else if (nbTours >= 6.5) notePerf = 4.5;
-        else if (nbTours >= 6) notePerf = 4;
-        else if (nbTours >= 5.5) notePerf = 3.5;
-        else if (nbTours >= 5) notePerf = 3;
-        else if (nbTours >= 4.5) notePerf = 2.5;
-        else if (nbTours >= 4) notePerf = 2;
-        else if (nbTours >= 3.5) notePerf = 1.5;
-        else if (nbTours >= 3) notePerf = 1;
-        else notePerf = 0.5;
-
-        // Régularité : Écart entre le meilleur et le pire temps de course
-        // On compare les temps de course uniquement
-        const tempsCourses = historiqueEpreuve.map(t => t.course);
-        const maxCourse = Math.max(...tempsCourses);
-        const minCourse = Math.min(...tempsCourses);
-        const ecartMax = maxCourse - minCourse;
-        let noteRegul = 0;
-        if (ecartMax < 10) noteRegul = 5;
-        else if (ecartMax <= 15) noteRegul = 4;
-        else if (ecartMax <= 20) noteRegul = 3;
-        else if (ecartMax <= 25) noteRegul = 2;
-        else noteRegul = 1;
-
-        // Tir : Total de points de tir sur tous les tours
-        // Somme de tous les scores de tir
-        const totalTir = historiqueEpreuve.reduce((sum, t) => sum + t.scoreTir, 0);
-        const pourcentageTir = (totalTir / (nbTours * 5)) * 100;
-        let noteTir = 0;
-        // Barème : 21 = 5pts, 19 = 4pts, etc.
-        if (totalTir >= 21) noteTir = 5;
-        else if (totalTir >= 20) noteTir = 4.5;
-        else if (totalTir >= 19) noteTir = 4;
-        else if (totalTir >= 18) noteTir = 3.5;
-        else if (totalTir >= 17) noteTir = 3;
-        else if (totalTir >= 16) noteTir = 2.5;
-        else if (totalTir >= 15) noteTir = 2;
-        else if (totalTir >= 14) noteTir = 1.5;
-        else if (totalTir >= 13) noteTir = 1;
-        else noteTir = 0.5;
-
-        let medaillePerf = nbTours >= 8 ? "DIAMANT" : nbTours >= 7 ? "PLATINE" : nbTours >= 6 ? "OR" : nbTours >= 5 ? "ARGENT" : "BRONZE";
-        let medailleRegul = ecartMax < 10 ? "DIAMANT" : ecartMax <= 15 ? "PLATINE" : ecartMax <= 20 ? "OR" : ecartMax <= 25 ? "ARGENT" : "BRONZE";
-        let medailleTir = pourcentageTir >= 85 ? "DIAMANT" : pourcentageTir >= 75 ? "PLATINE" : pourcentageTir >= 65 ? "OR" : pourcentageTir >= 55 ? "ARGENT" : "BRONZE";
-
-        afficherResultatsFinaux(nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir);
+        // On affiche la modale de ressenti
+        const modalRessenti = document.getElementById("modal-ressenti");
+        modalRessenti.style.display = "flex";
+        setTimeout(() => modalRessenti.classList.add("show"), 10);
     }
 };
 
@@ -386,6 +431,35 @@ const afficherResultatsFinaux = (nbTours, notePerf, medaillePerf, ecartMax, meda
     }
 };
 
+/**
+ * Récupère les infos VMA du coureur actif et affiche son parcours coloré
+ */
+const afficherParcoursVMA = () => {
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    const displayZone = document.getElementById("vma-result-display");
+    const badgeZone = document.getElementById("badge-parcours");
+
+    if (displayZone && badgeZone) {
+        // On rend le bloc visible dans tous les cas pour guider l'élève
+        displayZone.style.display = "block";
+
+        if (coureur && coureur.vma_badge && coureur.vma_parcours) {
+            // Données présentes -> Affichage du parcours coloré
+            badgeZone.textContent = coureur.vma_parcours;
+            badgeZone.className = "parcours-badge " + coureur.vma_badge;
+            badgeZone.style.backgroundColor = ""; // Reset du style inline
+        } else {
+            // Pas de données -> Message d'alerte gris neutre
+            badgeZone.textContent = "Test VMA non réalisé";
+            badgeZone.className = "parcours-badge";
+            badgeZone.style.backgroundColor = "#989Ca0";
+            badgeZone.style.color = "white";
+        }
+    }
+};
+// Appeler la fonction au chargement de la page
+document.addEventListener("DOMContentLoaded", afficherParcoursVMA);
+
 /* Ajout des écouteurs d'événements pour les boutons. */
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
@@ -393,4 +467,5 @@ resetBtn.addEventListener("click", reset);
 enregistrerBtn.addEventListener("click", enregistrer);
 supprimerBtn.addEventListener("click", supprimer);
 btnValiderTir.addEventListener("click", validerTourEtTir);
-terminerBtn.addEventListener("click", terminerEpreuve);
+terminerBtn.addEventListener("click", declencherFinEpreuve);
+btnVoirBilan.addEventListener("click", validerRessentis);

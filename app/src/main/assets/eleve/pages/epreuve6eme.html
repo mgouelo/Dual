@@ -17,6 +17,13 @@
             <p>Réaliser un tour de parcours puis un tir autant de fois que possible en 20 minutes.</p>
         </header>
 
+        <div id="vma-result-display" class="vma-card-display">
+            <p class="vma-display-label">Mon Parcours</p>
+            <div id="badge-parcours" class="parcours-badge">
+                -
+            </div>
+        </div>
+
         <div id="chrono">20:00:00</div>
 
         <div id="buttonTraining">
@@ -54,6 +61,46 @@
             <button id="terminer" class="button-green">Terminer l'épreuve</button>
         </div>
 
+        <!-- Modal de ressenti avant le bilan -->
+        <div id="modal-ressenti" class="modal">
+            <div class="modal-content bilan-content">
+                <h2>Tes Ressentis</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 20px;">Analyse ton effort avant de voir tes notes.</p>
+
+                <div class="audit-eleve">
+                    <div class="audit-section">
+                        <p>Mon essoufflement :</p>
+                        <div class="btn-group-audit">
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Tranquille')">🟢<br>Je parle</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Chaud')">🟡<br>Un peu dur</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Essoufflé')">🟠<br>Je souffle</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'À bout')">🔴<br>À bout</button>
+                        </div>
+                    </div>
+
+                    <div class="audit-section">
+                        <p>Ma vitesse sur les 20 minutes :</p>
+                        <div class="btn-group-audit">
+                            <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Lent')">🐢<br>Trop tranquille</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Bien')">✅<br>Allure régulière</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Vite')">🥵<br>Parti trop vite</button>
+                        </div>
+                    </div>
+
+                    <div class="audit-section">
+                        <p>Ma maîtrise au moment du tir :</p>
+                        <div class="btn-group-audit">
+                            <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Zen')">🎯<br>Bien posé</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Bouge')">⚖️<br>Je tremble</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Vite')">🤠<br>Vite et mal</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btnVoirBilan" class="button" style="margin-top: 20px;">Voir mon Bilan</button>
+            </div>
+        </div>
+
         <!-- Modal de bilan final -->
         <div id="modal-bilan" class="modal">
             <div class="modal-content bilan-content">
@@ -87,7 +134,7 @@
 
                 <!-- La Note Finale du 6eme -->
                 <div class="total-final">
-                    Note Finale : <span id="note-totale">-</span> / 20
+                    Note Finale : <span id="note-totale">-</span> / 15
                 </div>
 
                 <div class="retourSeance">
