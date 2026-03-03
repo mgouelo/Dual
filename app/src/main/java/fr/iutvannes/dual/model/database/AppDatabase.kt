@@ -16,10 +16,12 @@ import fr.iutvannes.dual.model.dao.ProfDAO
 import fr.iutvannes.dual.model.dao.ResultatDAO
 import fr.iutvannes.dual.model.dao.SeanceDAO
 import fr.iutvannes.dual.model.dao.TirDAO
+import fr.iutvannes.dual.model.persistence.SalveTir
+import fr.iutvannes.dual.model.persistence.TourCourse
 
 @Database(
-    entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, Course::class],
-    version = 2,
+    entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, Course::class, TourCourse::class, SalveTir::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -45,7 +45,7 @@ data class EleveDTO(
     val id_eleve: Int,
     val nomComplet: String,
     val genre: String,
-    val vma: Float
+    val vma: Float?
 )
 
 /**

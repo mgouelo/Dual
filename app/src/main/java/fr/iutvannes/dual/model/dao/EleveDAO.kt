@@ -9,8 +9,8 @@ interface EleveDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(eleve: Eleve): Long
 
-    @Query("DELETE FROM Eleve WHERE id_eleve = :idEleve")
-    suspend fun delete(idEleve: Int): Int
+    @Delete
+    suspend fun delete(eleve: Eleve)
 
     @Query("SELECT * FROM Eleve")
     suspend fun getAll(): List<Eleve>
@@ -27,6 +27,9 @@ interface EleveDAO {
     @Query("SELECT * FROM Eleve WHERE classe = :classe")
     fun getElevesByClasse(classe: String): List<Eleve>
 
+    @Query("SELECT COUNT(*) FROM Eleve WHERE classe = :nomClasse")
+    fun countElevesByClasse(nomClasse: String): Int
+
     @Query("DELETE FROM Eleve")
     fun clearTable()
 
@@ -36,6 +39,15 @@ interface EleveDAO {
     @Query("SELECT * FROM Eleve WHERE LOWER(prenom) = LOWER(:prenom) AND LOWER(nom) = LOWER(:nom) LIMIT 1")
     fun findByName(prenom: String, nom: String): Eleve?
 
+    @Query("UPDATE Eleve SET classe = :nouveauNom WHERE classe = :ancienNom")
+    suspend fun updateClasseEleves(ancienNom: String, nouveauNom: String)
+
+    @Query("DELETE FROM Eleve WHERE classe = :nomClasse")
+    suspend fun deleteElevesByClasse(nomClasse: String)
+
     @Query("UPDATE Eleve SET vma = :vma WHERE id_eleve = :id")
     suspend fun updateVma(id: Int, vma: Float): Int
+
+    @Query("UPDATE Eleve SET couleur_parcours = :parcours WHERE id_eleve = :id")
+    suspend fun updateParcours(id: Int, parcours: String)
 }

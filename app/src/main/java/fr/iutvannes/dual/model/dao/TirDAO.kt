@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import fr.iutvannes.dual.model.persistence.SalveTir
 import fr.iutvannes.dual.model.persistence.Tir
+import fr.iutvannes.dual.model.persistence.TirAvecPassages
 
 @Dao
 interface TirDAO {
@@ -29,5 +30,5 @@ interface TirDAO {
 
     @Transaction
     @Query("SELECT * FROM Tir WHERE id_eleve = :idEleve")
-    suspend fun getTousLesTirs(idEleve: Int): List<SalveTir>
+    suspend fun getTousLesTirs(idEleve: Int): List<TirAvecPassages>
 }
