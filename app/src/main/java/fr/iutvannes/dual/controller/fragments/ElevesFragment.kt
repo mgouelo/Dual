@@ -18,9 +18,13 @@ import androidx.fragment.app.viewModels
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
+import fr.iutvannes.dual.model.persistence.Classe
+import fr.iutvannes.dual.model.persistence.Eleve
 
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
+    // init db
+    private val db = DatabaseProvider.db
 
     //variable qui contiendra le nom de la classe
     private var classeNom: String? = null
@@ -64,15 +68,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 (activity as MainActivity).showFragment(fragment, true, true)
             },
             onDelete = { eleve ->
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    val db = DatabaseProvider.db
-                    db.EleveDao().delete(eleve.id_eleve)
-
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Élève supprimé", Toast.LENGTH_SHORT).show()
-                        chargerEleves()
-                    }
-                }
+                afficherConfirmationSuppression(eleve)
             }
         )
         recyclerViewEleves.adapter = adapter
@@ -181,7 +177,6 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     private fun chargerEleves() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            val db = DatabaseProvider.db
             val eleves = db.EleveDao().getElevesByClasse(classeNom!!)
 
             withContext(Dispatchers.Main) {
@@ -191,5 +186,37 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 recyclerViewEleves.visibility = if (eleves.isEmpty()) View.GONE else View.VISIBLE
             }
         }
+    }
+
+    private fun supprimerEleve(eleve: Eleve) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+
+            // suppression au préalable des élèves
+            db.EleveDao().delete(eleve)
+
+            // rechargement de la liste
+            chargerEleves()
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Eleve ${eleve.nom} supprimée", Toast.LENGTH_SHORT).show() // feedback utilisateur
+            }
+        }
+    }
+
+
+    /**
+     * Affiche une boite de dialogue demandant à l'utilisateur de confirmer la suppression
+     */
+    private fun afficherConfirmationSuppression(eleve: Eleve) {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Supprimer l'élève ?")
+            .setMessage("Attention, vous êtes sur le point de supprimer l'élève  \"${eleve.nom}\" ainsi que toutes les données qui lui sont associées.\n\nCette action est irréversible.")
+            .setNegativeButton("Annuler") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Supprimer") { _, _ ->
+                supprimerEleve(eleve)
+            }
+            .show()
     }
 }

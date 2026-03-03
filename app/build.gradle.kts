@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("org.jetbrains.kotlin.kapt")
+    // id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.ksp)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     kotlin("plugin.serialization") version "1.9.10"
 }
@@ -48,12 +49,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = "11"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     // On peut retirer le bloc buildFeatures { compose = false }
@@ -70,6 +67,10 @@ android {
             excludes += "META-INF/*.kotlin_module"
         }
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -97,8 +98,12 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.11.1")
 
     // Room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
     implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
     // Ktor Server CIO
@@ -145,4 +150,7 @@ dependencies {
     // Lecture fichier libre office .odf (ODF Toolkit Simple API)
     implementation("org.odftoolkit:odfdom-java:0.9.0")
     implementation("org.odftoolkit:simple-odf:0.9.0")
+
+    // permet de chager une image depuis une url (utilisé pour la pdp)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }
