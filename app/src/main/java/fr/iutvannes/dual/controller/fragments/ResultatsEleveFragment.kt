@@ -12,10 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.model.components.GraphView
-import fr.iutvannes.dual.model.persistence.Classe
-import fr.iutvannes.dual.model.persistence.Courses
-import fr.iutvannes.dual.model.persistence.Eleve
-import fr.iutvannes.dual.model.persistence.Seance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -78,34 +74,35 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 val eleveExist = db.EleveDao().getEleveById(eleveId)
                 val resultatExist = db.resultatDao().getResultatsByEleve(eleveId)
-                val tirsExist = db.tirsDao().getTirsByIdEleve(eleveId)
-                val coursesExist = db.coursesDao().getCoursesByIdEleve(eleveId)
+                val tirsExist = db.tirDao().getTousLesTirs(eleveId)
+                val coursesExist = db.courseDao().getAllTour(eleveId)
 
                 if (eleveExist != null) {
-                    val dataTirs = resultatExist.map { resultat ->
-                        val temps = resultat.cibles_touchees
+                    val dataTirs = tirsExist.map { tirAvecPassages ->
                         val date = db.seanceDao()
-                            .getSeanceById(resultat.id_seance)
+                            .getSeanceById(tirAvecPassages.tir.id_seance)
                             ?.date ?: "Inconnu"
-                        Pair("Séance du $date", temps.toFloat())
+
+                        val totalReussi = tirAvecPassages.liste_passages
+                            .sumOf { it.nb_tir_reussi }
+
+                        Pair("Séance du $date", totalReussi.toFloat())
                     }
 
-                    val dataCourse = coursesExist.map { course ->
-                        val seance = db.seanceDao().getSeanceById(course.id_seance)
-                        val date = seance?.date ?: "Inconnu"
+                    val dataCourse = coursesExist.map { courseAvecTours ->
 
-                        // Calcul de la moyenne du temps au tour
-                        val moyenneTemps = if (course.temps_au_tour.isNotEmpty())
-                            course.temps_au_tour.average().toFloat()
+                        val date = db.seanceDao()
+                            .getSeanceById(courseAvecTours.course.id_seance)
+                            ?.date ?: "Inconnu"
+
+                        val moyenneTemps = if (courseAvecTours.liste_tours.isNotEmpty())
+                            courseAvecTours.liste_tours
+                                .map { it.temps_ms }
+                                .average()
+                                .toFloat()
                         else 0f
 
-                        // VMA de la séance
-                        val vma = 10f // éviter division par zéro
-
-                        // Pourcentage VMA
-                        val pourcentageVMA = (moyenneTemps / vma) * 100
-
-                        Pair("Séance du $date", pourcentageVMA)
+                        Pair("Séance du $date", moyenneTemps)
                     }
 
                     withContext(Dispatchers.Main) {

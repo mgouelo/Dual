@@ -2,9 +2,7 @@ package fr.iutvannes.dual.infrastructure.server
 
 import android.content.Context
 import android.util.Log
-import fr.iutvannes.dual.model.persistence.Courses
 import fr.iutvannes.dual.model.persistence.Seance
-import fr.iutvannes.dual.model.persistence.Tirs
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -23,11 +21,9 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
@@ -292,23 +288,49 @@ fun Application.module(appContext: Context) {
                         .insert(seance)
                         .toInt()
 
-                    val tirs = Tirs(
+                    // ----- TIR -----
+                    val tir = fr.iutvannes.dual.model.persistence.Tir(
                         id_seance = seanceId,
-                        id_eleve = eleve.id_eleve,
-                        nb_tirs_reussi = nbTirsReussi,
-                        temps_au_pas_de_tir = tempsAuPasDeTir
+                        id_eleve = eleve.id_eleve
                     )
 
-                    DatabaseProvider.db.tirsDao().insert(tirs)
+                    val tirId = DatabaseProvider.db
+                        .tirDao()
+                        .insert(tir)
+                        .toInt()
 
-                    val course = Courses(
+                    nbTirsReussi.forEachIndexed { index, nbReussi ->
+                        val salve = fr.iutvannes.dual.model.persistence.SalveTir(
+                            id_tir = tirId,
+                            numero_passage = index + 1,
+                            nb_tir_reussi = nbReussi,
+                            temps_au_pas_de_tir_ms = tempsAuPasDeTir.getOrElse(index) { 0 }.toLong()
+                        )
+
+                        DatabaseProvider.db.salveTirDao().insert(salve)
+                    }
+
+                    // ----- COURSE -----
+                    val course = fr.iutvannes.dual.model.persistence.Course(
                         id_seance = seanceId,
                         id_eleve = eleve.id_eleve,
-                        vitesse = vitesse,
-                        temps_au_tour = tempsAuTour
+                        distance_tour = vitesse
                     )
 
-                    DatabaseProvider.db.coursesDao().insert(course)
+                    val courseId = DatabaseProvider.db
+                        .courseDao()
+                        .insert(course)
+                        .toInt()
+
+                    tempsAuTour.forEachIndexed { index, temps ->
+                        val tour = fr.iutvannes.dual.model.persistence.TourCourse(
+                            id_course = courseId,
+                            numero_tour = index + 1,
+                            temps_ms = temps.toLong()
+                        )
+
+                        DatabaseProvider.db.tourCourseDao().insert(tour)
+                    }
                 }
 
                 call.respond(HttpStatusCode.Created)

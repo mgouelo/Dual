@@ -152,14 +152,43 @@ enregistrerSessionBtn.addEventListener("click", async () => {
 });
 
 async function envoyerCourseAuServeur() {
+
     const identite = localStorage.getItem("eleve_identite");
-    const [prenom, nom] = identite.split(" ");
-    const dateSeance = new Date().toISOString(); // ou la date choisie
+
+    if (!identite) {
+        alert("Identité élève introuvable.");
+        return;
+    }
+
+    const parts = identite.trim().split(" ");
+    const prenom = parts[0] || "";
+    const nom = parts[1] || "";
+
+    if (!prenom || !nom) {
+        alert("Identité invalide.");
+        return;
+    }
+
+    const dateSeance = new Date().toISOString();
+
     const listeTours = document.querySelectorAll("#listeTours span");
+
+    if (listeTours.length === 0) {
+        alert("Aucun tour enregistré.");
+        return;
+    }
+
     const tempsAuTour = Array.from(listeTours).map(span => {
+
         const texte = span.textContent.split(": ")[1]; // "mm:ss:ms"
-        const [m, s, ms] = texte.split(":").map(Number);
-        return m * 60000 + s * 1000 + ms * 10; // convertir en ms ou garder en int selon serveur
+
+        if (!texte) return 0;
+
+        const [m, s, cs] = texte.split(":").map(Number);
+
+        // votre affichage est en centièmes (00-99)
+        // conversion correcte vers millisecondes
+        return (m * 60000) + (s * 1000) + (cs * 10);
     });
 
     const request = {
@@ -168,20 +197,35 @@ async function envoyerCourseAuServeur() {
         dateSeance,
         nbTours: tempsAuTour.length,
         nbCibles: 0,
-        nbTirsReussi: [],       // non utilisé ici
-        tempsAuPasDeTir: [],    // non utilisé ici
-        vitesse: 0,             // optionnel, ou calculé si souhaité
+        nbTirsReussi: [],
+        tempsAuPasDeTir: [],
+        vitesse: 0,
         tempsAuTour
     };
 
     try {
+
         const response = await fetch("/api/biathlon", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(request)
         });
-        setTimeout(() => { window.location.href = "seance.html"; }, 1500);
+
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("Erreur serveur :", err);
+            alert("Erreur lors de l'envoi.");
+            return;
+        }
+
+        alert("Session envoyée avec succès.");
+
+        setTimeout(() => {
+            window.location.href = "seance.html";
+        }, 1000);
+
     } catch (e) {
         console.error("Erreur fetch course :", e);
+        alert("Erreur réseau.");
     }
 }

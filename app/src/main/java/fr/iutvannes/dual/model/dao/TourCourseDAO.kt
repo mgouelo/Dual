@@ -6,24 +6,23 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import fr.iutvannes.dual.model.persistence.Course
 import fr.iutvannes.dual.model.persistence.CourseAvecTours
 import fr.iutvannes.dual.model.persistence.TourCourse
 
 @Dao
-interface CourseDAO {
+interface TourCourseDAO {
 
     @Insert
-    suspend fun insert(course: Course): Long
+    suspend fun insert(tourCourse: TourCourse): Long
 
     @Delete
-    suspend fun delete(course: Course)
+    suspend fun delete(tourCourse: TourCourse)
 
-    @Query("SELECT * FROM Course WHERE id_eleve = :idEleve")
-    suspend fun getCourseByIdEleve(idEleve: Int): Course?
+    @Query("SELECT * FROM TourCourse WHERE id_course = :idCourse")
+    suspend fun getTourCourseByIdCourse(idCourse: Int): List<TourCourse>
 
     @Update
-    suspend fun update(course: Course)
+    suspend fun update(tourCourse: TourCourse)
 
     @Transaction
     @Query("SELECT * FROM Course WHERE id_eleve = :idEleve")
