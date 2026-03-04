@@ -87,6 +87,11 @@ interface ClasseDAO {
     @Query("UPDATE Classe SET nom = :nouveauNom WHERE nom = :ancienNom")
     suspend fun updateNomClasse(ancienNom: String, nouveauNom: String)
 
+    /**
+     * Retrieves the names of all existing classes from the database.
+     *
+     * @return A list of class names.
+     */
     @Query("SELECT nom FROM Classe")
     suspend fun getAllNames(): List<String>
 }

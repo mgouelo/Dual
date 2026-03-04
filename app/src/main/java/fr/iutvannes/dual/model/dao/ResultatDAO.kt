@@ -61,10 +61,21 @@ interface ResultatDAO {
     @Query("SELECT COUNT(*) FROM Resultat")
     fun getCount(): Int
 
+    /**
+     * Retrieves the results of a specific seance.
+     *
+     * @param idSeance The ID of the seance to retrieve results for
+     * @return A list of results corresponding to the seance
+     */
     @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
     fun getResultatsBySeance(idSeance: Int): List<Resultat>
 
-
+    /**
+     * Retrieves the results of a specific seance.
+     *
+     * @param idSeance The ID of the seance to retrieve results for
+     * @return A list of results
+     */
     @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
     fun getBySeance(idSeance: Int): List<Resultat>
 }

@@ -32,6 +32,10 @@ import fr.iutvannes.dual.model.persistence.TourCourse
  * @see Prof
  * @see Resultat
  * @see Seance
+ * @see Course
+ * @see Tir
+ * @see TourCourse
+ * @see SalveTir
  */
 @Database(
     entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, Course::class, TourCourse::class, SalveTir::class],
@@ -74,6 +78,18 @@ abstract class AppDatabase : RoomDatabase() {
      * @return [ClasseDAO]
      */
     abstract fun classeDao(): ClasseDAO
+
+    /**
+     * Abstract method that returns an object of type [TirDAO].
+     *
+     * @return [TirDAO]
+     */
     abstract fun tirDao(): TirDAO
+
+    /**
+     * Abstract method that returns an object of type [CourseDAO].
+     *
+     * @return [CourseDAO]
+     */
     abstract fun courseDao(): CourseDAO
 }

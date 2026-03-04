@@ -65,6 +65,11 @@ interface EleveDAO {
     suspend fun update(eleve: Eleve): Int
 
     // WARNING: REVIEW WITH THE TEAM AS THIS METHOD IS USELESS
+    /**
+     * Retrieves all classes from the database.
+     *
+     * @return A list of all classes
+     */
     @Query("SELECT DISTINCT classe FROM Eleve")
     fun getClasses(): List<String>
 
@@ -93,6 +98,11 @@ interface EleveDAO {
     fun clearTable()
 
     // WARNING: METHOD ALREADY EXISTS, THIS IS NAMED getAll
+    /**
+     * Retrieves all students from the database.
+     *
+     * @return A list of all students
+     */
     @Query("SELECT * FROM Eleve")
     fun getAllEleves(): List<Eleve>
 
@@ -106,15 +116,38 @@ interface EleveDAO {
     @Query("SELECT * FROM Eleve WHERE LOWER(prenom) = LOWER(:prenom) AND LOWER(nom) = LOWER(:nom) LIMIT 1")
     fun findByName(prenom: String, nom: String): Eleve?
 
+    /**
+     * Updates the class of a student in the database.
+     *
+     * @param ancienNom The old class of the student
+     */
     @Query("UPDATE Eleve SET classe = :nouveauNom WHERE classe = :ancienNom")
     suspend fun updateClasseEleves(ancienNom: String, nouveauNom: String)
 
+    /**
+     * Deletes all students from a specific class.
+     *
+     * @param nomClasse The name of the class to delete
+     */
     @Query("DELETE FROM Eleve WHERE classe = :nomClasse")
     suspend fun deleteElevesByClasse(nomClasse: String)
 
+    /**
+     * Updates the VMA of a student in the database.
+     *
+     * @param id The ID of the student
+     * @param vma The new VMA value
+     * @return The number of rows updated
+     */
     @Query("UPDATE Eleve SET vma = :vma WHERE id_eleve = :id")
     suspend fun updateVma(id: Int, vma: Float): Int
 
+    /**
+     * Updates the distance of a student in the database.
+     *
+     * @param id The ID of the student
+     * @param parcours The new parcours value
+     */
     @Query("UPDATE Eleve SET couleur_parcours = :parcours WHERE id_eleve = :id")
     suspend fun updateParcours(id: Int, parcours: String)
 }

@@ -46,6 +46,11 @@ interface ProfDAO {
     @Query("SELECT * FROM Prof WHERE id_prof = :idProf")
     suspend fun getProfById(idProf: Int): Prof?
 
+    /**
+     * Retrieve the teacher's ID.
+     *
+     * @return The teacher's ID
+     */
     @Query("SELECT id_prof FROM Prof")
     suspend fun getProfId(): Int
 
@@ -67,6 +72,11 @@ interface ProfDAO {
     @Query("SELECT * FROM Prof WHERE email = :email")
     fun getProfLive(email: String): LiveData<Prof?>
 
+    /**
+     * Retrieve the teacher's email.
+     *
+     * @return The teacher's email
+     */
     @Query("SELECT email FROM Prof")
     suspend fun getProfEmail(): String
 

@@ -8,6 +8,15 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 
 //table parent
+/**
+ * Class representing a course
+ *
+ * @param id_course unique identifier of the class
+ * @param id_seance unique identifier of the class
+ * @param id_eleve unique identifier of the class
+ * @param distance_tour distance of the tour in meters
+ * @param note_course course note
+ */
 @Entity(tableName = "Course")
 data class Course(
     @PrimaryKey(autoGenerate = true)
@@ -19,6 +28,14 @@ data class Course(
 )
 
 // table enfant (Les informations de chaque tour)
+/**
+ * Class representing a tour of a course
+ *
+ * @param id_tour unique identifier of the class
+ * @param id_course unique identifier of the class
+ * @param numero_tour tour number
+ * @param temps_ms time in milliseconds
+ */
 @Entity(
     tableName = "TourCourse",
     foreignKeys = [
@@ -41,6 +58,12 @@ data class TourCourse(
 
 // Modèle de vue pour Room (Ce n'est pas une table en BDD)
 // permet de récupérer facilement la Course avec tous ses tours dans le DAO
+/**
+ * Class representing a course with its tours
+ *
+ * @param course course
+ * @param liste_tours list of tours
+ */
 data class CourseAvecTours(
     @Embedded
     var course: Course,
