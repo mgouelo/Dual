@@ -40,6 +40,8 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
     private var countInitial = 0
     private val sessionViewModel: SessionViewModel by activityViewModels()
 
+    private var classeActuelle: String = ""
+
     /**
      * Cette fonction est appelée lorsque la vue du fragment est créée.
      * Elle initialise les interactions avec les vues.
@@ -54,70 +56,42 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                 //Demander confirmation
                 android.app.AlertDialog.Builder(requireContext())
                     .setTitle("Terminer la séance ?")
-                    .setMessage("Voulez-vous arrêter et recevoir le bilan par email ?")
-                    .setPositiveButton("Oui, terminer") { _, _ ->
+                    .setMessage("Voulez-vous vraiment arrêter la séance actuelle ?")
+                    .setPositiveButton("Oui, arrêter") { _, _ ->
 
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            val idSeance = KtorServer.idSeanceActuelle
-                            val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(Date())
-
-                            //Récupération des données (Résultats + Elèves)
-                            val (resultats, eleves) = withContext(Dispatchers.IO) {
-                                val res = DatabaseProvider.db.resultatDao().getBySeance(idSeance)
-                                val ele = DatabaseProvider.db.EleveDao().getAll() // Liste de tous les élèves
-                                Pair(res, ele)
-                            }
-
-                            //Faire le lien (Map) pour avoir les noms
-                            val eleveMap = eleves.associateBy { it.id_eleve }
-
-                            //Construction du CSV
-                            val csvHeader = "Nom;Prenom;Temps;Cibles;Note\n"
-                            val csvRows = resultats.joinToString("\n") { res ->
-                                val e = eleveMap[res.id_eleve]
-                                "${e?.nom ?: "Inconnu"};${e?.prenom ?: "Inconnu"};${res.temp_course};${res.cibles_touchees};${res.note_finale}"
-                            }
-                            val fullCsv = csvHeader + csvRows
-
-                            //Récupération de l'email du prof et arrêt de la séance
-                            val emailProf = withContext(Dispatchers.IO) { DatabaseProvider.db.profDAO().getProfEmail() }
-                            sessionViewModel.stopSession()
-                            KtorServer.idSeanceActuelle = 0
-
-                            //Envoie de l'email
-                            val success = EmailService.sendExcelExportEmail(emailProf, dateStr, fullCsv)
-
-                            if (success) {
-                                Toast.makeText(requireContext(), "Bilan envoyé à $emailProf", Toast.LENGTH_LONG).show()
-                            } else {
-                                Toast.makeText(requireContext(), "Erreur d'envoi de l'email", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                        sessionViewModel.stopSession()
+                        KtorServer.idSeanceActuelle = 0
+                        Toast.makeText(requireContext(), "Séance terminée", Toast.LENGTH_SHORT).show()
                     }
-                    .setNegativeButton("Annuler", null)
+                    .setNegativeButton("Annuler", null) // Ne fait rien si on clique sur annuler
                     .show()
 
 
             //Si la séance n'est pas en cours, on la lance
             } else {
-                //Lancement de la séance
                 viewLifecycleOwner.lifecycleScope.launch {
-                    val idGenere = withContext(Dispatchers.IO) {
-                        val nouvelleSeance = fr.iutvannes.dual.model.persistence.Seance(
-                            date = SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.FRANCE).format(java.util.Date()),
-                            id_prof = DatabaseProvider.db.profDAO().getProfId()
-                        )
-                        DatabaseProvider.db.seanceDao().insert(nouvelleSeance)
-                    }
+                    //Récupération des classes depuis la DB
+                    val classes = withContext(Dispatchers.IO) { DatabaseProvider.db.classeDao().getAllNames() }
 
-                    KtorServer.idSeanceActuelle = idGenere.toInt()
+                    //Boîte de dialogue pour la CLASSE
+                    android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Sélectionner la classe")
+                        .setItems(classes.toTypedArray()) { _, index ->
+                            val classeChoisie = classes[index]
 
-                    val count = withContext(Dispatchers.IO) {
-                        DatabaseProvider.db.resultatDao().getCount()
-                    }
-                    (activity as MainActivity).countInitialSession = count
+                            //Boîte de dialogue pour le TYPE
+                            val types = arrayOf("Test VMA", "Entraînement", "Épreuve Finale")
+                            android.app.AlertDialog.Builder(requireContext())
+                                .setTitle("Type de séance ($classeChoisie)")
+                                .setItems(types) { _, typeIndex ->
+                                    val typeChoisi = types[typeIndex]
 
-                    sessionViewModel.startSession(requireContext())
+                                    //Lancement final
+                                    lancerLaSeance(classeChoisie, typeChoisi)
+                                }
+                                .show()
+                        }
+                        .show()
                 }
             }
         }
@@ -176,7 +150,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
                     //Mise à jour du texte du bouton export
                     val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(java.util.Date())
-                    btnExport.text = "Télécharger les résultats (séance $dateAujourdhui)"
+                    btnExport.text = "Télécharger les résultats (séance $dateAujourdhui - $classeActuelle)"
 
                 } else {
                     sessionBtn.text = "Lancer une séance"
@@ -214,5 +188,35 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
             }
         }
         return bmp
+    }
+
+    /**
+     * Méthode pour lancer une séance.
+     * @param type : type de séance (Entraînement ou Évaluation)
+     */
+    private fun lancerLaSeance(classe: String, type: String) {
+        classeActuelle = classe
+        viewLifecycleOwner.lifecycleScope.launch {
+            val idGenere = withContext(Dispatchers.IO) {
+                val nouvelleSeance = fr.iutvannes.dual.model.persistence.Seance(
+                    date = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE).format(Date()),
+                    id_prof = DatabaseProvider.db.profDAO().getProfId(),
+                    type = type,    //"Entraînement" ou "Épreuve Finale"
+                    classe = classe
+                )
+                DatabaseProvider.db.seanceDao().insert(nouvelleSeance)
+            }
+
+            KtorServer.idSeanceActuelle = idGenere.toInt()
+
+            val count = withContext(Dispatchers.IO) {
+                DatabaseProvider.db.resultatDao().getCount()
+            }
+            (activity as MainActivity).countInitialSession = count
+
+            sessionViewModel.startSession(requireContext())
+
+            Toast.makeText(requireContext(), "Séance $type ($classe) lancée", Toast.LENGTH_SHORT).show()
+        }
     }
 }

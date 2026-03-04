@@ -163,11 +163,24 @@ fun Application.module(appContext: Context) {
 
                         val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
                         if (eleve != null) {
+                            //Mise à jour de la VMA sur la fiche de l'élève 
                             eleve.vma = vmaValue
                             DatabaseProvider.db.EleveDao().update(eleve)
-                            Log.i("KtorServer", "VMA mise à jour : $studentId -> $vmaValue km/h")
+
+                            //On crée une ligne dans la table Resultat liée à l'idSeanceActuelle
+                            val marquageResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                                id_eleve = eleve.id_eleve,
+                                id_seance = KtorServer.idSeanceActuelle,
+                                vma = vmaValue, //On stocke la VMA ici pour l'historique de la séance
+                                cibles_touchees = 0, //Pas de tir en Test VMA
+                                temp_course = 0F
+                            )
+                            DatabaseProvider.db.resultatDao().insert(marquageResultat)
+
+                            Log.i("KtorServer", "Test VMA enregistré : $studentId -> $vmaValue km/h")
                             call.respond(HttpStatusCode.Accepted, mapOf("status" to "VMA_OK"))
                         } else {
+                            Log.e("KtorServer", "ÉLÈVE NON TROUVÉ : $prenom $nom")
                             call.respond(HttpStatusCode.NotFound, mapOf("error" to "Eleve non trouvé"))
                         }
                     }
@@ -206,44 +219,77 @@ fun Application.module(appContext: Context) {
             }
         }
 
-        // Route d'export CSV pour le professeur
+        //Route d'export CSV pour le professeur
         get("/api/admin/export") {
             try {
-                //Récupération de la séance actuelle en base pour avoir la date
                 val idActuel = KtorServer.idSeanceActuelle
                 val seance = DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
 
-                //Formatage de la date pour le nom du fichier
-                val dateSession = seance?.date?.replace("/", "_")?.replace(" ", "_") ?: "inconnue"
-                val nomFichier = "resultats_seance_$dateSession.csv"
+                if (seance == null) {
+                    call.respond(HttpStatusCode.NotFound, "Aucune séance active.")
+                    return@get
+                }
 
-                //Récupération des résultats uniquement pour cette séance
-                val resultats = DatabaseProvider.db.resultatDao().getResultatsBySeance(idActuel)
+                //Nom du fichier dynamique
+                val dateClean = seance.date.replace("/", "-").replace(":", "h").replace(" ", "_")
+                val nomFichier = "Bilan_${seance.type}_${seance.classe}_$dateClean.csv"
 
-                //Construction du CSV
-                val csv = StringBuilder("Séance du: ${seance?.date ?: "Inconnue"}\n")
-                csv.append("prenom;nom;genre;cibles_touchees;vma\n")
+                //Récupération des résultats
+                val resultats = DatabaseProvider.db.resultatDao().getBySeance(idActuel)
+                val csv = StringBuilder()
 
-                resultats.forEach { res ->
-                    val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
-                    if (eleve != null) {
-                        csv.append("${eleve.prenom};${eleve.nom.uppercase()};${eleve.genre};${res.cibles_touchees};${eleve.vma}\n")
+                //Personnalisation du contenu selon le type de séance
+                when (seance.type) {
+                    "Épreuve Finale" -> {
+                        csv.append("BILAN ÉVALUATION FINALE - CLASSE : ${seance.classe}\n")
+                        csv.append("Date;${seance.date}\n\n")
+                        csv.append("Nom;Prenom;Genre;Cibles;VMA;Note Finale;Classement\n") //Colonnes complètes
+
+                        resultats.forEach { res ->
+                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            if (eleve != null) {
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${eleve.genre};${res.cibles_touchees};${eleve.vma};${res.note_finale};${res.classement}\n")
+                            }
+                        }
+                    }
+                    "Test VMA" -> {
+                        csv.append("RÉSULTATS TEST VMA - CLASSE : ${seance.classe}\n")
+                        csv.append("Date;${seance.date}\n\n")
+                        csv.append("Nom;Prenom;VMA (km/h)\n") //Uniquement l'essentiel pour le test VMA
+
+                        resultats.forEach { res ->
+                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            if (eleve != null) {
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${eleve.vma}\n")
+                            }
+                        }
+                    }
+                    else -> { //Mode Entraînement par défaut
+                        csv.append("SUIVI ENTRAÎNEMENT - CLASSE : ${seance.classe}\n")
+                        csv.append("Date;${seance.date}\n\n")
+                        csv.append("Nom;Prenom;Cibles Touchees;VMA\n")
+
+                        resultats.forEach { res ->
+                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            if (eleve != null) {
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${res.cibles_touchees};${eleve.vma}\n")
+                            }
+                        }
                     }
                 }
 
-                //Envoi du fichier avec le nom dynamique
+                //Configuration des en-têtes pour le téléchargement
                 call.response.header(
                     HttpHeaders.ContentDisposition,
                     ContentDisposition.Attachment.withParameter(
                         ContentDisposition.Parameters.FileName, nomFichier
                     ).toString()
                 )
-
                 call.respondText(csv.toString(), ContentType.Text.CSV)
 
             } catch (e: Exception) {
-                Log.e("KtorServer", "Erreur Export CSV: ${e.message}")
-                call.respond(HttpStatusCode.InternalServerError, "Erreur lors de la génération")
+                Log.e("KtorServer", "Erreur Export: ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, "Erreur génération CSV")
             }
         }
     }
