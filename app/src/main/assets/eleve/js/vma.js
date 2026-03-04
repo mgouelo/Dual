@@ -6,6 +6,7 @@ let vitesseAff = document.getElementById("vitesse");
 let distanceAff = document.getElementById("distance");
 let resultat = document.getElementById("resultat");
 let parcours = document.getElementById("parcours");
+let resumeBtn = document.getElementById("resume");
 const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
@@ -107,6 +108,24 @@ let tableVma = [
     { vitesse: 16, vma: 16.00, distance: 3750, tempsCumule: 1129 }
 ];
 
+// Récupération de l'élève qui court
+const coureurActif = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+const niveau = localStorage.getItem("niveau") || "6eme";
+const nomCoureurActif = document.getElementById("nom-eleve-vma");
+const vmaActuelleAff = document.getElementById("vma-actuelle");
+
+// Afficher le nom du coureur sur la page de test
+if (coureurActif && nomCoureurActif) {
+    nomCoureurActif.textContent = coureurActif.nomComplet;
+
+    // Affichage de la VMA actuelle
+    if (coureurActif.vma && coureurActif.vma > 0) {
+        vmaActuelleAff.textContent = coureurActif.vma.toFixed(1);
+    } else {
+        vmaActuelleAff.textContent = "N/A";
+    }
+}
+
 const defilerTemps = () => {
     if (estArrete) return;
 
@@ -154,60 +173,103 @@ const defilerTemps = () => {
     timeout = setTimeout(defilerTemps, 10);
 };
 
-const setColorTrack4eme = () => {
-    const niveau = localStorage.getItem("niveau") || "6eme";
+const btnSaveVma = document.getElementById("btn-save-vma");
+let vmaTemporaire = 0; // Pour stocker la valeur avant validation
 
-    const coupellesJaunes = `Parcours : <span class="rond rond-jaune"></span> (coupelles jaunes – 250m)`
-    const coupellesBleues = `Parcours : <span class="rond rond-bleu"></span> (coupelles bleues – 300m)`
-    const coupellesRouges = `Parcours : <span class="rond rond-rouge"></span> (coupelles rouges – 350m)`
-    const plotsVerts = `Parcours : <span class="rond rond-vert"></span> (plots verts – 275m)`
-    const plotsBleus = `Parcours : <span class="rond rond-bleu"></span> (plots bleus – 325m)`
-    const plotsRouges = `Parcours : <span class="rond rond-rouge"></span> (plots rouges – 375m)`
-    const grandTour = `Parcours : <span class="rond rond-noir"></span> (grand tour – 400m)`
+const afficherResultatVMA = () => {
+    // Définitions des parcours pour chaque niveau
+    const coupellesJaunes = "Parcours : (coupelles jaunes – 250m)"
+    const coupellesBleues = "Parcours : (coupelles bleues – 300m)"
+    const coupellesRouges = "Parcours : (coupelles rouges – 350m)"
+    const plotsVerts = "Parcours : (plots verts – 275m)"
+    const plotsBleus = "Parcours : (plots bleus – 325m)"
+    const plotsRouges = "Parcours : (plots rouges – 375m)"
+    const grandTour = "Parcours : (grand tour – 400m)"
 
-    const vma = tableVma[Math.max(0, currentIndex - 1)].vma;
-    const vmaArrondie = Math.ceil(vma * 2) / 2;
+    // On prend la VMA du palier précédent (car le coureur n'a pas réussi à tenir le palier actuel)
+    const vmaReelle = tableVma[Math.max(0, currentIndex - 1)].vma;
+    vmaTemporaire = Math.ceil(vmaReelle * 2) / 2; // On stocke la vma temporaire arrondie au 0.5 supérieur pour validation
 
-    let color = "";
-
-    if (niveau === "6eme") {
-
-    } else {
-
-    }
+    let texteParcours = "";
+    let badgeClass = "";
 
     // Coupelles jaunes : 9.5 ou 10
-    if (vmaArrondie <= 9.5 || vmaArrondie === 10) {
-        color = coupellesJaunes;
+    if (vmaTemporaire <= 9.5 || vmaTemporaire === 10) {
+        badgeClass = "bg-jaune";
+        texteParcours = coupellesJaunes;
 
         // Plots verts : 10.5 ou 11
-    } else if (vmaArrondie === 10.5 || vmaArrondie === 11) {
-        color = plotsVerts;
+    } else if (vmaTemporaire === 10.5 || vmaTemporaire === 11) {
+        badgeClass = "bg-vert";
+        texteParcours = plotsVerts;
 
         // Coupelles bleues : 11.5 ou 12
-    } else if (vmaArrondie === 11.5 || vmaArrondie === 12) {
-        color = coupellesBleues;
+    } else if (vmaTemporaire === 11.5 || vmaTemporaire === 12) {
+        badgeClass = "bg-bleu";
+        texteParcours = coupellesBleues;
 
         // Plots bleus : 12.5 ou 13
-    } else if (vmaArrondie === 12.5 || vmaArrondie === 13) {
-        color = plotsBleus;
+    } else if (vmaTemporaire === 12.5 || vmaTemporaire === 13) {
+        badgeClass = "bg-bleu";
+        texteParcours = plotsBleus;
 
         // Coupelles rouges : 13.5 ou 14
-    } else if (vmaArrondie === 13.5 || vmaArrondie === 14) {
-        color = coupellesRouges;
+    } else if (vmaTemporaire === 13.5 || vmaTemporaire === 14) {
+        badgeClass = "bg-rouge";
+        texteParcours = coupellesRouges;
 
         // Plots rouges : 14.5 ou 15
-    } else if (vmaArrondie === 14.5 || vmaArrondie === 15) {
-        color = plotsRouges;
+    } else if (vmaTemporaire === 14.5 || vmaTemporaire === 15) {
+        badgeClass = "bg-rouge";
+        texteParcours = plotsRouges;
 
         // Grand tour : > 15
-    } else if (vmaArrondie > 15) {
-        color = grandTour;
+    } else {
+        badgeClass = "bg-noir";
+        texteParcours = grandTour;
     }
 
-    return color;
+    // Génération du HTML de la carte de résultat
+    resultat.innerHTML = `
+        <div class="vma-card">
+            <p class="vma-label">VMA réelle : ${vmaReelle.toFixed(2)} km/h</p>
+            <span class="vma-main-val">${vmaTemporaire.toFixed(1)} km/h</span>
+            <div class="parcours-badge ${badgeClass}">${texteParcours}</div>
+        </div>
+    `;
+
+    btnSaveVma.style.display = "inline-block";
 }
 
+const enregistrerNouvelleVMA = async () => {
+    if (vmaTemporaire === 0 || !coureurActif) return;
+
+    const message = `Confirmer l'enregistrement de ${vmaTemporaire.toFixed(1)} km/h pour ${coureurActif.nomComplet} ?`;
+    const confirmation = await demanderConfirmation(message);
+
+    if (confirmation) {
+        // Mise à jour de l'objet local
+        coureurActif.vma = vmaTemporaire;
+
+        // Sauvegarde pour le Hub (séance actuelle)
+        localStorage.setItem("coureur_actif_objet", JSON.stringify(coureurActif));
+
+        // Mise à jour du binôme (eleve1 ou eleve2)
+        const activeIndex = localStorage.getItem("active_index");
+        const key = (activeIndex === "0") ? "eleve1" : "eleve2";
+        localStorage.setItem(key, JSON.stringify(coureurActif));
+
+        // Sauvegarde permanente en BDD
+        await sauvegarderVmaServeur(coureurActif.id_eleve || coureurActif.id, vmaTemporaire, coureurActif.classe);
+
+        // Feedback visuel et nettoyage
+        btnSaveVma.style.display = "none";
+        resultat.innerHTML += `<p style="color: #27ae60; font-weight: bold; margin-top: 10px;">VMA enregistrée avec succès !</p>`;
+    }
+};
+
+// Ajouter l'écouteur d'événement pour le bouton
+btnSaveVma.addEventListener("click", enregistrerNouvelleVMA);
 
 const demarrer = () => {
     if (estArrete) {
@@ -223,13 +285,18 @@ const arreter = () => {
         estArrete = true;
         clearTimeout(timeout);
 
-        const index = Math.max(0, currentIndex - 1);
-        const vma = tableVma[index].vma;
-        const vmaArrondie = Math.ceil(vma * 2) / 2;
+        // Calcul de la VMA réelle atteinte (en km/h) si le coureur n'atteint même pas le premier palier
+        if (currentIndex === 0) {
+            currentIndex = 1;
+        }
 
-        resultat.innerHTML = `VMA réelle : ${vma.toFixed(2)} km/h <br><br>`;
-        resultat.innerHTML += `VMA arrondie : ${vmaArrondie.toFixed(1)} km/h `;
-        parcours.innerHTML = setColorTrack4eme();
+        // On appelle la fonction qui centralise calcul et affichage
+        afficherResultatVMA();
+
+        // On fige l'interface
+        startBtn.style.display = "none";
+        stopBtn.style.display = "none";
+        resumeBtn.style.display = "inline-block";
     }
 };
 
@@ -246,6 +313,31 @@ const reset = async() => {
         distanceAff.textContent = "0";
         resultat.textContent = "";
         parcours.textContent = "";
+        resumeBtn.style.display = "none";
+        btnSaveVma.style.display = "none";
+        // Réaffichage des boutons
+        startBtn.style.display = "inline-block";
+        stopBtn.style.display = "inline-block";
+    }
+};
+
+const reprendre = async () => {
+    const confirmation = await demanderConfirmation("Voulez-vous vraiment reprendre le test ?");
+
+    if (confirmation) {
+        estArrete = false;
+
+        // On cache le résultat temporaire et le bouton enregistrer
+        resultat.textContent = "";
+        btnSaveVma.style.display = "none";
+
+        // On réaffiche les boutons normaux
+        resumeBtn.style.display = "none";
+        startBtn.style.display = "none"; // Optionnel : on garde le Stop uniquement
+        stopBtn.style.display = "inline-block";
+
+        // On relance le défilement
+        defilerTemps();
     }
 };
 
@@ -273,6 +365,42 @@ const demanderConfirmation = (message) => {
     });
 };
 
+/**
+ * Envoie la VMA calculée au serveur pour la sauvegarder dans la base de données.
+ * @param eleveId L'identifiant de l'élève pour lequel on sauvegarde la VMA
+ * @param vmaValeur La valeur de la VMA à sauvegarder (en km/h)
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la requête est terminée
+ */
+async function sauvegarderVmaServeur(eleveId, vmaValeur, nomClasse) {
+    try {
+        const response = await fetch('/api/eleves/update-vma', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: eleveId,
+                vma: vmaValeur
+            })
+        });
+
+        if (response.ok) {
+            console.log("VMA synchronisée avec la base de données.");
+
+            // Actualiser l'affichage de la VMA sur la page après sauvegarde
+            if (vmaActuelleAff) {
+                vmaActuelleAff.textContent = vmaValeur.toFixed(1);
+                vmaActuelleAff.style.color = "#27ae60";
+            }
+        } else {
+            console.error("Échec de la sauvegarde serveur.");
+        }
+    } catch (error) {
+        console.error("Erreur réseau :", error);
+    }
+}
+
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
 resetBtn.addEventListener("click", reset);
+resumeBtn.addEventListener("click", reprendre);

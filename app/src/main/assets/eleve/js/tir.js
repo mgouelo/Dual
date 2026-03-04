@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const nombreDeTirs = 6;
     const btnEnvoyer = document.getElementById("btn-envoyer");
 
+    // Focus automatique sur le 1er input
+    const inputTir1 = document.getElementById("tir1");
+    setTimeout(() => inputTir1.focus(), 100); // Un léger délai assure que l'élément est visible
+
 
     //Fonction d'envoi JSON au serveur (tablette prof)
     async function envoyerResultatAuServeur(total, medaille) {
@@ -48,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let valeur = parseInt(champ.value);
 
             if (!isNaN(valeur) && champ.value !== "") {
-                // Strict nécessaire : borner entre 0 et 5 (5 balles max par tir)
+                //Strict nécessaire : borner entre 0 et 5 (5 balles max par tir)
                 valeur = Math.min(Math.max(valeur, 0), 5);
                 champ.value = valeur; // Correction visuelle pour l'élève
 
@@ -61,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultatsDiv.style.display = "block";
         document.getElementById("total").textContent = total;
 
-        // Ajout de la médaille selon le barème officiel
+        //Ajout de la médaille selon le barème officiel
         const display = document.getElementById("medaille-display");
         if (compteTirs === nombreDeTirs) {
             let medaille = "BRONZE";
@@ -74,8 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             display.textContent = "Médaille : " + medaille;
             display.style.backgroundColor = couleur;
-            display.style.padding = "10px";
+            display.style.padding = "20px";
             display.style.borderRadius = "12px";
+            display.style.fontSize = "1.6rem";
 
             // Sauvegarde pour le bilan final
             localStorage.setItem("tir_total", total);
@@ -85,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (btnEnvoyer) {
                 btnEnvoyer.style.display = "block";
                 btnEnvoyer.onclick = () => {
-                    btnEnvoyer.disabled = true; // Empêche l'élève de cliquer plusieurs fois
+                    btnEnvoyer.disabled = true; //Empêche l'élève de cliquer plusieurs fois
                     btnEnvoyer.textContent = "Envoi en cours...";
                     envoyerResultatAuServeur(total, medaille);
                 };
@@ -96,6 +101,14 @@ document.addEventListener("DOMContentLoaded", () => {
             display.style.backgroundColor = "transparent";
         }
     }
+
+    // Ecouteur pour la touche Entrée sur l'input (ergonomie)
+    const inputTir6eme = document.querySelector(".tir6eme");
+    inputTir6eme.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            calculerResultats();
+        }
+    });
 
     for (let i = 1; i <= nombreDeTirs; i++) {
         const inputTir = document.getElementById(`tir${i}`);

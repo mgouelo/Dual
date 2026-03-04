@@ -2,15 +2,14 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Test VMA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Test VMA</title>
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
 <div id="container">
 
     <header>
-        <h1>Test VMA</h1>
+        <h1>Test VMA de <span id="nom-eleve-vma">(Chargement...)</span></h1>
         <p>Lancer le chono au début de l'épreuve et l'arrêter dès que le camarade ne peut plus suivre le rythme imposé</p>
     </header>
 
@@ -19,16 +18,24 @@
     <div id="infos">
         <p>Vitesse : <span id="vitesse">8.0</span> km/h</p>
         <p>Distance parcourue : <span id="distance">0</span> m</p>
+        <p>VMA actuelle : <span id="vma-actuelle">--</span> km/h</p>
     </div>
 
-    <div id="buttons">
+    <div id="buttonTraining">
         <button id="reset" class="button">Reset</button>
         <button id="stop" class="button">Arrêter</button>
         <button id="start" class="button">Démarrer</button>
+        <button id="resume" style="display: none;" class="button">Reprendre le test</button>
     </div>
 
     <div id="resultat"></div>
     <div id="parcours"></div>
+
+    <div id="zone-actions-vma">
+        <button id="btn-save-vma" class="button">
+            Enregistrer la nouvelle VMA
+        </button>
+    </div>
 
     <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
 
