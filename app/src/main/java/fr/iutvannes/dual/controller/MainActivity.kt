@@ -6,23 +6,32 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View // Import pour gérer la visibilité (View.VISIBLE, View.GONE)
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.bumptech.glide.Glide
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.fragments.ConnexionFragment
 import fr.iutvannes.dual.controller.fragments.ClassesFragment
+import fr.iutvannes.dual.controller.fragments.InscriptionFragment
 import fr.iutvannes.dual.controller.fragments.ProfilFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
 import fr.iutvannes.dual.model.database.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.text.replace
 
 /**
  * Activité principale de l'application.
@@ -55,6 +64,9 @@ class MainActivity : AppCompatActivity() {
 
     /* Database */
     private lateinit var db: AppDatabase
+
+    var countInitialSession: Int = 0
+
 
     /**
      * Method called when the activity is created.

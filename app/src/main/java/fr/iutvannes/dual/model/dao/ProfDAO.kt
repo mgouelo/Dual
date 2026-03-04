@@ -18,7 +18,7 @@ interface ProfDAO {
      *
      * @param prof The Professor to Insert
      */
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(prof: Prof): Long
 
     /**
@@ -46,6 +46,9 @@ interface ProfDAO {
     @Query("SELECT * FROM Prof WHERE id_prof = :idProf")
     suspend fun getProfById(idProf: Int): Prof?
 
+    @Query("SELECT id_prof FROM Prof")
+    suspend fun getProfId(): Int
+
     /**
      * Retrieve a teacher via their email.
      *
@@ -63,6 +66,9 @@ interface ProfDAO {
      */
     @Query("SELECT * FROM Prof WHERE email = :email")
     fun getProfLive(email: String): LiveData<Prof?>
+
+    @Query("SELECT email FROM Prof")
+    suspend fun getProfEmail(): String
 
     /**
      * Updates a Professor in the database.

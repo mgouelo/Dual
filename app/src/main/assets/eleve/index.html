@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Portail Élève</title>
-        <link rel="stylesheet" href="css/style.css">
-    </head>
-    <body>
-        <main id="containerMain">
-            <header>
-                <h1>Portail élève</h1>
-            </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">        <title>Portail Élève</title>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main id="containerMain">
+    <header>
+        <h1>Portail élève</h1>
+    </header>
 
-            <div id="typeClasse" style="display: none">
+    <div id="typeClasse" style="display: none">
 
-            </div>
+    </div>
 
-            <section id="buttons">
-                <p>Chargement des binômes...</p>
-            </section>
+    <section id="buttons">
+        <p>Chargement des binômes...</p>
+    </section>
 
-            <div id="retourClasseBtn" style="display: none">
+    <div id="retourClasseBtn" style="display: none">
 
-            </div>
+    </div>
 
-            <footer>
-                <p class="info">Connecté au serveur local</p>
-            </footer>
-        </main>
+    <button id="btnRetourBinomes" class="button btn-back" onclick="location.href='index.html'" style="margin-top: 20px; display: none">Changer de classe</button>
 
-        <script src="js/main.js"></script>
-    </body>
+    <footer>
+        <p class="info">Connecté au serveur local</p>
+    </footer>
+</main>
+<script src="js/main.js"></script>
+</body>
 </html>

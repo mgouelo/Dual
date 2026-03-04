@@ -7,4 +7,6 @@
     <color name="bleu_fonce">#1C1E4E</color>
     <color name="blanc">#FFFFFFFF</color>
     <color name="rouge">#C8232C</color>
+    <color name="jaune">#FFCE00</color>
+    <color name="vert">#008000</color>
 </resources>

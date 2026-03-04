@@ -9,6 +9,9 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import android.util.Base64
+import fr.iutvannes.dual.model.persistence.Resultat
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 
 /**
  * EmailService is a Kotlin object (singleton) used to send emails
@@ -41,9 +44,9 @@ object EmailService {
     suspend fun sendPasswordResetEmail(emailTo: String, newPassword: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                // --- Construction of the JSON expected by Brevo ---
+                // --- Construction du JSON attendu par Brevo ---
                 val json = JSONObject().apply {
-                    // "sender": verified sender
+                    // "sender" : expéditeur vérifié
                     put("sender", JSONObject().apply { put("email", SENDER_EMAIL) })
 
                     // "to": list of recipients
@@ -91,6 +94,42 @@ object EmailService {
 
                 // Returns true if HTTP code 2xx
                 response.isSuccessful
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+    }
+
+    suspend fun sendExcelExportEmail(emailTo: String, dateSession: String, csvContent: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                //Encodage du contenu CSV en Base64
+                val base64Content = android.util.Base64.encodeToString(csvContent.toByteArray(), android.util.Base64.NO_WRAP)
+
+                val json = JSONObject().apply {
+                    put("sender", JSONObject().apply { put("email", SENDER_EMAIL) })
+                    put("to", JSONArray().apply { put(JSONObject().apply { put("email", emailTo) }) })
+                    put("subject", "Bilan DUAL - Séance du $dateSession")
+                    put("textContent", "Bonjour,\n\nVotre séance est terminée. Veuillez trouver le bilan en pièce jointe.\n\nCordialement.")
+
+                    //Pièce jointe
+                    put("attachment", JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("content", base64Content)
+                            put("name", "bilan_seance_${dateSession.replace("/", "_")}.csv")
+                        })
+                    })
+                }
+
+                val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
+                val request = Request.Builder()
+                    .url(BREVO_API_URL)
+                    .addHeader("api-key", API_KEY)
+                    .post(requestBody)
+                    .build()
+
+                client.newCall(request).execute().isSuccessful
             } catch (e: Exception) {
                 e.printStackTrace()
                 false

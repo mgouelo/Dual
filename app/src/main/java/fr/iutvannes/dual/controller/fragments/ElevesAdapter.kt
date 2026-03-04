@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.model.persistence.Eleve
 import fr.iutvannes.dual.R
+import fr.iutvannes.dual.model.persistence.Classe
 
 /**
  * Adapter for the student list.
@@ -19,6 +20,7 @@ import fr.iutvannes.dual.R
  * @return Adapter for the student list
  */
 class ElevesAdapter(
+    private val onClick: (Eleve) -> Unit,
     private val onEdit: (Eleve) -> Unit,
     private val onDelete: (Eleve) -> Unit
 ) : RecyclerView.Adapter<ElevesAdapter.VH>() {
@@ -53,6 +55,7 @@ class ElevesAdapter(
 
         /* Variable for the delete button */
         val btnDelete: View = view.findViewById(R.id.btnDelete)
+        val card: View = view
     }
 
     /**
@@ -82,6 +85,7 @@ class ElevesAdapter(
         holder.tvNomPrenom.text = "${eleve.nom} ${eleve.prenom}"
         holder.tvGenre.text = eleve.genre ?: "—"
 
+        holder.card.setOnClickListener { onClick(eleve) }
         holder.btnEdit.setOnClickListener { onEdit(eleve) }
         holder.btnDelete.setOnClickListener { onDelete(eleve) }
     }

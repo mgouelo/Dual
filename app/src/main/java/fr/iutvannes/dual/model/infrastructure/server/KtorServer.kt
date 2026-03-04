@@ -17,10 +17,14 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -33,12 +37,24 @@ data class EventDTO(
     val studentId: String? = null,
     val payload: JsonObject? = null
 )
+@Serializable
+data class VmaUpdate(val id: Int, val vma: Float)
+
+@Serializable
+data class EleveDTO(
+    val id_eleve: Int,
+    val nomComplet: String,
+    val genre: String,
+    val vma: Float?
+)
 
 /**
  * Starts/stops the Ktor server (HTTP) and installs the JSON, logs, CORS plugins...
  * Injects dependencies into routes
  */
 object KtorServer {
+
+    var idSeanceActuelle: Int = 0
 
     /* Variable for the server engine */
     private var engine: EmbeddedServer<*, *>? = null
@@ -133,10 +149,42 @@ fun Application.module(appContext: Context) {
 
         // Route to send students from ONE specific class
         get("/api/eleves/par-classe/{nomClasse}") {
-            val nomClasse = call.parameters["nomClasse"] ?: ""
-            val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
-            val nomsComplets = eleves.map { "${it.prenom} ${it.nom.uppercase()}" }
-            call.respond(nomsComplets)
+            val nom = call.parameters["nomClasse"] ?: ""
+            Log.d("KtorDebug", "Requête reçue pour la classe : $nom") // Log de début
+
+            try {
+                val eleves = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.EleveDao().getElevesByClasse(nom)
+                }
+
+                Log.d("KtorDebug", "Nombre d'élèves trouvés en BDD : ${eleves.size}") // Vérifie si la BDD est vide
+
+                val dataEleves = eleves.map {
+                    Log.d("KtorDebug", "Traitement de : ${it.prenom} (VMA: ${it.vma})") // Vérifie les valeurs individuelles
+                    EleveDTO(
+                        id_eleve = it.id_eleve,
+                        nomComplet = "${it.prenom} ${it.nom.uppercase()}",
+                        genre = it.genre,
+                        vma = it.vma
+                    )
+                }
+                call.respond(dataEleves)
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur critique route event : ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+        }
+
+        post("/api/eleves/update-vma") {
+            val req = call.receive<VmaUpdate>() // Ktor convertit le JSON direct en objet
+
+            val rows = DatabaseProvider.db.EleveDao().updateVma(req.id, req.vma)
+
+            if (rows > 0) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
 
         // Receives student events
@@ -153,38 +201,73 @@ fun Application.module(appContext: Context) {
                 val type = jsonElement["type"]?.jsonPrimitive?.content ?: ""
                 val studentId = jsonElement["studentId"]?.jsonPrimitive?.content ?: ""
 
-                // Business logic: We process the shot
-                if (type == "TIR_RESULTAT_6EME") {
-                    val payload = jsonElement["payload"]?.jsonObject
-                    val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
-                    val scoreInt = scoreRaw.toIntOrNull() ?: 0
+                val parts = studentId.split(" ")
+                val prenom = parts.getOrNull(0) ?: ""
+                val nom = parts.getOrNull(1) ?: ""
 
-                    // We separate First Name and Last Name
-                    val parts = studentId.split(" ")
-                    val prenom = parts.getOrNull(0) ?: ""
-                    val nom = parts.getOrNull(1) ?: ""
+                when (type) {
+                    "TIR_RESULTAT_6EME" -> {
+                        val payload = jsonElement["payload"]?.jsonObject
+                        val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
+                        val scoreInt = scoreRaw.toIntOrNull() ?: 0
 
-                    // Database insertion
-                    val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
-                    if (eleve != null) {
-                        val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
-                            id_eleve = eleve.id_eleve,
-                            id_seance = 1,
-                            cibles_touchees = scoreInt,
-                            temp_course = 0F
-                        )
-                        DatabaseProvider.db.resultatDao().insert(nouveauResultat)
-                        Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
-                    } else {
-                        Log.e("KtorServer", "ÉLÈVE NON TROUVÉ en BDD : $prenom $nom")
+                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        if (eleve != null) {
+                            val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                                id_eleve = eleve.id_eleve,
+                                id_seance = KtorServer.idSeanceActuelle,
+                                cibles_touchees = scoreInt,
+                                temp_course = 0F
+                            )
+                            DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                            Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
+                            call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
+                        } else {
+                            Log.e("KtorServer", "ÉLÈVE NON TROUVÉ : $prenom $nom")
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Eleve non trouvé"))
+                        }
+                    }
+
+                    "VMA_RESULTAT" -> {
+                        val payload = jsonElement["payload"]?.jsonObject
+                        val vmaValue = payload?.get("vma")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+
+                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        if (eleve != null) {
+                            //Mise à jour de la VMA sur la fiche de l'élève
+                            eleve.vma = vmaValue
+                            DatabaseProvider.db.EleveDao().update(eleve)
+
+                            //On crée une ligne dans la table Resultat liée à l'idSeanceActuelle
+                            val marquageResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                                id_eleve = eleve.id_eleve,
+                                id_seance = KtorServer.idSeanceActuelle,
+                                vma = vmaValue, //On stocke la VMA ici pour l'historique de la séance
+                                cibles_touchees = 0, //Pas de tir en Test VMA
+                                temp_course = 0F
+                            )
+                            DatabaseProvider.db.resultatDao().insert(marquageResultat)
+
+                            Log.i("KtorServer", "Test VMA enregistré : $studentId -> $vmaValue km/h")
+                            call.respond(HttpStatusCode.Accepted, mapOf("status" to "VMA_OK"))
+                        } else {
+                            Log.e("KtorServer", "ÉLÈVE NON TROUVÉ : $prenom $nom")
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Eleve non trouvé"))
+                        }
+                    }
+
+                    else -> {
+                        Log.w("KtorServer", "Type d'événement inconnu : $type")
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Unknown type"))
                     }
                 }
 
-                call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
-
             } catch (e: Exception) {
                 Log.e("KtorServer", "Erreur critique route event : ${e.message}")
-                call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error"))
+                // On vérifie si une réponse n'a pas déjà été envoyée avant d'envoyer l'erreur
+                if (!call.response.isCommitted) {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error"))
+                }
             }
         }
 
@@ -212,21 +295,59 @@ fun Application.module(appContext: Context) {
         // CSV export route for the teacher
         get("/api/admin/export") {
             try {
-                // Retrieving data from the Room database
-                val resultats = DatabaseProvider.db.resultatDao().getAllResultats()
+                val idActuel = KtorServer.idSeanceActuelle
+                val seance = DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
 
-                // CSV Content Construction
-                val csv = StringBuilder("prenom;nom;genre;cibles_touchees\n")
+                if (seance == null) {
+                    call.respond(HttpStatusCode.NotFound, "Aucune séance active.")
+                    return@get
+                }
 
-                resultats.forEach { res ->
-                    val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
-                    if (eleve != null) {
-                        val prenom = eleve.prenom
-                        val nom = eleve.nom.uppercase()
-                        val genre = eleve.genre
-                        val score = res.cibles_touchees
+                //Nom du fichier dynamique
+                val dateClean = seance.date.replace("/", "-").replace(":", "h").replace(" ", "_")
+                val nomFichier = "Bilan_${seance.type}_${seance.classe}_$dateClean.csv"
 
-                        csv.append("$prenom;$nom;$genre;$score\n")
+                //Récupération des résultats
+                val resultats = DatabaseProvider.db.resultatDao().getBySeance(idActuel)
+                val csv = StringBuilder()
+
+                //Personnalisation du contenu selon le type de séance
+                when (seance.type) {
+                    "Épreuve Finale" -> {
+                        csv.append("BILAN ÉVALUATION FINALE - CLASSE : ${seance.classe}\n")
+                        csv.append("Date;${seance.date}\n\n")
+                        csv.append("Nom;Prenom;Genre;Cibles;VMA;Note Finale;Classement\n") //Colonnes complètes
+
+                        resultats.forEach { res ->
+                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            if (eleve != null) {
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${eleve.genre};${res.cibles_touchees};${eleve.vma};${res.note_finale};${res.classement}\n")
+                            }
+                        }
+                    }
+                    "Test VMA" -> {
+                        csv.append("RÉSULTATS TEST VMA - CLASSE : ${seance.classe}\n")
+                        csv.append("Date;${seance.date}\n\n")
+                        csv.append("Nom;Prenom;VMA (km/h)\n") //Uniquement l'essentiel pour le test VMA
+
+                        resultats.forEach { res ->
+                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            if (eleve != null) {
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${eleve.vma}\n")
+                            }
+                        }
+                    }
+                    else -> { //Mode Entraînement par défaut
+                        csv.append("SUIVI ENTRAÎNEMENT - CLASSE : ${seance.classe}\n")
+                        csv.append("Date;${seance.date}\n\n")
+                        csv.append("Nom;Prenom;Cibles Touchees;VMA\n")
+
+                        resultats.forEach { res ->
+                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            if (eleve != null) {
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${res.cibles_touchees};${eleve.vma}\n")
+                            }
+                        }
                     }
                 }
 
@@ -234,7 +355,7 @@ fun Application.module(appContext: Context) {
                 call.response.header(
                     HttpHeaders.ContentDisposition,
                     ContentDisposition.Attachment.withParameter(
-                        ContentDisposition.Parameters.FileName, "resultats_biathlon.csv"
+                        ContentDisposition.Parameters.FileName, nomFichier
                     ).toString()
                 )
 
@@ -242,8 +363,8 @@ fun Application.module(appContext: Context) {
                 call.respondText(csv.toString(), ContentType.Text.CSV)
 
             } catch (e: Exception) {
-                Log.e("KtorServer", "Erreur Export CSV: ${e.message}")
-                call.respond(HttpStatusCode.InternalServerError, "Erreur lors de la génération du fichier")
+                Log.e("KtorServer", "Erreur Export: ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, "Erreur génération CSV")
             }
         }
     }

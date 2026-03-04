@@ -19,6 +19,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.model.persistence.Eleve
+import fr.iutvannes.dual.ui.fragments.EleveProfilFragment
 
 /**
  * Fragment to display the list of students in a class.
@@ -90,6 +91,10 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         recyclerViewEleves = view.findViewById(R.id.recyclerViewEleves)
         tvEmpty = view.findViewById(R.id.tvEmpty)
         adapter = ElevesAdapter(
+            onClick = { eleve ->
+                val fragment = EleveProfilFragment.newInstance(eleve.id_eleve)
+                (activity as MainActivity).showFragment(fragment, true, true)
+            },
             onEdit = { eleve ->
                 val fragment = AjoutFragment.newInstanceForEdit(classeNom!!, eleve.id_eleve)
                 (activity as MainActivity).showFragment(fragment, true, true)
