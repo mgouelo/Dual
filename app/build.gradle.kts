@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     // id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.ksp)
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
