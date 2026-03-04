@@ -177,6 +177,7 @@ const btnSaveVma = document.getElementById("btn-save-vma");
 let vmaTemporaire = 0; // Pour stocker la valeur avant validation
 let parcoursTexteTemporaire = "";
 let badgeTemporaire = "";
+let vmaDistanceTemporaire = 0; // Pour stocker la distance du tour associée au parcours
 
 const afficherResultatVMA = () => {
     // Définitions des parcours pour chaque niveau
@@ -196,36 +197,43 @@ const afficherResultatVMA = () => {
     if (vmaTemporaire <= 9.5 || vmaTemporaire === 10) {
         badgeTemporaire = "bg-jaune";
         parcoursTexteTemporaire = coupellesJaunes;
+        vmaDistanceTemporaire = 250;
 
         // Plots verts : 10.5 ou 11
     } else if (vmaTemporaire === 10.5 || vmaTemporaire === 11) {
         badgeTemporaire = "bg-vert";
         parcoursTexteTemporaire = plotsVerts;
+        vmaDistanceTemporaire = 275;
 
         // Coupelles bleues : 11.5 ou 12
     } else if (vmaTemporaire === 11.5 || vmaTemporaire === 12) {
         badgeTemporaire = "bg-bleu";
         parcoursTexteTemporaire = coupellesBleues;
+        vmaDistanceTemporaire = 300;
 
         // Plots bleus : 12.5 ou 13
     } else if (vmaTemporaire === 12.5 || vmaTemporaire === 13) {
         badgeTemporaire = "bg-bleu";
         parcoursTexteTemporaire = plotsBleus;
+        vmaDistanceTemporaire = 325;
 
         // Coupelles rouges : 13.5 ou 14
     } else if (vmaTemporaire === 13.5 || vmaTemporaire === 14) {
         badgeTemporaire = "bg-rouge";
         parcoursTexteTemporaire = coupellesRouges;
+        vmaDistanceTemporaire = 350;
 
         // Plots rouges : 14.5 ou 15
     } else if (vmaTemporaire === 14.5 || vmaTemporaire === 15) {
         badgeTemporaire = "bg-rouge";
         parcoursTexteTemporaire = plotsRouges;
+        vmaDistanceTemporaire = 375;
 
         // Grand tour : > 15
     } else {
         badgeTemporaire = "bg-noir";
         parcoursTexteTemporaire = grandTour;
+        vmaDistanceTemporaire = 400;
     }
 
     // Génération du HTML de la carte de résultat
@@ -250,7 +258,10 @@ const enregistrerNouvelleVMA = async () => {
         // Mise à jour de l'objet local
         coureurActif.vma = vmaTemporaire;
         coureurActif.vma_badge = badgeTemporaire; // Stocke "bg-bleu", "bg-jaune", etc.
-        coureurActif.vma_parcours = parcoursTexteTemporaire; // Stocke le nom du parcours
+        coureurActif.vma_parcours = parcoursTexteTemporaire; // Stocke le nom du parcours (ex : Parcours : (coupelles jaunes – 250m)
+
+        // On stocke la distance du tour associée au parcours (ex : 250)
+        coureurActif.vma_distance = vmaDistanceTemporaire;
 
         // Sauvegarde pour le Hub (séance actuelle)
         localStorage.setItem("coureur_actif_objet", JSON.stringify(coureurActif));

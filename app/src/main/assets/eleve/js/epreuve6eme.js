@@ -54,7 +54,7 @@ const defilerTemps = () => {
         estArrete = true;
         clearTimeout(timeout);
         chrono.textContent = "00:00:00";
-        alert("Temps écoulé ! Fin de l'épreuve.");
+        confirmation("Temps écoulé ! Fin de l'épreuve.");
         return;
     }
 
@@ -459,6 +459,15 @@ const afficherParcoursVMA = () => {
 };
 // Appeler la fonction au chargement de la page
 document.addEventListener("DOMContentLoaded", afficherParcoursVMA);
+
+/** Confirmation pour le retour à la séance. */
+const retourSeance = () => {
+    demanderConfirmation("Retourner à la séance ? Toutes les données de cette épreuve seront perdues.").then(confirmation => {
+        if (confirmation) {
+            window.location.href = "../pages/seance.html";
+        }
+    });
+}
 
 /* Ajout des écouteurs d'événements pour les boutons. */
 startBtn.addEventListener("click", demarrer);
