@@ -23,5 +23,7 @@ data class Seance(
     var date: String = "",
     var nb_tours: Int = 0,
     var nb_cibles: Int = 0,
-    var id_prof: Int = 0
+    var id_prof: Int = 0,
+    var type: String,
+    var classe: String
 )
