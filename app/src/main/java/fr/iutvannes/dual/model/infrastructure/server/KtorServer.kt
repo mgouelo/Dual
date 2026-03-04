@@ -296,7 +296,9 @@ fun Application.module(appContext: Context) {
                         date = dateSeance,
                         nb_tours = nbTours,
                         nb_cibles = nbCibles,
-                        id_prof = 1
+                        id_prof = 1,
+                        type = "Entraînement",
+                        classe = eleve.classe
                     )
 
                     val seanceId = DatabaseProvider.db
