@@ -22,8 +22,8 @@ import fr.iutvannes.dual.model.dao.TirDAO
 import fr.iutvannes.dual.model.dao.TourCourseDAO
 
 @Database(
-    entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, SalveTir::class, Course::class, TourCourse::class],
-    version = 2,
+    entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, Course::class, TourCourse::class, SalveTir::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

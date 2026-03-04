@@ -68,7 +68,7 @@ class AjoutFragment : Fragment(R.layout.fragment_ajout_eleve) {
             val nom = inputNom.text.toString().trim()
             val selectedId = groupSexe.checkedRadioButtonId
 
-            // Déterminer le genre en fonction de l'ID
+            //Déterminer le genre en fonction de l'ID
             val genre = when (selectedId) {
                 R.id.radio_homme -> "M"
                 R.id.radio_femme -> "F"
