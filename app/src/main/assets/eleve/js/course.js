@@ -138,6 +138,35 @@ const supprimer = () => {
     }
 };
 
+/**
+ * Récupère les infos VMA du coureur actif et affiche son parcours coloré
+ */
+const afficherParcoursVMA = () => {
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    const displayZone = document.getElementById("vma-result-display");
+    const badgeZone = document.getElementById("badge-parcours");
+
+    if (displayZone && badgeZone) {
+        // On rend le bloc visible dans tous les cas pour guider l'élève
+        displayZone.style.display = "block";
+
+        if (coureur && coureur.vma_badge && coureur.vma_parcours) {
+            // Données présentes -> Affichage du parcours coloré
+            badgeZone.textContent = coureur.vma_parcours;
+            badgeZone.className = "parcours-badge " + coureur.vma_badge;
+            badgeZone.style.backgroundColor = ""; // Reset du style inline
+        } else {
+            // Pas de données -> Message d'alerte gris neutre
+            badgeZone.textContent = "Test VMA non réalisé";
+            badgeZone.className = "parcours-badge";
+            badgeZone.style.backgroundColor = "#989Ca0";
+            badgeZone.style.color = "white";
+        }
+    }
+};
+// Appeler la fonction au chargement de la page
+document.addEventListener("DOMContentLoaded", afficherParcoursVMA);
+
 /* Ajout des écouteurs d'événements pour les boutons. */
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
