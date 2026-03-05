@@ -241,24 +241,49 @@ function selectAudit(element, categorie, valeur) {
 }
 
 /**
- * Récupère les infos VMA du coureur actif et affiche son parcours coloré
+ * Récupère les infos VMA du coureur actif et affiche son parcours coloré (Spécifique 4ème)
  */
 const afficherParcoursVMA = () => {
     const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    // On force le niveau 4ème ici ou on le récupère
+    const niveau = localStorage.getItem("niveau") || "4eme";
+
     const displayZone = document.getElementById("vma-result-display");
     const badgeZone = document.getElementById("badge-parcours");
 
     if (displayZone && badgeZone) {
-        // On rend le bloc visible dans tous les cas pour guider l'élève
         displayZone.style.display = "block";
 
-        if (coureur && coureur.vma_badge && coureur.vma_parcours) {
-            // Données présentes -> Affichage du parcours coloré
-            badgeZone.textContent = coureur.vma_parcours;
-            badgeZone.className = "parcours-badge " + coureur.vma_badge;
-            badgeZone.style.backgroundColor = ""; // Reset du style inline
+        if (coureur && coureur.vma && coureur.vma > 0) {
+            const vma = parseFloat(coureur.vma);
+            let badge = "";
+            let parcours = "";
+
+            // --- LOGIQUE BARÈME 4ÈME (Complet) ---
+            if (vma <= 10) {
+                badge = "bg-jaune"; parcours = "Coupelles Jaunes (250m)";
+            } else if (vma <= 11) {
+                badge = "bg-vert"; parcours = "Plots Verts (275m)";
+            } else if (vma <= 12) {
+                badge = "bg-bleu"; parcours = "Coupelles Bleues (300m)";
+            } else if (vma <= 13) {
+                badge = "bg-bleu"; parcours = "Plots Bleus (325m)";
+            } else if (vma <= 14) {
+                badge = "bg-rouge"; parcours = "Coupelles Rouges (350m)";
+            } else if (vma <= 15) {
+                badge = "bg-rouge"; parcours = "Plots Rouges (375m)";
+            } else {
+                badge = "bg-noir"; parcours = "Grand Tour (400m)";
+            }
+
+            // Mise à jour de l'interface
+            badgeZone.textContent = parcours;
+            badgeZone.className = "parcours-badge " + badge;
+            badgeZone.style.backgroundColor = "";
+            badgeZone.style.color = "white";
+
+            console.log(`Affichage Parcours 4ème - VMA: ${vma}`);
         } else {
-            // Pas de données -> Message d'alerte gris neutre
             badgeZone.textContent = "Test VMA non réalisé";
             badgeZone.className = "parcours-badge";
             badgeZone.style.backgroundColor = "#989Ca0";

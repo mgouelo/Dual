@@ -432,24 +432,43 @@ const afficherResultatsFinaux = (nbTours, notePerf, medaillePerf, ecartMax, meda
 };
 
 /**
- * Récupère les infos VMA du coureur actif et affiche son parcours coloré
+ * Récupère les infos VMA du coureur actif et affiche son parcours coloré (Spécifique 6ème)
  */
 const afficherParcoursVMA = () => {
     const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    //On récupère le niveau, par défaut 6eme pour ce fichier
+    const niveau = localStorage.getItem("niveau") || "6eme";
+
     const displayZone = document.getElementById("vma-result-display");
     const badgeZone = document.getElementById("badge-parcours");
 
     if (displayZone && badgeZone) {
-        // On rend le bloc visible dans tous les cas pour guider l'élève
         displayZone.style.display = "block";
 
-        if (coureur && coureur.vma_badge && coureur.vma_parcours) {
-            // Données présentes -> Affichage du parcours coloré
-            badgeZone.textContent = coureur.vma_parcours;
-            badgeZone.className = "parcours-badge " + coureur.vma_badge;
-            badgeZone.style.backgroundColor = ""; // Reset du style inline
+        if (coureur && coureur.vma && coureur.vma > 0) {
+            const vma = parseFloat(coureur.vma);
+            let badge = "";
+            let parcours = "";
+
+            // --- LOGIQUE BARÈME 6ÈME ---
+            if (vma <= 9) {
+                badge = "bg-jaune"; parcours = "Coupelles Jaunes (250m)";
+            } else if (vma <= 10.5) {
+                badge = "bg-vert"; parcours = "Plots Verts (275m)";
+            } else if (vma <= 11.5) {
+                badge = "bg-bleu"; parcours = "Coupelles Bleues (300m)";
+            } else {
+                badge = "bg-rouge"; parcours = "Coupelles Rouges (350m)";
+            }
+
+            //Mise à jour de l'interface
+            badgeZone.textContent = parcours;
+            badgeZone.className = "parcours-badge " + badge;
+            badgeZone.style.backgroundColor = "";
+            badgeZone.style.color = "white";
+
+            console.log(`Affichage Parcours 6ème - VMA: ${vma}`);
         } else {
-            // Pas de données -> Message d'alerte gris neutre
             badgeZone.textContent = "Test VMA non réalisé";
             badgeZone.className = "parcours-badge";
             badgeZone.style.backgroundColor = "#989Ca0";
