@@ -175,6 +175,9 @@ const defilerTemps = () => {
 
 const btnSaveVma = document.getElementById("btn-save-vma");
 let vmaTemporaire = 0; // Pour stocker la valeur avant validation
+let parcoursTexteTemporaire = "";
+let badgeTemporaire = "";
+let vmaDistanceTemporaire = 0; // Pour stocker la distance du tour associée au parcours
 
 const afficherResultatVMA = () => {
     // Définitions des parcours pour chaque niveau
@@ -190,43 +193,47 @@ const afficherResultatVMA = () => {
     const vmaReelle = tableVma[Math.max(0, currentIndex - 1)].vma;
     vmaTemporaire = Math.ceil(vmaReelle * 2) / 2; // On stocke la vma temporaire arrondie au 0.5 supérieur pour validation
 
-    let texteParcours = "";
-    let badgeClass = "";
-
     // Coupelles jaunes : 9.5 ou 10
     if (vmaTemporaire <= 9.5 || vmaTemporaire === 10) {
-        badgeClass = "bg-jaune";
-        texteParcours = coupellesJaunes;
+        badgeTemporaire = "bg-jaune";
+        parcoursTexteTemporaire = coupellesJaunes;
+        vmaDistanceTemporaire = 250;
 
         // Plots verts : 10.5 ou 11
     } else if (vmaTemporaire === 10.5 || vmaTemporaire === 11) {
-        badgeClass = "bg-vert";
-        texteParcours = plotsVerts;
+        badgeTemporaire = "bg-vert";
+        parcoursTexteTemporaire = plotsVerts;
+        vmaDistanceTemporaire = 275;
 
         // Coupelles bleues : 11.5 ou 12
     } else if (vmaTemporaire === 11.5 || vmaTemporaire === 12) {
-        badgeClass = "bg-bleu";
-        texteParcours = coupellesBleues;
+        badgeTemporaire = "bg-bleu";
+        parcoursTexteTemporaire = coupellesBleues;
+        vmaDistanceTemporaire = 300;
 
         // Plots bleus : 12.5 ou 13
     } else if (vmaTemporaire === 12.5 || vmaTemporaire === 13) {
-        badgeClass = "bg-bleu";
-        texteParcours = plotsBleus;
+        badgeTemporaire = "bg-bleu";
+        parcoursTexteTemporaire = plotsBleus;
+        vmaDistanceTemporaire = 325;
 
         // Coupelles rouges : 13.5 ou 14
     } else if (vmaTemporaire === 13.5 || vmaTemporaire === 14) {
-        badgeClass = "bg-rouge";
-        texteParcours = coupellesRouges;
+        badgeTemporaire = "bg-rouge";
+        parcoursTexteTemporaire = coupellesRouges;
+        vmaDistanceTemporaire = 350;
 
         // Plots rouges : 14.5 ou 15
     } else if (vmaTemporaire === 14.5 || vmaTemporaire === 15) {
-        badgeClass = "bg-rouge";
-        texteParcours = plotsRouges;
+        badgeTemporaire = "bg-rouge";
+        parcoursTexteTemporaire = plotsRouges;
+        vmaDistanceTemporaire = 375;
 
         // Grand tour : > 15
     } else {
-        badgeClass = "bg-noir";
-        texteParcours = grandTour;
+        badgeTemporaire = "bg-noir";
+        parcoursTexteTemporaire = grandTour;
+        vmaDistanceTemporaire = 400;
     }
 
     // Génération du HTML de la carte de résultat
@@ -234,7 +241,7 @@ const afficherResultatVMA = () => {
         <div class="vma-card">
             <p class="vma-label">VMA réelle : ${vmaReelle.toFixed(2)} km/h</p>
             <span class="vma-main-val">${vmaTemporaire.toFixed(1)} km/h</span>
-            <div class="parcours-badge ${badgeClass}">${texteParcours}</div>
+            <div class="parcours-badge ${badgeTemporaire}">${parcoursTexteTemporaire}</div>
         </div>
     `;
 
@@ -250,6 +257,11 @@ const enregistrerNouvelleVMA = async () => {
     if (confirmation) {
         // Mise à jour de l'objet local
         coureurActif.vma = vmaTemporaire;
+        coureurActif.vma_badge = badgeTemporaire; // Stocke "bg-bleu", "bg-jaune", etc.
+        coureurActif.vma_parcours = parcoursTexteTemporaire; // Stocke le nom du parcours (ex : Parcours : (coupelles jaunes – 250m)
+
+        // On stocke la distance du tour associée au parcours (ex : 250)
+        coureurActif.vma_distance = vmaDistanceTemporaire;
 
         // Sauvegarde pour le Hub (séance actuelle)
         localStorage.setItem("coureur_actif_objet", JSON.stringify(coureurActif));

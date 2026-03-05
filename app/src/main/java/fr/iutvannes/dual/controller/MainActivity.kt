@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity() {
 
     var countInitialSession: Int = 0
 
+    var classeSelectionnee: String? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -5,6 +5,8 @@
     --blue: #303586;
     --night-blue: #1c1e4e;
     --white: #e5e5e5;
+    --green: #2ecc71;
+    --blanc: #ffffff;
 }
 
 /* Style global */
@@ -107,7 +109,7 @@ footer .info {
 #buttonTraining .button:nth-child(3) {
     grid-column: span 2;
     width: 100%;
-    max-width: none; /* Pour annuler ton max-width de 300px */
+    max-width: none;
 }
 
 /* Conteneur pour les boutons d'action */
@@ -157,7 +159,6 @@ footer .info {
     text-align: center;
     padding: 10px;
     border-radius: 10px;
-    font-weight: bold;
     background: rgba(0,0,0,0.05); /* Un léger fond pour structurer l'espace */
 }
 
@@ -225,7 +226,7 @@ footer .info {
     }
 
     .button {
-        font-size: 1rem; /* On garde une taille lisible */
+        font-size: 0.9rem; /* On garde une taille lisible */
         padding: 20px 0;
         max-width: 100%; /* Le bouton prend toute la largeur disponible */
     }
@@ -383,6 +384,16 @@ footer .info {
     max-width: 300px;
     font-size: 1.2rem;
     margin-top: 3vh;
+}
+
+/* Petits écrans (smartphones) */
+@media (max-width: 480px) {
+    .btn-back {
+        background-color: #e74c3c !important;
+        width: 100%;
+        font-size: 0.9rem;
+        margin-top: 3vh;
+    }
 }
 
 /* Classes d'état pour le message de pénalité */
@@ -584,4 +595,343 @@ footer .info {
 #btn-save-vma:hover {
     background-color: #27ae60;
     transform: translateY(-2px);
+}
+
+/* --- Styles pour le Tir Efficience --- */
+.tir-popup {
+    text-align: center;
+    padding: 30px;
+    border: 4px solid var(--blue);
+}
+
+/* Conteneur pour les inputs de tir */
+.tir-inputs-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* Boutons de score pour les tirs */
+.btn-score {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid var(--blue);
+    background: white;
+}
+
+/* Classe pour indiquer le score sélectionné (ex: 0, 1 ou 2 points) */
+.btn-score.selected {
+    background: var(--blue);
+    color: white;
+}
+
+/* Boutons principaux */
+.button-green {
+    background: var(--green);
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 25px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #202122;
+}
+
+/* Effet de survol pour les boutons */
+.button-green:hover {
+    background: #27ae60;
+    transform: translateY(-3px);
+}
+
+/* Adaptation pour les petits écrans */
+@media (max-width: 480px) {
+    .button-green {
+        font-size: 0.9rem; /* On garde une taille lisible */
+        padding: 20px 0;
+        max-width: 100%; /* Le bouton prend toute la largeur disponible */
+    }
+}
+
+/* Conteneur pour le bouton de validation de l'épreuve */
+.terminerEpreuve {
+    display: flex;
+    justify-content: center;
+    max-width: 90%;
+    margin: 10vh auto 5vh auto; /* "auto" sur les côtés aide au centrage si une largeur est définie */
+}
+
+/* Conteneur pour les résultats détaillés du Tir Efficience */
+.resultats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+/* Carte individuelle pour chaque tir */
+.resultat-card {
+    background: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--grey);
+    text-align: left;
+}
+
+/* titre pour chaque partie  */
+.resultat-card h3 {
+    font-size: 1.2rem;
+    color: var(--blue);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+}
+
+/* Détails pour chaque catégorie */
+.valeur {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+.detail {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+.note {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+/* Affichage de la note finale */
+.note span {
+    color: var(--green);
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Style pour les médailles  */
+.medaille {
+    display: block;
+    color: white;
+    text-align: center;
+    margin: 8px 0 0 0;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Couleurs spécifiques pour les médailles */
+.total-final {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin: 15px 0;
+}
+
+/* Conteneur pour le bouton de retour après l'épreuve */
+.retourSeance {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+/* --- Styles pour l'Audit Élève (Modal Ressenti) --- */
+
+.audit-section {
+    margin-bottom: 15px; /* Aligné sur la marge des cartes du bilan */
+    text-align: left;
+}
+
+/* Titre de section : Calqué sur le h3 de .resultat-card */
+.audit-section p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+}
+
+.btn-group-audit {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+/* Bouton d'option : Calqué sur la taille .valeur / .note */
+.btn-audit {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--grey);
+    border-radius: 10px;
+    padding: 10px 5px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--black);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 0 var(--grey);
+    line-height: 1.2;
+}
+/* On cible l'emoji (qui est souvent interprété comme du texte ou un symbole) */
+.btn-audit::first-line {
+    font-size: 1.5rem; /* Augmente la taille de l'emoji sur la première ligne */
+}
+
+
+/* État sélectionné : Reprend le style de tes médailles ou boutons bleus */
+.btn-audit.selected {
+    background: var(--blue);
+    color: white;
+    transform: translateY(2px);
+    box-shadow: none;
+    border-color: var(--night-blue);
+}
+
+/* Indicateurs visuels (Essoufflement) */
+#group-intensite .btn-audit:nth-child(1) { border-bottom: 4px solid #2ecc71; }
+#group-intensite .btn-audit:nth-child(2) { border-bottom: 4px solid #f1c40f; }
+#group-intensite .btn-audit:nth-child(3) { border-bottom: 4px solid #e67e22; }
+#group-intensite .btn-audit:nth-child(4) { border-bottom: 4px solid #e74c3c; }
+
+/* Adaptation pour les textes de boutons sur très petits écrans */
+@media (max-width: 480px) {
+    .btn-audit {
+        font-size: 0.85rem;
+        padding: 8px 2px;
+    }
+}
+
+/* Conteneur du rappel de parcours */
+.vma-card-display {
+    display: none; /* Affiché via JS uniquement si les données existent */
+    background: var(--white);
+    border: 2px solid var(--blue);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px auto;
+    width: 95%;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Petit label au-dessus du badge */
+.vma-display-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+    margin: 0 0 8px 0;
+    letter-spacing: 1px;
+}
+
+/* Le badge de couleur (dynamique) */
+.parcours-badge {
+    padding: 12px;
+    border-radius: 10px;
+    color: var(--black); /* Texte noir pour lisibilité sur les fonds clairs */
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-transform: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* On s'assure que le texte est blanc sur les badges foncés */
+.bg-bleu, .bg-rouge, .bg-noir {
+    color: white !important;
+}
+
+/* Boite de règle simplifiée */
+.regle-simple {
+    background: rgba(48, 53, 134, 0.05);
+    border: 1px solid var(--blue);
+    border-radius: 12px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.regle-simple p {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--night-blue);
+}
+
+/* Barre de progression horizontale */
+.progression-visuelle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+}
+
+@media (max-width: 480px) {
+    .progression-visuelle {
+        font-size: 0.75rem;
+        gap: 3px;
+    }
+}
+
+.progression-visuelle span {
+    background: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--grey);
+}
+
+/* Conteneur Card Simple */
+.action-card-simple {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centre le bouton horizontalement */
+    justify-content: center;
+    background: var(--blanc);
+    border: 1px solid var(--blue);
+    border-radius: 15px;
+    padding: 25px 15px;
+    margin: 20px auto;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Ombre très légère */
+}
+
+/* Consigne d'étape (Texte) */
+.etape-titre {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--blue);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+/* Bouton Principal */
+#btn-principal {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    border-radius: 10px;
+    max-width: 400px;
+}
+
+/* Style du message d'attente dans la liste des tours */
+#msg-attente {
+    text-align: center;
+    color: var(--black);
+    margin-top: 4vh;
+    padding: 10px;
+    font-style: italic;
+    font-size: 1.2rem;
+    border: 1px dashed var(--black); /* Bordure en pointillés pour l'aspect "zone vide" */
+    border-radius: 10px;
 }

@@ -55,6 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // On sauvegarde l'objet du coureur actuel pour les pages de tir/course
         localStorage.setItem("coureur_actif_objet", JSON.stringify(coureur));
+
+        // Mise à jour immédiate du badge parcours
+        afficherParcoursVMA();
     }
 
     // 3. Fonction d'inversion (liée au bouton du Hub)

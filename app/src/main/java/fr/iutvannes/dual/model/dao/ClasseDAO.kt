@@ -31,6 +31,6 @@ interface ClasseDAO {
     @Query("UPDATE Classe SET nom = :nouveauNom WHERE nom = :ancienNom")
     suspend fun updateNomClasse(ancienNom: String, nouveauNom: String)
 
-    @Query("SELECT nom FROM Classe")
-    suspend fun getAllNames(): List<String>
+    @Query("SELECT nom FROM Classe") 
+    fun getAllNames(): List<String>
 }

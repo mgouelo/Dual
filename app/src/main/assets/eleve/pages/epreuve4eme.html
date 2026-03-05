@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../css/style.css">
+    <title>Epreuve 4eme</title>
+</head>
+<body>
+
+<div id="container">
+
+    <header>
+        <h1>Épreuve de 4eme</h1>
+        <div class="regle-simple">
+            <p><b>But :</b> Finir le plus vite possible !</p>
+            <div class="progression-visuelle">
+                <span>🏃 2t</span> ➔ <span>🎯 T1</span> ➔ <span>🏃 2t</span> ➔ <span>🎯 T2</span> ➔ <span>🏃 2t</span> ➔ <span>🏁</span>
+            </div>
+        </div>
+
+        <div id="vma-result-display" class="vma-card-display" style="margin-bottom: 3vh;">
+            <p class="vma-display-label">Mon Parcours</p>
+            <div id="badge-parcours" class="parcours-badge">
+                -
+            </div>
+        </div>
+    </header>
+
+    <div id="chrono">00:00:00</div>
+
+    <div id="buttonTraining" style="display: none">
+        <button id="reset" class="button">Reset</button>
+        <button id="stop" class="button">Arrêter</button>
+        <button id="start" class="button" style="display: none">Démarrer</button>
+    </div>
+
+    <div id="zone-action" class="action-card-simple">
+        <div id="consigne-etape" class="etape-titre">Prêt pour le départ ?</div>
+        <button id="btn-principal" class="button-green" onclick="gestionnaireEtape()">DÉMARRER</button>
+        <button id="btn-annuler" class="button btn-back" style="display: none; margin-top: 5vh;">Annuler la dernière saisie</button>
+    </div>
+
+    <div id="listeTours">
+        <p id="msg-attente">
+            En attente de l'arrivée au premier pas de tir...
+        </p>
+    </div>
+
+    <div id="modal-tir" class="modal" style="display:none">
+        <div class="modal-content tir-popup">
+            <h2 id="titre-tir">Tir après le Tour X</h2>
+            <p>Combien de cibles touchées ? (0 à 5)</p>
+            <div class="tir-inputs-row">
+                <button class="btn-score" onclick="setScoreTir(0)">0</button>
+                <button class="btn-score" onclick="setScoreTir(1)">1</button>
+                <button class="btn-score" onclick="setScoreTir(2)">2</button>
+                <button class="btn-score" onclick="setScoreTir(3)">3</button>
+                <button class="btn-score" onclick="setScoreTir(4)">4</button>
+                <button class="btn-score" onclick="setScoreTir(5)">5</button>
+            </div>
+            <input type="hidden" id="score-temporaire" value="0">
+            <button id="valider-tir" class="button btn-start">VALIDER LE TIR</button>
+        </div>
+    </div>
+
+    <div id="blockTerminerEpreuve" class="terminerEpreuve" style="display: none;">
+        <button id="terminer" class="button-green">Terminer l'épreuve</button>
+    </div>
+
+    <!-- Modal de ressenti avant le bilan -->
+    <div id="modal-ressenti" class="modal">
+        <div class="modal-content bilan-content">
+            <h2>Analyse de ton Sprint</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">Fais le lien entre ton effort physique et ta précision.</p>
+
+            <div class="audit-eleve">
+                <div class="audit-section">
+                    <p>Ton niveau d'engagement (Moteur) :</p>
+                    <div class="btn-group-audit">
+                        <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Contrôlé')">🟢<br>Peu essoufflé</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Intense')">🟡<br>Effort soutenu</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Critique')">🟠<br>Gros souffle</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Saturation')">🔴<br>Épuisé</button>
+                    </div>
+                </div>
+
+                <div class="audit-section">
+                    <p>Ta gestion de l'allure sur la durée :</p>
+                    <div class="btn-group-audit">
+                        <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Régulier')">✅<br>Vitesse stable</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Économie')">🐢<br>Gardé de la réserve</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Décroissant')">📉<br>Fin de course difficile</button>
+                    </div>
+                </div>
+
+                <div class="audit-section">
+                    <p>Ta lucidité face aux cibles (Efficience) :</p>
+                    <div class="btn-group-audit">
+                        <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Équilibré')">⚖️<br>Rapide et précis</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Prudent')">🎯<br>Calme et appliqué</button>
+                        <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Instable')">🤠<br>Précipité / Tremblant</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btnVoirBilan" class="button" style="margin-top: 20px;">Voir mon Bilan</button>
+        </div>
+    </div>
+
+    <!-- Modal de bilan final -->
+    <div id="modal-bilan" class="modal">
+        <div class="modal-content bilan-content">
+            <h2>Bilan Sprint - 4ème</h2>
+
+            <!-- L'intensité du 4eme -->
+            <div class="resultats-grid">
+                <div class="resultat-card">
+                    <h3>Vitesse (Intensité)</h3>
+                    <p class="valeur" id="res-vitesse">- % VMA</p>
+                    <p class="detail" id="detail-vitesse">Ma VMA : - km/h</p>
+                    <p class="note" id="note-vitesse">/4</p>
+                    <div id="medaille-display-intensite" class="medaille">Sans Médaille</div>
+                </div>
+
+                <!-- L'efficience au tir du 4eme -->
+                <div class="resultat-card">
+                    <h3>Efficience Tir</h3>
+                    <p class="valeur" id="res-tir-4eme">-</p>
+                    <p class="detail" id="detail-temps-tir">Temps des 2 salves : -</p>
+                    <p class="note" id="note-tir-4eme">/6</p>
+                </div>
+
+                <!-- L"efficacité au tir du 6eme -->
+                <div class="resultat-card">
+                    <h3>VMA</h3>
+                    <p class="valeur" id="res-vma">-</p>
+                    <p class="note" id="note-vma">/2</p>
+                    <div id="medaille-display-vma" class="medaille">Sans Médaille</div>
+                </div>
+            </div>
+
+            <!-- La Note Finale du 6eme -->
+            <div class="total-final">
+                Total : <span id="note-totale">-</span> / 12
+            </div>
+
+            <div class="retourSeance">
+                <button class="button" onclick="location.href='seance.html'">Retour séance</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="custom-confirm" class="modal">
+        <div class="modal-content">
+            <h3>Confirmation</h3>
+            <p id="confirm-message">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok" class="btn-confirm">OK</button>
+                <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-normal" class="modal">
+        <div class="modal-content">
+            <h3>Attention !</h3>
+            <p id="confirm-message-normal">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok-normal" class="btn-confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="button btn-back" onclick="retourSeance()">Retour séance</button>
+
+    <footer>
+        <p class="info">Connecté au serveur local</p>
+    </footer>
+
+</div>
+
+<script src="../js/epreuve4eme.js"></script>
+</body>
+
+</html>
