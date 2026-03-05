@@ -33,6 +33,8 @@ const btnAnnuler = document.getElementById("btn-annuler");
 let minutes = 0; // On part de 0 pour le sprint 4ème
 let secondes = 0;
 let millisecondes = 0;
+let tempsEcouleSession = 0; //Temps total accumulé en millisecondes
+let dateDepart = null;      //Moment précis où on a cliqué sur Start
 let timeout;
 let estArrete = true;
 
@@ -50,24 +52,28 @@ let tirsData = { serie1: 0, serie2: 0 };
 const defilerTemps = () => {
     if (estArrete) return;
 
-    millisecondes += 10;
+    // Calcul du temps réel écoulé depuis le dernier "Start"
+    const maintenant = Date.now();
+    const difference = maintenant - dateDepart;
+    const totalMs = tempsEcouleSession + difference;
 
-    if (millisecondes >= 1000) {
-        millisecondes = 0;
-        secondes++;
-    }
+    // Conversion pour l'affichage
+    let totalSecondes = Math.floor(totalMs / 1000);
+    let msAffiche = Math.floor((totalMs % 1000) / 10);
+    let sAffiche = totalSecondes % 60;
+    let mAffiche = Math.floor(totalSecondes / 60);
 
-    if (secondes >= 60) {
-        secondes = 0;
-        minutes++;
-    }
+    // Affichage formaté
+    chrono.textContent =
+        mAffiche.toString().padStart(2, '0') + ":" +
+        sAffiche.toString().padStart(2, '0') + ":" +
+        msAffiche.toString().padStart(2, '0');
 
-    // Affichage formaté avec padStart
-    let m = minutes.toString().padStart(2, '0');
-    let s = secondes.toString().padStart(2, '0');
-    let ms = Math.floor(millisecondes / 10).toString().padStart(2, '0');
+    // On stocke les valeurs dans tes anciennes variables pour ne pas casser le reste de ton code
+    minutes = mAffiche;
+    secondes = sAffiche;
+    millisecondes = totalMs % 1000;
 
-    chrono.textContent = `${m}:${s}:${ms}`;
     timeout = setTimeout(defilerTemps, 10);
 };
 
@@ -75,9 +81,10 @@ const defilerTemps = () => {
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
+        dateDepart = Date.now(); //On fige l'heure de départ
         defilerTemps();
-        startBtn.style.display = "none";
-        stopBtn.style.display = "block";
+        if(startBtn) startBtn.style.display = "none";
+        if(stopBtn) stopBtn.style.display = "block";
     }
 };
 
@@ -88,57 +95,87 @@ const arreter = async()=> {
         if (!estArrete) {
             estArrete = true;
             clearTimeout(timeout);
-            startBtn.style.display = "block";
-            stopBtn.style.display = "none";
+
+            //On sauvegarde le temps parcouru depuis le dernier "Start"
+            tempsEcouleSession += (Date.now() - dateDepart);
+
+            if(startBtn) startBtn.style.display = "block";
+            if(stopBtn) stopBtn.style.display = "none";
         }
     }
 };
 
 /* Arrête le chronomètre si il est en cours. */
-const arreterEpreuve = ()=> {
+const arreterEpreuve = () => {
     if (!estArrete) {
         estArrete = true;
         clearTimeout(timeout);
+        // On enregistre définitivement le temps écoulé jusqu'ici
+        tempsEcouleSession += (Date.now() - dateDepart);
     }
 };
 
 /* Réinitialise le chronomètre après confirmation. */
+/* Réinitialise l'épreuve après confirmation (Version 4ème corrigée) */
 const reset = async() => {
     const confirmationAction = await demanderConfirmation("Réinitialiser l'épreuve ?");
+
     if (confirmationAction) {
+        //Arrêt du moteur de rendu
         estArrete = true;
-        clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout);
+
+        //RESET DU SYSTÈME DE TEMPS RÉEL (Crucial pour Date.now)
+        tempsEcouleSession = 0;
+        dateDepart = null;
+
+        //Reset des variables de temps classiques
         minutes = 0;
         secondes = 0;
         millisecondes = 0;
         chrono.textContent = "00:00:00";
 
-        // Réinitialisation des données de l'épreuve
+        //Réinitialisation des données de l'épreuve
         etapeActuelle = 0;
         pointsPassage = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         tirsData = { serie1: 0, serie2: 0 };
         autoEval = {intensite: "", durer: "", lucidite: ""};
 
-        // Remise à zéro de l'interface (Bouton et Consigne)
-        btnPrincipal.style.display = "block";
-        btnPrincipal.textContent = "DÉMARRER";
-        btnPrincipal.className = "button-green"; // On s'assure qu'il redevient vert
-        consigne.textContent = "Prêt pour le départ ?";
+        //Remise à zéro de l'interface (Bouton et Consigne)
+        if (btnPrincipal) {
+            btnPrincipal.style.display = "block";
+            btnPrincipal.textContent = "DÉMARRER";
+            btnPrincipal.className = "button-green"; // Retour au vert
+        }
 
-        // Cacher les contrôles de secours au reset
-        document.getElementById("buttonTraining").style.display = "none";
-        startBtn.style.display = "none";
-        stopBtn.style.display = "none";
+        if (consigne) {
+            consigne.textContent = "Prêt pour le départ ?";
+        }
 
-        // Nettoyage de la liste des tours et remise du message d'attente
-        liste.innerHTML = "";
-        const p = document.createElement("p");
-        p.id = "msg-attente";
-        p.textContent = "En attente de l'arrivée au premier pas de tir...";
-        liste.appendChild(p);
+        if (btnAnnuler) {
+            btnAnnuler.style.display = "none";
+        }
 
-        // On redéfinit la variable globale msgAttente pour les prochains clics
-        window.msgAttente = msgAttente
+        //Cacher les contrôles de secours et le bouton terminer
+        const buttonTraining = document.getElementById("buttonTraining");
+        if (buttonTraining) buttonTraining.style.display = "none";
+
+        if (startBtn) startBtn.style.display = "none";
+        if (stopBtn) stopBtn.style.display = "none";
+        if (terminerBtn) terminerBtn.style.display = "none";
+
+        //Nettoyage de la liste des tours et remise du message d'attente
+        if (liste) {
+            liste.innerHTML = "";
+            const p = document.createElement("p");
+            p.id = "msg-attente";
+            p.textContent = "En attente de l'arrivée au premier pas de tir...";
+            liste.appendChild(p);
+            // On s'assure que la référence globale est mise à jour
+            window.msgAttente = p;
+        }
+
+        console.log("Épreuve 4ème réinitialisée avec succès.");
     }
 };
 
@@ -148,9 +185,9 @@ const reset = async() => {
 const resetCompletSansDemander = () => {
     estArrete = true;
     clearTimeout(timeout);
-    minutes = 0;
-    secondes = 0;
-    millisecondes = 0;
+    tempsEcouleSession = 0;
+    dateDepart = null;
+    minutes = secondes = millisecondes = 0;
     chrono.textContent = "00:00:00";
 
     // Réinitialisation des données de l'épreuve
