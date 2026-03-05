@@ -93,5 +93,5 @@ interface ClasseDAO {
      * @return A list of class names.
      */
     @Query("SELECT nom FROM Classe")
-    suspend fun getAllNames(): List<String>
+    fun getAllNames(): List<String>
 }

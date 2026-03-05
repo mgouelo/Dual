@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity() {
 
     var countInitialSession: Int = 0
 
+    var classeSelectionnee: String? = null
+
 
     /**
      * Method called when the activity is created.
