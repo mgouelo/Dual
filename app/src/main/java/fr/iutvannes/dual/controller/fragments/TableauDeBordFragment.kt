@@ -32,24 +32,35 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Cette classe représente le fragment du tableau de bord.
+ * Fragment to display the dashboard.
+ *
+ * @see SessionViewModel
+ * @see AppDatabase
+ * @see R.layout.fragment_tableau_de_bord
  */
 class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
-
+    /* Variable to keep track of the initial count */
     private var countInitial = 0
+
+    /* Variable for the SessionViewModel instance */
     private val sessionViewModel: SessionViewModel by activityViewModels()
 
     private var classeActuelle: String = ""
 
     /**
-     * Cette fonction est appelée lorsque la vue du fragment est créée.
-     * Elle initialise les interactions avec les vues.
+     * This function is called when the fragment view is created.
+     * It initializes interactions with views.
+     *
+     * @param view The fragment view.
+     * @param savedInstanceState The data saved during the activity's state.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val sessionBtn = view.findViewById<Button>(R.id.launchASession)
+
+        // Managing the click on the session start button
         sessionBtn.setOnClickListener {
             //Si la séance est déjà en cours, on arrête la séance
             if (sessionViewModel.running.value) {
@@ -101,6 +112,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val nbResultat = view.findViewById<TextView>(R.id.text_resultats_count)
         val btnExport = view.findViewById<Button>(R.id.btn_download_excel)
 
+        // Opening a coroutine in the I/O thread to count the results
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
                 if (sessionViewModel.running.value) {
@@ -121,6 +133,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val qrCode = view.findViewById<ImageView>(R.id.qrCodeView)
         qrCode.setBackgroundColor(Color.DKGRAY) // DEBUG
         val sessionUrl = view.findViewById<TextView>(R.id.textUrl)
+        // Opening a coroutine in the IO thread to generate the QR code
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.url.collect { url ->
                 if (url != null) {
@@ -137,6 +150,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
 
 
+        // Opening a coroutine in the I/O thread to handle the session start button
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.running.collect { running ->
                 if (running) {
@@ -163,13 +177,14 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
             }
         }
 
+        // Managing clicks on the export button
         btnExport.setOnClickListener {
             val currentUrl = sessionViewModel.url.value
             if (currentUrl != null) {
-                //On construit l'URL de téléchargement
+                // We construct the download URL
                 val downloadUrl = "$currentUrl/api/admin/export"
 
-                //On ouvre le navigateur de la tablette pour lancer le téléchargement
+                // We open the tablet's browser to start the download
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(downloadUrl))
                 startActivity(intent)
             } else {
@@ -178,6 +193,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         }
     }
 
+    /**
+     * Generates a QR code from text.
+     *
+     * @param text The text to encode in the QR code.
+     * @return The generated QR code as a Bitmap.
+     */
     private fun genererQRCode(text: String): Bitmap {
         val writer = QRCodeWriter()
         val bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, 512, 512)

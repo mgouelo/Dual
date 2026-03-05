@@ -10,34 +10,47 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
+import fr.iutvannes.dual.controller.viewmodel.ImportViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import fr.iutvannes.dual.controller.viewmodel.ImportViewModel
 import androidx.fragment.app.viewModels
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
-import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
 import fr.iutvannes.dual.ui.fragments.EleveProfilFragment
 
+/**
+ * Fragment to display the list of students in a class.
+ * As well as the ability to add, edit, and delete students.
+ * And the ability to import data from a spreadsheet file.
+ *
+ * @see ImportViewModel
+ * @see MainActivity
+ * @see R.layout.fragment_eleves
+ */
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
-    // init db
+    // Init db
     private val db = DatabaseProvider.db
 
-    //variable qui contiendra le nom de la classe
+    /* Variable used to retrieve the class name */
     private var classeNom: String? = null
 
-    // viewModel
+    /* Variable allowing the import of data from a spreadsheet file */
     private val importViewModel: ImportViewModel by viewModels()
 
+    /* Variable allowing retrieval of the list of students */
     private lateinit var adapter: ElevesAdapter
+
+    /* Variable enabling the use of the recyclerView */
     private lateinit var recyclerViewEleves: RecyclerView
+
+    /* Variable to display a message if the list is empty */
     private lateinit var tvEmpty: TextView
 
-    // Sélecteur de fichier pour tableur
+    /* Variable used to open the file selector */
     private val openDocument = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -46,13 +59,27 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         }
     }
 
+    /**
+     * Method called when the fragment is created.
+     * Retrieves the name of the class to display.
+     *
+     * @param savedInstanceState Data retained during a state change
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Récupération du nom de la classe appelée depuis ClasseFragment
+        // Retrieving the name of the class called from ClassFragment
         classeNom = arguments?.getString("classeNom")
     }
 
+    /**
+     * Method called when the fragment is created.
+     * Handles user interactions.
+     * Initializes the user interface and listeners.
+     *
+     * @param view The fragment view
+     * @param savedInstanceState The data saved during a state change
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -79,20 +106,21 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         recyclerViewEleves.adapter = adapter
         recyclerViewEleves.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
 
+        // Handling clicks on the back button
         backButton.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         titre.text = "Élèves de $classeNom"
 
-        //Action du bouton
+        // Managing clicks on the add button
         btnAdd.setOnClickListener {
             // On ouvre le fragment d'ajout
             val fragment = AjoutFragment.newInstance(classeNom!!)
             (activity as MainActivity).showFragment(fragment, true, true)
         }
 
-        // bouton import
+        // Managing clicks on the import button
         btnImport.setOnClickListener {
             ouvrirSelectionFichier()
         }
@@ -100,10 +128,19 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         chargerEleves()
     }
 
+    /**
+     * Static method to create a new instance of the fragment.
+     *
+     * @return A new ElevesFragment object
+     */
     companion object {
         /**
-         * Méthode utilitaire pour créer un fragment ElevesFragment
-         * en lui passant le nom de la classe à afficher.
+         * Utility method to create a StudentFragment
+         * by passing it the name of the class to display.
+         *
+         * @param classeNom The name of the class to display
+         *
+         * @return A new ElevesFragment object
          */
         fun newInstance(classeNom: String): ElevesFragment {
             val fragment = ElevesFragment()
@@ -115,15 +152,15 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     }
 
     /**
-     * Ouvre le sélecteur de fichier android
-     * + applique un filtre pour afficher que les fichiers .xls / .xlsx / .ods / .csv
+     * Open the Android file selector
+     * + applies a filter to show only .xls / .xlsx / .ods / .csv files
      */
     private fun ouvrirSelectionFichier() {
         openDocument.launch(
             arrayOf(
                 "text/csv",
                 "text/comma-separated-values",
-                "text/plain",
+                "text/plain", // Crucial addition: some CSV files are seen as plain text
                 "application/csv",
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -132,9 +169,11 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     }
 
     /**
-     * analyse les métadonnées du fichier tableur (nom + type MIME)
-     * ouvre un objet InputStream + appel la viewModel
-     * recharge dynamiquement la liste d'éleve
+     * Analyzes the spreadsheet file's metadata (name + MIME type)
+     * Opens an InputStream object + calls the viewModel
+     * Dynamically reloads the student list
+     *
+     * @param uri The file's URI
      */
     private fun importerDepuisUri(uri: Uri) {
         val context = requireContext()
@@ -142,6 +181,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         val mime = resolver.getType(uri)
         val fileName = getFileName(uri) ?: "import"
 
+        // Opening a coroutine on the I/O thread to import the data
         viewLifecycleOwner.lifecycleScope.launch {
             val report = withContext(Dispatchers.IO) {
                 resolver.openInputStream(uri)?.use { input ->
@@ -149,6 +189,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                 }
             }
 
+            // Displaying a message based on the import result
             if (report != null) {
                 Toast.makeText(
                     context,
@@ -156,14 +197,17 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
                     Toast.LENGTH_LONG
                 ).show()
 
-                // maj de la liste des eleves
+                // student list update
                 chargerEleves()
             }
         }
     }
 
     /**
-     * Récupération du réel du fichier
+     * Retrieving the actual file
+     *
+     * @param uri The file URI
+     * @return The file name
      */
     private fun getFileName(uri: Uri): String? {
         val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
@@ -177,7 +221,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
     }
 
     /**
-     * Exécute une requête room pour récupréer les élèves en DB
+     * Executes a room query to retrieve the students from the database.
      */
     private fun chargerEleves() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -193,24 +237,31 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         }
     }
 
+    /**
+     * Deletes an element from the database.
+     *
+     * @param eleve The element to delete
+     */
     private fun supprimerEleve(eleve: Eleve) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
-            // suppression au préalable des élèves
+            // Prior removal of students
             db.EleveDao().delete(eleve)
 
-            // rechargement de la liste
+            // Reloading the list
             chargerEleves()
 
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Eleve ${eleve.nom} supprimée", Toast.LENGTH_SHORT).show() // feedback utilisateur
+                Toast.makeText(context, "Eleve ${eleve.nom} supprimée", Toast.LENGTH_SHORT).show() // User feedback
             }
         }
     }
 
 
     /**
-     * Affiche une boite de dialogue demandant à l'utilisateur de confirmer la suppression
+     * Displays a confirmation dialog before deleting an element.
+     *
+     * @param eleve The element to delete
      */
     private fun afficherConfirmationSuppression(eleve: Eleve) {
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())

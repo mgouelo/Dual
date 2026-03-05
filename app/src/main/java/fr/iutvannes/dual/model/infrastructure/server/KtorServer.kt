@@ -29,7 +29,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Event test eleve -> server
+ * Event test student -> server
  */
 @Serializable
 data class EventDTO(
@@ -49,15 +49,26 @@ data class EleveDTO(
 )
 
 /**
- * Démarre/arrête le serveur Ktor (HTTP) et installe les plugins json, logs, cors...
- * Injecte les dépendances dans les routes
+ * Starts/stops the Ktor server (HTTP) and installs the JSON, logs, CORS plugins...
+ * Injects dependencies into routes
  */
 object KtorServer {
 
     var idSeanceActuelle: Int = 0
+
+    /* Variable for the server engine */
     private var engine: EmbeddedServer<*, *>? = null
+
+    /* Variable for the application context */
     private lateinit var appContext: Context
 
+    /**
+     * Starts the server
+     *
+     * @param context the application context
+     * @param port the port to listen on
+     * @param wait if true, the server will block the current thread
+     */
     fun start(context: Context, port: Int = 8080, wait: Boolean = false) {
         if (engine != null) {
             return
@@ -68,6 +79,9 @@ object KtorServer {
         }.also { it.start(wait = wait) }
     }
 
+    /**
+     * Stops the server
+     */
     fun stop() {
         engine?.stop()
         engine = null
@@ -75,6 +89,12 @@ object KtorServer {
 }
 
 // helper MIME
+/**
+ * Returns the content type for the given path
+ *
+ * @param path the path to analyze
+ * @return the content type
+ */
 private fun contentTypeFor(path: String): ContentType = when (path.substringAfterLast('.', "")) {
     "html" -> ContentType.Text.Html
     "css"  -> ContentType("text", "css")
@@ -89,6 +109,8 @@ private fun contentTypeFor(path: String): ContentType = when (path.substringAfte
 
 /**
  * Modules Ktor
+ *
+ * @param appContext the application context
  */
 fun Application.module(appContext: Context) {
 
@@ -103,13 +125,14 @@ fun Application.module(appContext: Context) {
     }
     install(Compression) { gzip() }
 
-    // bus d'évènement pour le temps réel
+    // Event bus for real time
     val liveBus = MutableSharedFlow<EventDTO>(extraBufferCapacity = 64)
 
     routing {
+        // Route to check if the server is running
         get("/ping") { call.respond(mapOf("status" to "ok")) }
 
-        // URL à mettre dans le QR
+        // URL to put in the QR code
         get("/qr-url") {
             val host = call.request.host()
             val port = call.request.port()
@@ -117,14 +140,14 @@ fun Application.module(appContext: Context) {
             call.respond(mapOf("join" to base))
         }
 
-        //Route pour envoyer toutes les classes existantes
+        // Route to send all existing classes
         get("/api/classes/all") {
             val classes = DatabaseProvider.db.classeDao().getAllClasses()
             val nomsClasses = classes.map { it.nom }
             call.respond(nomsClasses)
         }
 
-        // Route pour envoyer les élèves d'une classe donnée (paramètre dans l'URL)
+        // Route to send students from ONE specific class
         get("/api/eleves/par-classe/{nomClasse}") {
             val nom = call.parameters["nomClasse"] ?: ""
             Log.d("KtorDebug", "Requête reçue pour la classe : $nom") // Log de début
@@ -164,10 +187,14 @@ fun Application.module(appContext: Context) {
             }
         }
 
-        //Reçoit les événements des élèves
+        // Receives student events
         post("/event") {
             try {
+                // We receive the raw text to avoid Serializer errors
                 val body = call.receiveText()
+                Log.d("KtorServer", "Texte brut reçu : $body")
+
+                // Manual analysis of the JSON
                 val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
                 val jsonElement = jsonParser.parseToJsonElement(body).jsonObject
 
@@ -228,7 +255,7 @@ fun Application.module(appContext: Context) {
 
                         val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
                         if (eleve != null) {
-                            //Mise à jour de la VMA sur la fiche de l'élève 
+                            //Mise à jour de la VMA sur la fiche de l'élève
                             eleve.vma = vmaValue
                             DatabaseProvider.db.EleveDao().update(eleve)
 
@@ -265,11 +292,13 @@ fun Application.module(appContext: Context) {
             }
         }
 
+        // Route to send real time events
         get("/") {
             val bytes = appContext.assets.open("eleve/index.html").use { it.readBytes() }
             call.respondBytes(bytes, contentType = ContentType.Text.Html)
         }
 
+        // Route to send real time events
         get("/{path...}") {
             val segments = call.parameters.getAll("path") ?: emptyList()
             val rest = segments.joinToString("/")
@@ -284,7 +313,7 @@ fun Application.module(appContext: Context) {
             }
         }
 
-        //Route d'export CSV pour le professeur
+        // CSV export route for the teacher
         get("/api/admin/export") {
             try {
                 val idActuel = KtorServer.idSeanceActuelle
@@ -350,13 +379,15 @@ fun Application.module(appContext: Context) {
                     }
                 }
 
-                //Configuration des en-têtes pour le téléchargement
+                // Configuring Headers to Trigger Download
                 call.response.header(
                     HttpHeaders.ContentDisposition,
                     ContentDisposition.Attachment.withParameter(
                         ContentDisposition.Parameters.FileName, nomFichier
                     ).toString()
                 )
+
+                // Sending the reply
                 call.respondText(csv.toString(), ContentType.Text.CSV)
 
             } catch (e: Exception) {
@@ -366,4 +397,3 @@ fun Application.module(appContext: Context) {
         }
     }
 }
-

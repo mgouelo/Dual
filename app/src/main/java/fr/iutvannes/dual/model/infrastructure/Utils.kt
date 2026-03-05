@@ -3,12 +3,15 @@ package fr.iutvannes.dual.infrastructure
 import java.net.NetworkInterface
 import java.net.Inet4Address
 
+/**
+ * A utility tool that allows you to retrieve the tablet's local IP address.
+ */
 object Utils {
 
     /**
-     * Renvoie l’adresse IP locale de la tablette
-     * Retourne null si aucune connexion réseau active --> on part sur localhost dans ce cas
-     * Permet de construire ensuite l'url du type http://ip:8080/
+     * Returns the tablet's local IP address
+     * Returns null if no network connection is active --> localhost is used in this case
+     * Allows you to then construct the URL of the type http://ip:8080/
      */
     fun getLocalIpAddress(): String? {
         try {
@@ -20,7 +23,7 @@ object Utils {
                 for (addr in iface.inetAddresses) {
                     if (addr is Inet4Address && !addr.isLoopbackAddress) {
                         val ip = addr.hostAddress
-                        if (!ip.startsWith("169.")) { // permet d'éviter les ip fantômes commencant par 169.x.x.x
+                        if (!ip.startsWith("169.")) { // This helps prevent phantom IP addresses starting with 169.x.x.x
                             return ip
                         }
                     }
@@ -32,6 +35,6 @@ object Utils {
 }
 
 /**
- * Pour que la tablette prof ait toujours la même adresse IP lors de la création de la séance, il faudra modifier
- * le fichier de configuration réseau du Raspberry Pi afin d'associé une adresse MAC <-> à une unique adresse IP.
+ * To ensure the teacher's tablet always has the same IP address when creating a session, you will need to modify:
+ * the Raspberry Pi's network configuration file to associate a MAC address with a single IP address.
  */

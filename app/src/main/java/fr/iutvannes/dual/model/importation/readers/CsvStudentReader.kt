@@ -8,26 +8,40 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 /**
- * Classe de lecture de tableur d'extension .csv pour l'importation des élèves
+ * Classroom for reading spreadsheets with .csv extension for importing students
  */
 class CsvStudentReader : StudentReader {
 
+    /**
+     * Checks if the file can be read by this reader
+     *
+     * @param mimeType the MIME type of the file
+     * @param fileName the name of the file
+     * @return true if the file can be read by this reader
+     */
     override fun supports(mimeType: String?, fileName: String): Boolean {
         val n = fileName.lowercase()
         val mime = mimeType?.lowercase().orEmpty()
         return n.endsWith(".csv") || mime.contains("text/csv") || mime.contains("csv")
     }
 
+    /**
+     * File reading method
+     *
+     * @param input the input stream
+     * @return the list of drafts to import
+     * @throws IllegalArgumentException if the file cannot be read
+     */
     override fun read(input: InputStream): List<StudentDraft> {
 
-        // Lecture en UTF-8 avec gestion simple d’un éventuel BOM (caractère invisible causant un décalage)
+        // UTF-8 encoding with simple handling of any BOM (invisible character causing a shift)
         val reader = BufferedReader(InputStreamReader(input, StandardCharsets.UTF_8))
         val lines = reader.useLines { it.toList() }.toMutableList()
         if (lines.isEmpty()) {
             return emptyList()
         }
 
-        // En-tête
+        // Header
         val headerLine = stripBom(lines.removeAt(0))
         val delimiter = detectDelimiter(headerLine)
         val headerCells = parseCsvLine(headerLine, delimiter).map { normalize(it) }
@@ -37,25 +51,26 @@ class CsvStudentReader : StudentReader {
         val idxLast  = findIndex(headerCells, setOf("nom", "last name", "lastname", "surname"))
             ?: throw IllegalArgumentException("Colonne 'Nom' absente dans le CSV")
         val idxClass = findIndex(headerCells, setOf("classe", "class", "group")) // optionnelle
-        // Nouvelle détection pour le genre
+        // New detection for the genus
         val idxGenre = findIndex(headerCells, setOf("genre", "sexe", "gender", "sex"))
 
         val out = mutableListOf<StudentDraft>()
         for (line in lines) {
             if (line.isBlank()) continue
+            // Reading the line
             val cells = parseCsvLine(line, delimiter)
 
             val first = cells.getOrNull(idxFirst)?.trim().orEmpty()
             val last  = cells.getOrNull(idxLast )?.trim().orEmpty()
             val cls = idxClass?.let { cells.getOrNull(it)?.trim().orEmpty() }.orEmpty()
 
-            // Lecture du genre (on normalise pour avoir "M" ou "F")
+            // Gender reading (normalized to get "M" or "F")
             val rawGenre = idxGenre?.let { cells.getOrNull(it)?.trim().orEmpty() }.orEmpty()
             val finalGenre = mapToGenderCode(rawGenre)
 
             if (first.isBlank() && last.isBlank()) continue
 
-            // création du brouillon
+            // Creating the draft
             out += StudentDraft(
                 firstName = first,
                 lastName  = last,
@@ -69,13 +84,19 @@ class CsvStudentReader : StudentReader {
     // --- helpers ---
 
     /**
-     * Supprimer le préfixe uFEFF afin d'éviter un décalage à la lecture
+     * Remove the uFEFF prefix to avoid a reading delay
+     *
+     * @param s the string to clean
+     * @return the cleaned string
      */
     private fun stripBom(s: String): String =
         s.removePrefix("\uFEFF")
 
     /**
-     * Détectection du délimiteur entre chaque donnée
+     * Detecting the delimiter between each data element
+     *
+     * @param header the header row
+     * @return the detected delimiter
      */
     private fun detectDelimiter(header: String): Char {
         // le + plus fréquent entre ',' et ';'
@@ -89,19 +110,23 @@ class CsvStudentReader : StudentReader {
     }
 
     /**
-     * Gestion des guillemet (ex: "val,eur" -> 1 seul champ et pas 2)
+     * Handling quotation marks (e.g., "value" -> only one field, not two)
+     *
+     * @param line: the line to parse
+     * @param delimiter: the delimiter
+     * @return: the list of separated fields
      */
     private fun parseCsvLine(line: String, delimiter: Char): List<String> {
         val out = mutableListOf<String>()
         val sb = StringBuilder()
         var inQuotes = false
         var i = 0
-        while (i < line.length) { // parcours de la ligne caractère par caractère
+        while (i < line.length) { // Traversing the line character by character
             val ch = line[i]
             when {
-                ch == '"' -> { // quand le caractère est un guillemet
+                ch == '"' -> { // When the character is a quotation mark
                     if (inQuotes && i + 1 < line.length && line[i + 1] == '"') {
-                        // échappement "" -> "
+                        // Exhaust "" -> "
                         sb.append('"');
                         i++
                     } else {
@@ -121,21 +146,33 @@ class CsvStudentReader : StudentReader {
     }
 
     /**
-     * uniformisation du texte
+     * Text standardization
+     *
+     * @param s the string to normalize
+     * @return the normalized string
      */
     private fun normalize(s: String): String =
-        s.trim() // retire les espaces autour
-            .lowercase() // majuscule -> minuscule
-            .normalizeAccents() // retire les accents
-            .replace("\\s+".toRegex(), " ") // rêmplace les espaces multiples en 1
+        s.trim() // Remove the spaces around
+            .lowercase() // uppercase -> lowercase
+            .normalizeAccents() // Remove the accents
+            .replace("\\s+".toRegex(), " ") // Replaces multiple spaces in 1
 
+    /**
+     * Removes accents from a string
+     *
+     * @return the string without accents
+     */
     private fun String.normalizeAccents(): String =
         java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD)
             .replace("\\p{Mn}+".toRegex(), "")
 
 
     /**
-     * Trouve l'indice des colonnes
+     * Find the column index
+     *
+     * @param headers the headers
+     * @param aliases the aliases
+     * @return the column index
      */
     private fun findIndex(headers: List<String>, aliases: Set<String>): Int? {
         val normalizedAliases = aliases.map { normalize(it) }.toSet()
@@ -144,7 +181,10 @@ class CsvStudentReader : StudentReader {
     }
 
     /**
-     * Convertit les entrées CSV (homme, garçon, M, femme, etc.) en "M" ou "F"
+     * Converts CSV inputs (male, boy, M, female, etc.) to "M" or "F"
+     *
+     * @param s the string to convert
+     * @return "M" or "F"
      */
     private fun mapToGenderCode(s: String): String {
         val clean = s.trim().uppercase()
