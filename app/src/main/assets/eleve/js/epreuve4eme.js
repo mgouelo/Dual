@@ -282,9 +282,6 @@ function selectAudit(element, categorie, valeur) {
  */
 const afficherParcoursVMA = () => {
     const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
-    // On force le niveau 4ème ici ou on le récupère
-    const niveau = localStorage.getItem("niveau") || "4eme";
-
     const displayZone = document.getElementById("vma-result-display");
     const badgeZone = document.getElementById("badge-parcours");
 
@@ -296,7 +293,7 @@ const afficherParcoursVMA = () => {
             let badge = "";
             let parcours = "";
 
-            // --- LOGIQUE BARÈME 4ÈME (Complet) ---
+            // --- LOGIQUE BARÈME UNIQUE (Harmonisation 4ème/6ème) ---
             if (vma <= 10) {
                 badge = "bg-jaune"; parcours = "Coupelles Jaunes (250m)";
             } else if (vma <= 11) {
@@ -315,11 +312,11 @@ const afficherParcoursVMA = () => {
 
             // Mise à jour de l'interface
             badgeZone.textContent = parcours;
+            // On s'assure de bien concaténer la classe de couleur
             badgeZone.className = "parcours-badge " + badge;
-            badgeZone.style.backgroundColor = "";
             badgeZone.style.color = "white";
 
-            console.log(`Affichage Parcours 4ème - VMA: ${vma}`);
+            console.log(`Parcours harmonisé - VMA: ${vma}`);
         } else {
             badgeZone.textContent = "Test VMA non réalisé";
             badgeZone.className = "parcours-badge";
@@ -497,44 +494,63 @@ const validerRessentis = async() => {
 const terminerEpreuve4eme = () => {
     const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
 
-    // Récupération des données avec valeurs de secours pour éviter le "NaN"
+    // Récupération des données avec valeurs de secours
     const vmaRef = (coureur && coureur.vma) ? parseFloat(coureur.vma) : 10;
-    const genreEleve = coureur ? coureur.genre : "M"; // "M" par défaut
+    const genreEleve = coureur ? coureur.genre : "M";
     const distanceTour = (coureur && coureur.vma_distance) ? parseInt(coureur.vma_distance) : 250;
 
-    // --- CALCUL INTENSITÉ (% VMA) ---
-    const tempsTotalSec = pointsPassage.E; // Temps final figé à l'arrivée
-
-    // Calcul de la distance : 6 tours de piste + pénalités (30m par cible ratée)
+    // --- CALCULS ---
+    const tempsTotalSec = pointsPassage.E;
     const fautesTotales = (10 - (tirsData.serie1 + tirsData.serie2));
     const distanceTotaleM = (distanceTour * 6) + (fautesTotales * 30);
-
-    // Calcul vitesse en km/h : (Distance / Temps) * 3.6
     const vitesseRealiseeKmh = (distanceTotaleM / tempsTotalSec) * 3.6;
     const pourcentageVMA = (vitesseRealiseeKmh / vmaRef) * 100;
 
-    // Barème Intensité (sur 4 pts)
-    let noteIntensite = 0;
-    if (pourcentageVMA > 110) noteIntensite = 4;
-    else if (pourcentageVMA >= 106) noteIntensite = 3.5;
-    else if (pourcentageVMA >= 101) noteIntensite = 3;
-    else if (pourcentageVMA >= 96)  noteIntensite = 2.5;
-    else if (pourcentageVMA >= 91)  noteIntensite = 2;
-    else if (pourcentageVMA >= 86)  noteIntensite = 1.5;
-    else if (pourcentageVMA >= 81)  noteIntensite = 1;
-    else if (pourcentageVMA >= 76)  noteIntensite = 0.5;
-    else noteIntensite = 0;
-
-    // EFFICIENCE TIR (Le nouveau barème croisé)
-    // Temps cumulé passé sur le pas de tir (A->B + C->D)
+    // Calcul des notes (Intensité, Efficience, VMA)
+    let noteIntensite = calculerNoteIntensite(pourcentageVMA);
     const tempsTirTotal = (pointsPassage.B - pointsPassage.A) + (pointsPassage.D - pointsPassage.C);
     const scoreTirTotal = tirsData.serie1 + tirsData.serie2;
     const noteEfficience = calculerNoteEfficience(tempsTirTotal, scoreTirTotal);
-
-    // --- POINTS VMA (sur 2 pts) ---
     const noteVmaPoints = calculerNoteVMA(vmaRef, genreEleve);
 
-    afficherResultats4eme(pourcentageVMA.toFixed(1), noteIntensite, vitesseRealiseeKmh, scoreTirTotal, tempsTirTotal, noteEfficience, vmaRef, noteVmaPoints);};
+    const noteFinale = parseFloat((noteIntensite + noteEfficience + noteVmaPoints).toFixed(2));
+
+    // --- ENVOI DES DONNÉES AU SERVEUR (Pour l'export prof) ---
+    const bilanData = {
+        type: "RESULTAT_EPREUVE_FINALE",
+        studentId: `${coureur.prenom} ${coureur.nom}`,
+        payload: {
+            note_finale: noteFinale,
+            cibles_touchees: scoreTirTotal,
+            vma_realisee: parseFloat(vitesseRealiseeKmh.toFixed(2)),
+            pourcentage_vma: parseFloat(pourcentageVMA.toFixed(1)),
+            temps_tir_total: tempsTirTotal
+        }
+    };
+
+    fetch('/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bilanData)
+    })
+    .then(response => console.log("Données transmises pour l'export prof"))
+    .catch(error => console.error("Erreur transmission export:", error));
+
+    // Affichage de la modale de bilan pour l'élève
+    afficherResultats4eme(pourcentageVMA.toFixed(1), noteIntensite, vitesseRealiseeKmh, scoreTirTotal, tempsTirTotal, noteEfficience, vmaRef, noteVmaPoints);
+};
+
+const calculerNoteIntensite = (pourcentageVMA) => {
+    if (pourcentageVMA > 110) return 4;
+    if (pourcentageVMA >= 106) return 3.5;
+    if (pourcentageVMA >= 101) return 3;
+    if (pourcentageVMA >= 96)  return 2.5;
+    if (pourcentageVMA >= 91)  return 2;
+    if (pourcentageVMA >= 86)  return 1.5;
+    if (pourcentageVMA >= 81)  return 1;
+    if (pourcentageVMA >= 76)  return 0.5;
+    return 0;
+};
 
 /**
  * Calcule la note d'efficience au tir par croisement (Moyenne Temps/Réussite)
