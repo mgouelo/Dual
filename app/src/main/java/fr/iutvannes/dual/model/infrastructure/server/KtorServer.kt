@@ -58,12 +58,10 @@ data class EleveDTO(
 data class BiathlonRequest(
     val prenom: String,
     val nom: String,
-    val dateSeance: String,
+    val distance: Double,
     val nbTours: Int,
-    val nbCibles: Int,
     val nbTirsReussi: List<Int>,
     val tempsAuPasDeTir: List<Int>,
-    val vitesse: Double,
     val tempsAuTour: List<Int>
 )
 
@@ -288,19 +286,14 @@ fun Application.module(appContext: Context) {
 
             try {
 
-                val body = call.receiveText()
-                val jsonParser = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                val jsonElement = jsonParser.parseToJsonElement(body).jsonObject
+                val req = call.receive<BiathlonRequest>()
+                val prenom = req.prenom
+                val nom = req.nom
+                val nbTirsReussi = req.nbTirsReussi
+                val tempsAuPasDeTir = req.tempsAuPasDeTir
+                val tempsAuTour = req.tempsAuTour
+                val distance = req.distance
 
-                val prenom = jsonElement["prenom"]?.jsonPrimitive?.content ?: ""
-                val nom = jsonElement["nom"]?.jsonPrimitive?.content ?: ""
-                val dateSeance = jsonElement["dateSeance"]?.jsonPrimitive?.content ?: ""
-                val nbTours = jsonElement["nbTours"]?.jsonPrimitive?.int ?: 0
-                val nbCibles = jsonElement["nbCibles"]?.jsonPrimitive?.int ?: 0
-                val nbTirsReussi = jsonElement["nbTirsReussi"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
-                val tempsAuPasDeTir = jsonElement["tempsAuPasDeTir"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
-                val vitesse = jsonElement["vitesse"]?.jsonPrimitive?.double ?: 0.0
-                val tempsAuTour = jsonElement["tempsAuTour"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
 
                 val eleve = DatabaseProvider.db
                     .EleveDao()
@@ -311,21 +304,14 @@ fun Application.module(appContext: Context) {
                     return@post
                 }
 
+                val seanceId = KtorServer.idSeanceActuelle
+
+                if (seanceId == 0) {
+                    call.respond(HttpStatusCode.BadRequest, "Aucune séance active")
+                    return@post
+                }
+
                 withContext(Dispatchers.IO) {
-
-                    val seance = Seance(
-                        date = dateSeance,
-                        nb_tours = nbTours,
-                        nb_cibles = nbCibles,
-                        id_prof = 1,
-                        type = "Entraînement",
-                        classe = eleve.classe
-                    )
-
-                    val seanceId = DatabaseProvider.db
-                        .seanceDao()
-                        .insert(seance)
-                        .toInt()
 
                     // ----- TIR -----
                     val tir = fr.iutvannes.dual.model.persistence.Tir(
@@ -353,7 +339,7 @@ fun Application.module(appContext: Context) {
                     val course = fr.iutvannes.dual.model.persistence.Course(
                         id_seance = seanceId,
                         id_eleve = eleve.id_eleve,
-                        distance_tour = vitesse
+                        distance_tour = distance
                     )
 
                     val courseId = DatabaseProvider.db

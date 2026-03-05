@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import kotlin.math.min
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +16,7 @@ import fr.iutvannes.dual.model.components.GraphView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.collections.map
 
 /**
  * Affichage des résultats de l'élève
@@ -89,20 +91,35 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                         Pair("Séance du $date", totalReussi.toFloat())
                     }
 
+                    val vmaEleve = eleveExist.vma
+
+                    val distance = db.courseDao().getCourseByIdEleve(eleveId)!!.distance_tour
+
                     val dataCourse = coursesExist.map { courseAvecTours ->
 
                         val date = db.seanceDao()
                             .getSeanceById(courseAvecTours.course.id_seance)
                             ?.date ?: "Inconnu"
 
-                        val moyenneTemps = if (courseAvecTours.liste_tours.isNotEmpty())
+                        val moyenneTempsMs = if (courseAvecTours.liste_tours.isNotEmpty())
                             courseAvecTours.liste_tours
                                 .map { it.temps_ms }
+                                .filter { it > 0 }
                                 .average()
-                                .toFloat()
-                        else 0f
+                        else 0.0
 
-                        Pair("Séance du $date", moyenneTemps)
+                        val calculatedValue = if (moyenneTempsMs > 0 && vmaEleve > 0) {
+
+                            val tempsSecondes = moyenneTempsMs / 1000
+                            val vitesse = (distance / tempsSecondes) * 3.6
+
+                            (vitesse / vmaEleve * 100).toFloat()
+
+                        } else 0f
+
+                        val pourcentageVMA = min(130f, calculatedValue)
+
+                        Pair("Séance du $date", pourcentageVMA)
                     }
 
                     withContext(Dispatchers.Main) {

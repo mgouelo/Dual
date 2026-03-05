@@ -223,12 +223,10 @@ async function envoyerCourseAuServeur() {
     const request = {
         prenom,
         nom,
-        dateSeance,
         nbTours: tempsAuTour.length,
         nbCibles: 0,
         nbTirsReussi: [],
         tempsAuPasDeTir: [],
-        vitesse: 0,
         tempsAuTour
     };
 

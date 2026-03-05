@@ -16,6 +16,6 @@ data class Eleve(
     var prenom: String = "",
     var genre : String = "",
     var classe: String = "",
-    var vma: Float? = null,
+    var vma: Float = 10f,
     var couleur_parcours: String? = null // coupelles jaunes / plots verts / coupelles bleues / plots bleus / coupelles rouge / plots rouges / grand tour
     )
