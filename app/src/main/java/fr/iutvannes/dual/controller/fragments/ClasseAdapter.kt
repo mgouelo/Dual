@@ -15,7 +15,7 @@ class ClasseAdapter(
     private val onClick: (Classe) -> Unit,
     private val onEdit: (Classe) -> Unit,
     private val onDelete: (Classe) -> Unit
-) : RecyclerView.Adapter<ClasseAdapter.ViewHolder>() { // Tu as bien précisé ton ViewHolder ici, c'est bien.
+) : RecyclerView.Adapter<ClasseAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvNom: TextView = view.findViewById(R.id.tvNomClasse)
@@ -25,19 +25,15 @@ class ClasseAdapter(
         val card: View = view
     }
 
-    // CORRECTION 1 : Le type de retour doit être TON ViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_classe, parent, false)
-        // CORRECTION 2 : Tu dois retourner une instance de TON ViewHolder, pas celui de base
         return ViewHolder(view)
     }
 
-    // CORRECTION 3 : L'argument 'holder' doit être de type 'ViewHolder' (le tien), pas 'RecyclerView.ViewHolder'
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
 
-        // Maintenant, 'holder' connait tes variables tvNom, tvCount, etc.
-        holder.tvNom.text = item.classe.nom
+        holder.tvNom.text = item.classe.nom.formatAffichageClasse() // nom formaté pour un affichage + propre
         holder.tvCount.text = "${item.nombreEleves} élèves"
 
         holder.card.setOnClickListener { onClick(item.classe) }
@@ -50,5 +46,27 @@ class ClasseAdapter(
     fun updateList(newItems: List<ClasseUI>) {
         items = newItems
         notifyDataSetChanged()
+    }
+
+    /**
+     * Transforme "6A" en "6e A" ou "3Lisbonne" en "3e Lisbonne"
+     */
+    fun String.formatAffichageClasse(): String {
+        // si la chaîne est vide ou a 1 seul caractère, on la renvoie telle quelle
+        if (this.length < 2) {
+            return this
+        }
+
+        // On vérifie que le premier caractère est bien un chiffre
+        val premierCaractere = this.first()
+        if (!premierCaractere.isDigit()) {
+            return this
+        }
+
+        // extrait le reste (nom de la classe ou lettre)
+        val reste = this.substring(1).trim()
+
+        // formatage
+        return "${premierCaractere}e $reste"
     }
 }
