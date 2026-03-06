@@ -1,7 +1,6 @@
 package fr.iutvannes.dual.model.dao
 
 import androidx.room.*
-import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
 
 @Dao
@@ -45,4 +44,10 @@ interface EleveDAO {
 
     @Query("DELETE FROM Eleve WHERE classe = :nomClasse")
     suspend fun deleteElevesByClasse(nomClasse: String)
+
+    @Query("UPDATE Eleve SET vma = :vma WHERE id_eleve = :id")
+    suspend fun updateVma(id: Int, vma: Float): Int
+
+    @Query("UPDATE Eleve SET couleur_parcours = :parcours WHERE id_eleve = :id")
+    suspend fun updateParcours(id: Int, parcours: String)
 }

@@ -7,7 +7,7 @@ import fr.iutvannes.dual.model.persistence.Prof
 @Dao
 interface ProfDAO {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(prof: Prof): Long
 
     @Query("DELETE FROM Prof WHERE id_prof = :idProf")

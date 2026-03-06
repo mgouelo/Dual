@@ -20,6 +20,7 @@ import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
+import fr.iutvannes.dual.ui.fragments.EleveProfilFragment
 
 class ElevesFragment : Fragment(R.layout.fragment_eleves){
 
@@ -63,6 +64,10 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         recyclerViewEleves = view.findViewById(R.id.recyclerViewEleves)
         tvEmpty = view.findViewById(R.id.tvEmpty)
         adapter = ElevesAdapter(
+            onClick = { eleve ->
+                val fragment = EleveProfilFragment.newInstance(eleve.id_eleve)
+                (activity as MainActivity).showFragment(fragment, true, true)
+            },
             onEdit = { eleve ->
                 val fragment = AjoutFragment.newInstanceForEdit(classeNom!!, eleve.id_eleve)
                 (activity as MainActivity).showFragment(fragment, true, true)
@@ -118,7 +123,7 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
             arrayOf(
                 "text/csv",
                 "text/comma-separated-values",
-                "text/plain", // Ajout crucial : certains CSV sont vus comme du texte brut
+                "text/plain",
                 "application/csv",
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

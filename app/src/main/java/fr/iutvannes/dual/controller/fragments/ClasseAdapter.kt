@@ -33,6 +33,7 @@ class ClasseAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
 
+        holder.tvNom.text = item.classe.nom
         holder.tvNom.text = item.classe.nom.formatAffichageClasse() // nom formaté pour un affichage + propre
         holder.tvCount.text = "${item.nombreEleves} élèves"
 
