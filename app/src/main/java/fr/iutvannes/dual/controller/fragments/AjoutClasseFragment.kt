@@ -10,9 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import fr.iutvannes.dual.R
-import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Classe
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +41,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
         val buttonBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
         val buttonValider = view.findViewById<Button>(R.id.btn_valider)
 
-        // Groupe de bouton radio pour la sélection du type de nommage --> Soit le nom est une lettre (6e A) soit un mot (6e Ouessant)
+        // Groupe de bouton radio pour la sélection du type de nommage
         val radioGroup = view.findViewById<RadioGroup>(R.id.radio_mode_nommage)
 
         // Les toggles sont les sélecteurs à choix prédéfini comme le niveau ou la lettre
@@ -56,47 +54,10 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
         // Contient la logique de nommage par lettre
         val containerNommageLettre = view.findViewById<View>(R.id.container_nom_lettre)
 
-        // Contient la lgoique de nommage par mot
-        val containerNommageLibre = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.container_nom_libre)
+        // Contient la logique de nommage par mot
+        val containerNommageLibre = view.findViewById<View>(R.id.container_nom_libre)
 
-        // Cas spécial : on modifie une classe existante
-        if (oldClasseNom != null) { // Si l'ancien de nom de classe n'est pas null --> alors on modifie une classe existante
 
-            // On change le titre et le bouton de 'valider' à 'modifier' pour moins d'ambiguité
-            title.setText("Modifier la classe " + oldClasseNom)
-            buttonValider.text = "Modifier"
-
-            // On découpe le nom actuel de la classe en 2 parties séparées d'un espace :
-            // 1ère partie : Niveau'e'
-            // 2ème partie : Nom
-            val parts = oldClasseNom!!.split(" ", limit = 2)
-
-            if (parts.size >= 2) {
-                val niveauStr = parts[0] // ex: "6e"
-                val suiteStr = parts[1]  // ex: "A" ou "Ouessant"
-
-                // On préselectionne le niveau pour plus de cohérance + meilleur UX
-                selectionnerBoutonParTexte(toggleNiveau, niveauStr)
-
-                // On choisit la méthode de nommage utilisée pour l'ancien nom.
-                // Si suiteStr à une taille exactement de 1 alors c'est une simple lettre
-                if (suiteStr.length == 1 && suiteStr[0].isLetter()) {
-                    containerNommageLettre.visibility = View.VISIBLE
-                    containerNommageLibre.visibility = View.GONE
-                    radioGroup.check(R.id.radio_nommage_lettre)
-                    selectionnerBoutonParTexte(toggleLettre, suiteStr)
-
-                } else { // sinon c'est un mot
-                    containerNommageLettre.visibility = View.GONE
-                    containerNommageLibre.visibility = View.VISIBLE
-                    radioGroup.check(R.id.radio_nommage_libre)
-                    inputLibre.setText(suiteStr)
-
-                }
-            }
-        }
-
-        // Cas standart : on créer une nouvelle classe
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == R.id.radio_nommage_lettre) {
                 // Mode Standard : On affiche les boutons, on cache le texte
@@ -109,42 +70,72 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
             }
         }
 
+        // On modifie une classe existante (ex: "6A" ou "4Lisbonne") --> Mode édition
+        if (oldClasseNom != null) {
+
+            // On change le titre et le bouton de 'valider' à 'modifier' pour moins d'ambiguité
+            title.text = "Modifier la classe " + oldClasseNom!!.formatAffichageClasse()
+            buttonValider.text = "Modifier"
+
+            // Nouvelle logique de découpage pour le format brut (ex: "6A" ou "6Lisbonne")
+            if (oldClasseNom!!.length >= 2 && oldClasseNom!!.first().isDigit()) {
+                val premierCaractere = oldClasseNom!!.first() // ex: '6'
+                val niveauStr = "${premierCaractere}e"        // ex: "6e" (Pour matcher avec le texte des boutons)
+                val suiteStr = oldClasseNom!!.substring(1).trim() // ex: "A" ou "Lisbonne"
+
+                // On préselectionne le niveau pour plus de cohérence + meilleur UX
+                selectionnerBoutonParTexte(toggleNiveau, niveauStr)
+
+                // On choisit la méthode de nommage utilisée pour l'ancien nom
+                if (suiteStr.length == 1 && suiteStr.first().isLetter()) {
+                    // C'est une simple lettre (ex: "A")
+                    radioGroup.check(R.id.radio_nommage_lettre)
+                    selectionnerBoutonParTexte(toggleLettre, suiteStr)
+                } else {
+                    // C'est un mot libre (ex: "Lisbonne")
+                    radioGroup.check(R.id.radio_nommage_libre)
+                    inputLibre.setText(suiteStr)
+                }
+            }
+        }
+
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // logique du bouton de validation (vérification, validation et ecriture en base)
+        // 3. Logique du bouton de validation (vérification, validation et écriture en base)
         buttonValider.setOnClickListener {
-            var nomFinal = ""
+            val nomFinal: String
             val idNiveau = toggleNiveau.checkedButtonId
 
-            // Aucun niveau a été sélectionné
+            // Aucun niveau n'a été sélectionné
             if (idNiveau == -1) {
                 Toast.makeText(requireContext(), "Veuillez sélectionner un niveau", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val niveau = view.findViewById<Button>(idNiveau).text.toString()
+            val niveau = view.findViewById<Button>(idNiveau).text.toString() // ex: "6e"
+
             // On vérifie quel mode est choisi
             if (radioGroup.checkedRadioButtonId == R.id.radio_nommage_lettre) {
 
                 val idLettre = toggleLettre.checkedButtonId
-                if (idLettre == -1) { // aucune lettre est sélectionnée
+                if (idLettre == -1) { // aucune lettre n'est sélectionnée
                     Toast.makeText(requireContext(), "Veuillez sélectionner une lettre", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
 
                 val lettre = view.findViewById<Button>(idLettre).text.toString()
-                nomFinal = "${niveau[0]}e $lettre" // Ex: "6A"
+                nomFinal = "${niveau[0]}$lettre" // Ex: "6A"
 
             } else { // sinon c'est en nommage libre
-                nomFinal = inputLibre.text.toString().trim()
-                nomFinal = "${niveau[0]}e " + inputLibre.text.toString().trim()
+                val motLibre = inputLibre.text.toString().trim()
 
-                if (nomFinal.isEmpty()) {
+                if (motLibre.isEmpty()) {
                     Toast.makeText(requireContext(), "Veuillez entrer un nom de classe", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
+                nomFinal = "${niveau[0]}$motLibre" // ex: "4Lisbonne"
             }
 
             // sauvegarde en bdd
@@ -172,8 +163,8 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             db.classeDao().insert(Classe(nom = nom))
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Classe $nom ajoutée", Toast.LENGTH_SHORT).show() // toast de retour utilisateur
-                (activity as MainActivity).onBackPressed() // retour a l'écran précédent
+                Toast.makeText(requireContext(), "Classe ${nom.formatAffichageClasse()} ajoutée", Toast.LENGTH_SHORT).show() // toast de retour utilisateur
+                requireActivity().onBackPressedDispatcher.onBackPressed() // retour a l'écran précédent
             }
         }
     }
@@ -187,7 +178,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 if (oldClasseNom == nouveauNom) {
                     // L'utilisateur n'a rien changé
                     withContext(Dispatchers.Main) {
-                        requireActivity().onBackPressed()
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
                     }
                     return@launch
                 }
@@ -209,7 +200,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Classe modifiée", Toast.LENGTH_SHORT).show() // feedback utilisateur
-                    requireActivity().onBackPressed()
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
 
             } else {
@@ -217,9 +208,9 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 val existe = db.classeDao().getClasseByName(nouveauNom) != null // retourne un boolean pour vérifier l'existence
                 if (existe) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "La classe $nouveauNom existe déjà", Toast.LENGTH_SHORT).show() // feedback utilisateur
+                        Toast.makeText(requireContext(), "La classe ${nouveauNom.formatAffichageClasse()} existe déjà", Toast.LENGTH_SHORT).show() // feedback utilisateur
                     }
-                } else { // existe pas --> pas de doublon en vu
+                } else { // n'existe pas --> pas de doublon en vu
                     insererEtQuitter(db, nouveauNom)
                 }
             }
@@ -237,5 +228,27 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 return
             }
         }
+    }
+
+    /**
+     * Transforme "6A" en "6e A" ou "3Lisbonne" en "3e Lisbonne"
+     */
+    fun String.formatAffichageClasse(): String {
+        // si la chaîne est vide ou a 1 seul caractère, on la renvoie telle quelle
+        if (this.length < 2) {
+            return this
+        }
+
+        // On vérifie que le premier caractère est bien un chiffre
+        val premierCaractere = this.first()
+        if (!premierCaractere.isDigit()) {
+            return this
+        }
+
+        // extrait le reste (nom de la classe ou lettre)
+        val reste = this.substring(1).trim()
+
+        // formatage
+        return "${premierCaractere}e $reste"
     }
 }

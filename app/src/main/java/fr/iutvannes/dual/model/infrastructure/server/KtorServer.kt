@@ -159,6 +159,22 @@ fun Application.module(appContext: Context) {
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.NotFound)
+            val nomClasse = call.parameters["nomClasse"] ?: ""
+
+            try {
+                val eleves = DatabaseProvider.db.EleveDao().getElevesByClasse(nomClasse)
+
+                // On renvoie une liste d'objets json
+                val elevesJson = eleves.map { eleve ->
+                    mapOf(
+                        "prenom" to eleve.prenom,
+                        "nom" to eleve.nom
+                    )
+                }
+                call.respond(elevesJson)
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur BDD eleves/par-classe: ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Erreur serveur"))
             }
         }
 

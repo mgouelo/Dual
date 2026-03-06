@@ -34,6 +34,7 @@ class ClasseAdapter(
         val item = items[position]
 
         holder.tvNom.text = item.classe.nom
+        holder.tvNom.text = item.classe.nom.formatAffichageClasse() // nom formaté pour un affichage + propre
         holder.tvCount.text = "${item.nombreEleves} élèves"
 
         holder.card.setOnClickListener { onClick(item.classe) }
@@ -46,5 +47,27 @@ class ClasseAdapter(
     fun updateList(newItems: List<ClasseUI>) {
         items = newItems
         notifyDataSetChanged()
+    }
+
+    /**
+     * Transforme "6A" en "6e A" ou "3Lisbonne" en "3e Lisbonne"
+     */
+    fun String.formatAffichageClasse(): String {
+        // si la chaîne est vide ou a 1 seul caractère, on la renvoie telle quelle
+        if (this.length < 2) {
+            return this
+        }
+
+        // On vérifie que le premier caractère est bien un chiffre
+        val premierCaractere = this.first()
+        if (!premierCaractere.isDigit()) {
+            return this
+        }
+
+        // extrait le reste (nom de la classe ou lettre)
+        val reste = this.substring(1).trim()
+
+        // formatage
+        return "${premierCaractere}e $reste"
     }
 }
