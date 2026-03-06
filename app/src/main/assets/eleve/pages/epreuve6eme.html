@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../css/style.css">
+    <title>Epreuve 6eme</title>
+</head>
+<body>
+
+    <div id="container">
+
+        <header>
+            <h1>Épreuve de 6eme</h1>
+            <p>Réaliser un tour de parcours puis un tir autant de fois que possible en 20 minutes.</p>
+        </header>
+
+        <div id="vma-result-display" class="vma-card-display">
+            <p class="vma-display-label">Mon Parcours</p>
+            <div id="badge-parcours" class="parcours-badge">
+                -
+            </div>
+        </div>
+
+        <div id="chrono">20:00:00</div>
+
+        <div id="buttonTraining">
+            <button id="reset" class="button">Reset</button>
+            <button id="stop" class="button">Arrêter</button>
+            <button id="start" class="button">Démarrer</button>
+        </div>
+
+        <div id="listeTours"></div>
+
+        <div id="modal-tir" class="modal" style="display:none">
+            <div class="modal-content tir-popup">
+                <h2 id="titre-tir">Tir après le Tour X</h2>
+                <p>Combien de cibles touchées ? (0 à 5)</p>
+                <div class="tir-inputs-row">
+                    <button class="btn-score" onclick="setScoreTir(0)">0</button>
+                    <button class="btn-score" onclick="setScoreTir(1)">1</button>
+                    <button class="btn-score" onclick="setScoreTir(2)">2</button>
+                    <button class="btn-score" onclick="setScoreTir(3)">3</button>
+                    <button class="btn-score" onclick="setScoreTir(4)">4</button>
+                    <button class="btn-score" onclick="setScoreTir(5)">5</button>
+                </div>
+                <input type="hidden" id="score-temporaire" value="0">
+                <input type="hidden" id="temps-tour-cache" value="">
+                <button id="valider-tir" class="button btn-start">VALIDER LE TOUR ET LE TIR</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button id="enregistrer" class="button">Enregistrer (+1 tour)</button>
+            <button id="supprimer" class="button">Supprimer (-1 tour)</button>
+        </div>
+
+        <div class="terminerEpreuve">
+            <button id="terminer" class="button-green">Terminer l'épreuve</button>
+        </div>
+
+        <!-- Modal de ressenti avant le bilan -->
+        <div id="modal-ressenti" class="modal">
+            <div class="modal-content bilan-content">
+                <h2>Tes Ressentis</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 20px;">Analyse ton effort avant de voir tes notes.</p>
+
+                <div class="audit-eleve">
+                    <div class="audit-section">
+                        <p>Mon essoufflement :</p>
+                        <div class="btn-group-audit">
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Tranquille')">🟢<br>Je parle</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Chaud')">🟡<br>Un peu dur</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'Essoufflé')">🟠<br>Je souffle</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'intensite', 'À bout')">🔴<br>À bout</button>
+                        </div>
+                    </div>
+
+                    <div class="audit-section">
+                        <p>Ma vitesse sur les 20 minutes :</p>
+                        <div class="btn-group-audit">
+                            <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Lent')">🐢<br>Trop tranquille</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Bien')">✅<br>Allure régulière</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'durer', 'Vite')">🥵<br>Parti trop vite</button>
+                        </div>
+                    </div>
+
+                    <div class="audit-section">
+                        <p>Ma maîtrise au moment du tir :</p>
+                        <div class="btn-group-audit">
+                            <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Zen')">🎯<br>Bien posé</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Bouge')">⚖️<br>Je tremble</button>
+                            <button class="btn-audit" onclick="selectAudit(this, 'lucidite', 'Vite')">🤠<br>Vite et mal</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btnVoirBilan" class="button" style="margin-top: 20px;">Voir mon Bilan</button>
+            </div>
+        </div>
+
+        <!-- Modal de bilan final -->
+        <div id="modal-bilan" class="modal">
+            <div class="modal-content bilan-content">
+                <h2>Bilan de l'Épreuve - 6ème</h2>
+
+                <!-- Les Performances du 6eme -->
+                <div class="resultats-grid">
+                    <div class="resultat-card" id="card-perf">
+                        <h3>Performance</h3>
+                        <p class="valeur" id="res-tours">-</p>
+                        <p class="note" id="note-perf">/5</p>
+                        <div id="medaille-display-perf" class="medaille">Sans Médaille</div>
+                    </div>
+
+                    <!-- Les Régularités du 6eme -->
+                    <div class="resultat-card" id="card-regul">
+                        <h3>Régularité</h3>
+                        <p class="valeur" id="res-ecart">-</p>
+                        <p class="note" id="note-regul">/5</p>
+                        <div id="medaille-display-reg" class="medaille">Sans Médaille</div>
+                    </div>
+
+                    <!-- L"efficacité au tir du 6eme -->
+                    <div class="resultat-card" id="card-tir">
+                        <h3>Efficacité Tir</h3>
+                        <p class="valeur" id="res-tir">-</p>
+                        <p class="note" id="note-tir">/5</p>
+                        <div id="medaille-display-tir" class="medaille">Sans Médaille</div>
+                    </div>
+                </div>
+
+                <!-- La Note Finale du 6eme -->
+                <div class="total-final">
+                    Note Finale : <span id="note-totale">-</span> / 15
+                </div>
+
+                <div class="retourSeance">
+                    <button class="button" onclick="location.href='seance.html'">Retour séance</button>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="custom-confirm" class="modal">
+            <div class="modal-content">
+                <h3>Confirmation</h3>
+                <p id="confirm-message">Êtes-vous sûr ?</p>
+                <div class="modal-buttons">
+                    <button id="confirm-ok" class="btn-confirm">OK</button>
+                    <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirm-normal" class="modal">
+            <div class="modal-content">
+                <h3>Attention !</h3>
+                <p id="confirm-message-normal">Êtes-vous sûr ?</p>
+                <div class="modal-buttons">
+                    <button id="confirm-ok-normal" class="btn-confirm">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="button btn-back" onclick="retourSeance()">Retour séance</button>
+
+        <footer>
+            <p class="info">Connecté au serveur local</p>
+        </footer>
+
+    </div>
+
+<script src="../js/epreuve6eme.js"></script>
+</body>
+
+</html>

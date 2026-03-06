@@ -3,6 +3,7 @@ let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
 let startBtn = document.getElementById("start");
 let enregistrerBtn = document.getElementById("enregistrer");
+let supprimerBtn = document.getElementById("supprimer");
 const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
@@ -14,6 +15,8 @@ let timeout;
 let estArrete = true;
 let tourActuel = 1;
 
+/* Cette fonction gère le déroulement du temps.
+Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arrêté. */
 const defilerTemps = () => {
     if (estArrete) return;
 
@@ -52,6 +55,7 @@ const defilerTemps = () => {
     timeout = setTimeout(defilerTemps, 10);
 };
 
+/* Démarre le chronomètre si il est arrêté. */
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
@@ -59,6 +63,7 @@ const demarrer = () => {
     }
 };
 
+/* Arrête le chronomètre si il est en cours. */
 const arreter = () => {
     if (!estArrete) {
         estArrete = true;
@@ -66,6 +71,7 @@ const arreter = () => {
     }
 };
 
+/* Réinitialise le chronomètre et les tours après confirmation de l'utilisateur. */
 const reset = async() => {
     const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
 
@@ -84,6 +90,7 @@ const reset = async() => {
     }
 };
 
+/* Affiche une boîte de confirmation personnalisée et retourne une promesse qui se résout en fonction du choix de l'utilisateur. */
 const demanderConfirmation = (message) => {
     document.getElementById("confirm-message").textContent = message;
 
@@ -108,24 +115,61 @@ const demanderConfirmation = (message) => {
     });
 };
 
+/* Enregistre le temps actuel dans la liste des tours si le chronomètre n'est pas à zéro. */
 const enregistrer = () => {
     if(chrono.textContent != "00:00:00"){
         const listeTours = document.getElementById("listeTours"); // conteneur de tous les tours
         const nouveauTour = document.createElement("span");
         nouveauTour.innerHTML = `Tour ${tourActuel}: ${chrono.textContent}<br><br> `;
         listeTours.appendChild(nouveauTour);
-
         tourActuel++;
-
-        // estArrete = true;
-        // clearTimeout(timeout);
-        // minutes = secondes = millisecondes = 0;
-        // chrono.textContent = "00:00:00";
-
     }
 };
 
+/* Supprime le dernier tour enregistré de la liste des tours si le chronomètre n'est pas à zéro. */
+const supprimer = () => {
+    if(chrono.textContent != "00:00:00"){
+        const listeTours = document.getElementById("listeTours"); // conteneur de tous les tours
+        /* Vérifie s'il y a au moins un tour enregistré avant de tenter de supprimer le dernier. */
+        if (listeTours.lastElementChild) {
+            listeTours.lastElementChild.remove(); // Supprime le dernier enfant affiché
+            tourActuel--;
+        }
+    }
+};
+
+/**
+ * Récupère les infos VMA du coureur actif et affiche son parcours coloré
+ */
+const afficherParcoursVMA = () => {
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    const displayZone = document.getElementById("vma-result-display");
+    const badgeZone = document.getElementById("badge-parcours");
+
+    if (displayZone && badgeZone) {
+        // On rend le bloc visible dans tous les cas pour guider l'élève
+        displayZone.style.display = "block";
+
+        if (coureur && coureur.vma_badge && coureur.vma_parcours) {
+            // Données présentes -> Affichage du parcours coloré
+            badgeZone.textContent = coureur.vma_parcours;
+            badgeZone.className = "parcours-badge " + coureur.vma_badge;
+            badgeZone.style.backgroundColor = ""; // Reset du style inline
+        } else {
+            // Pas de données -> Message d'alerte gris neutre
+            badgeZone.textContent = "Test VMA non réalisé";
+            badgeZone.className = "parcours-badge";
+            badgeZone.style.backgroundColor = "#989Ca0";
+            badgeZone.style.color = "white";
+        }
+    }
+};
+// Appeler la fonction au chargement de la page
+document.addEventListener("DOMContentLoaded", afficherParcoursVMA);
+
+/* Ajout des écouteurs d'événements pour les boutons. */
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
 resetBtn.addEventListener("click", reset);
 enregistrerBtn.addEventListener("click", enregistrer);
+supprimerBtn.addEventListener("click", supprimer);

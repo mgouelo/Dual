@@ -2,7 +2,6 @@ package fr.iutvannes.dual.controller.fragments
 
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,18 +12,36 @@ import androidx.room.Room
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
+import fr.iutvannes.dual.model.utils.PasswordUtils
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.content.edit
 
+/**
+ * Connection fragment
+ * This fragment is used to connect to the application.
+ *
+ * @see MainActivity
+ * @see AppDatabase
+ * @see PasswordUtils
+ * @see R.layout.fragment_connexion
+ */
 class ConnexionFragment : Fragment() {
 
+    /* Variable that determines whether the password is visible or not */
     private var passwordVisible = false
 
+    /**
+     * Method called when the fragment is created.
+     *
+     * @param inflater The inflator used to inflate the fragment's layout.
+     * @param container The container in which the fragment will be displayed.
+     * @param savedInstanceState The saved fragment data.
+     * @return The fragment's view.
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,10 +58,13 @@ class ConnexionFragment : Fragment() {
         val rememberMe = view.findViewById<CheckBox>(R.id.rememberMeCheckBox)
         val forgottenPassword = view.findViewById<TextView>(R.id.forgottenPassword)
 
+
+        // Creating a secret key for secure storage of preferences
         val masterKey = MasterKey.Builder(requireContext())
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
 
+        // Creating a secure storage object for preferences
         val sharedPref = EncryptedSharedPreferences.create(
             requireContext(),
             "loginPrefs",
@@ -52,14 +72,17 @@ class ConnexionFragment : Fragment() {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+
+        // Retrieving login preferences
         val editor = sharedPref.edit()
 
+        // Creating or opening the database
         val db = Room.databaseBuilder(
             requireContext(),
             AppDatabase::class.java,
             "dual.db"
         )
-            .fallbackToDestructiveMigration() // supprime et recrée la DB si le schéma change
+            .fallbackToDestructiveMigration() // Deletes and recreates the database if the schema changes
             .build()
 
         val dao = db.profDAO()
@@ -68,12 +91,14 @@ class ConnexionFragment : Fragment() {
         val savedPassword = sharedPref.getString("password", "")
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
+        // If connection preferences exist, load them
         if (isRemembered) {
             emailInput.setText(savedEmail)
             passwordInput.setText(savedPassword)
             rememberMe.isChecked = true
         }
 
+        // Displaying the password
         oeilIcon.setOnClickListener {
             passwordVisible = !passwordVisible
             passwordInput.inputType = if (passwordVisible)
@@ -83,11 +108,12 @@ class ConnexionFragment : Fragment() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
+        // Managing clicks on the login button
         connexionButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
 
-            // Regex simple pour email
+            // Simple regex for email
             val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
 
             if (email.isEmpty()) {
@@ -98,7 +124,7 @@ class ConnexionFragment : Fragment() {
                 Toast.makeText(requireContext(), "L'email n'est pas valide", Toast.LENGTH_SHORT).show()
                 emailInput.setText("")
             } else {
-                // On lance une coroutine pour accéder à la DB
+                // We launch a coroutine to access the database
                 lifecycleScope.launch {
                     val prof = withContext(Dispatchers.IO) {
                         dao.getProfByEmail(email)
@@ -118,15 +144,15 @@ class ConnexionFragment : Fragment() {
                             editor.putBoolean("rememberMe", true)
                             editor.apply()
                         } else {
-                            // On efface juste les champs inutiles, mais on garde l'email
+                            // We just delete the unnecessary fields, but we keep the email address.
                             editor.remove("password")
                             editor.putBoolean("rememberMe", false)
                             editor.apply()
                         }
 
-                        // Enregistrer l'email pour la top bar dans le tableau de bord
+                        // Save the email address for the top bar in the dashboard
                         sharedPref.edit { putString("email", email) }
-                        // Mettre à jour la top bar
+                        // Update the top bar
                         (activity as? MainActivity)?.chargerUtilisateur()
 
                         (activity as? MainActivity)?.showFragment(TableauDeBordFragment(), true, true)
@@ -135,10 +161,12 @@ class ConnexionFragment : Fragment() {
             }
         }
 
+        // Managing clicks on the registration link
         inscriptionLien.setOnClickListener {
             (activity as? MainActivity)?.showFragment(InscriptionFragment(), false, false)
         }
 
+        // Managing the click on the forgotten password link
         forgottenPassword.setOnClickListener {
             (activity as? MainActivity)?.showFragment(ForgottenPasswordFragment(), false, false)
         }

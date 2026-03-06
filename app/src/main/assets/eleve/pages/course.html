@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Course</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Course</title>
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
@@ -11,19 +10,30 @@
 
         <header>
             <h1>Entraînement à la course</h1>
-            <p>Réaliser un tour de parcours et noter son temps (x6)</p>
+            <p>Réaliser un tour de parcours et noter son temps</p>
         </header>
+
+        <div id="vma-result-display" class="vma-card-display">
+            <p class="vma-display-label">Mon Parcours</p>
+            <div id="badge-parcours" class="parcours-badge">
+                -
+            </div>
+        </div>
 
         <div id="chrono">00:00:00</div>
 
-        <div id="buttons">
+        <div id="buttonTraining">
             <button id="reset" class="button">Reset</button>
             <button id="stop" class="button">Arrêter</button>
             <button id="start" class="button">Démarrer</button>
-            <button id="enregistrer" class="button">Enregistrer</button>
         </div>
 
         <div id="listeTours"></div>
+
+        <div class="action-bar">
+            <button id="enregistrer" class="button">Enregistrer (+1 tour)</button>
+            <button id="supprimer" class="button">Supprimer (-1 tour)</button>
+        </div>
 
         <div id="custom-confirm" class="modal">
             <div class="modal-content">

@@ -16,19 +16,80 @@ import fr.iutvannes.dual.model.dao.ProfDAO
 import fr.iutvannes.dual.model.dao.ResultatDAO
 import fr.iutvannes.dual.model.dao.SeanceDAO
 import fr.iutvannes.dual.model.dao.TirDAO
+import fr.iutvannes.dual.model.persistence.SalveTir
+import fr.iutvannes.dual.model.persistence.TourCourse
 
+/**
+ * An abstract class that represents the application's database.
+ *
+ * @see ClasseDAO
+ * @see EleveDAO
+ * @see ProfDAO
+ * @see ResultatDAO
+ * @see SeanceDAO
+ * @see Classe
+ * @see Eleve
+ * @see Prof
+ * @see Resultat
+ * @see Seance
+ * @see Course
+ * @see Tir
+ * @see TourCourse
+ * @see SalveTir
+ */
 @Database(
-    entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, Course::class],
-    version = 2,
+    entities = [Eleve::class, Prof::class, Resultat::class, Seance::class, Classe::class, Tir::class, Course::class, TourCourse::class, SalveTir::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
+    /**
+     * Abstract method that returns an object of type [ClasseDAO].
+     *
+     * @return [ClasseDAO]
+     */
     abstract fun EleveDao(): EleveDAO
+
+    /**
+     * Abstract method that returns an object of type [ProfDAO].
+     *
+     * @return [ProfDAO]
+     */
     abstract fun profDAO() : ProfDAO
+
+    /**
+     * Abstract method that returns an object of type [ResultatDAO].
+     *
+     * @return [ResultatDAO]
+     */
     abstract fun resultatDao(): ResultatDAO
+
+    /**
+     * Abstract method that returns an object of type [SeanceDAO].
+     *
+     * @return [SeanceDAO]
+     */
     abstract fun seanceDao(): SeanceDAO
+
+    /**
+     * Abstract method that returns an object of type [ClasseDAO].
+     *
+     * @return [ClasseDAO]
+     */
     abstract fun classeDao(): ClasseDAO
+
+    /**
+     * Abstract method that returns an object of type [TirDAO].
+     *
+     * @return [TirDAO]
+     */
     abstract fun tirDao(): TirDAO
+
+    /**
+     * Abstract method that returns an object of type [CourseDAO].
+     *
+     * @return [CourseDAO]
+     */
     abstract fun courseDao(): CourseDAO
 }

@@ -5,8 +5,11 @@
     --blue: #303586;
     --night-blue: #1c1e4e;
     --white: #e5e5e5;
+    --green: #2ecc71;
+    --blanc: #ffffff;
 }
 
+/* Style global */
 body {
     font-family: "Poppins", Arial, sans-serif;
     background: var(--blue);
@@ -18,6 +21,7 @@ body {
     min-height: 100vh;
 }
 
+/* Conteneurs principaux */
 #containerMain {
     display: flex;
     flex-direction: column;
@@ -28,101 +32,166 @@ body {
     border-radius: 20px;
     box-shadow: 0 0 20px rgba(0,0,0,0.4);
     width: 90%;
-    max-width: 450px;
     margin: 40px
 }
 
+/* Conteneur pour les éléments de la page (chrono, boutons, résultats) */
 #container {
     text-align: center;
     background: var(--white);
-    padding: 40px;
+    padding: 30px;
     border-radius: 20px;
     box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    width: 90%;
-    max-width: 450px;
-    margin: 40px
+    width: 95%;
+    max-width: 600px;     /* LARGEUR MAXIMALE IDÉALE pour tablette/PC */
+    margin: 20px auto;    /* Centre le bloc sur la page */
 }
 
+/* En-tête et pied de page */
 header h1 {
     font-size: 1.8rem;
     color: var(--night-blue);
     margin-bottom: 0.5em;
 }
 
+/* Texte d'introduction ou d'information */
 header p {
     color: var(--blue);
     margin-bottom: 1.5em;
 }
 
+/* Pied de page avec informations supplémentaires */
 footer .info {
     font-size: 0.85rem;
     color: var(--grey);
 }
 
+/* Boutons principaux */
 .button {
     background: #303586;
     width: 100%;
-    max-width: 200px;
+    max-width: 300px;
     border: none;
     border-radius: 12px;
-    padding: 15px 0;
-    font-size: 1rem;
+    padding: 25px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #202122;
 }
 
+/* Effet de survol pour les boutons */
 .button:hover {
     background: #1C1E4E;
     transform: translateY(-3px);
 }
 
-#buttons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+.btn-eval {
+    background-color: #2ecc71;
+    font-weight: bold;
+
+}
+.btn-eval:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px);
+}
+
+/* Conteneur pour les boutons d'action */
+#buttonTraining {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
+    width: 100%;
 }
 
+#buttonTraining .button:nth-child(3) {
+    grid-column: span 2;
+    width: 100%;
+    max-width: none;
+}
+
+/* Conteneur pour les boutons d'action */
+#buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+}
+
+/* On crée une barre d'action qui utilise le même Grid que les boutons de tir */
+.action-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 colonnes égales pour la symétrie */
+    gap: 15px;
+    width: 100%;
+    max-width: 500px; /* Même limite que ton bloc #buttons */
+    margin: 20px auto 0 auto; /* Espace au-dessus pour détacher de la liste */
+}
+
+/* Chronomètre et résultats */
 #chrono {
-    font-size: 40px;
-    margin-bottom: 30px;
-    color: var(--night-blue);
+    font-size: 4rem; /* Beaucoup plus gros */
+    font-weight: 800;
+    margin: 10px 0 20px 0;
+    font-variant-numeric: tabular-nums; /* Évite que les chiffres bougent */
+    letter-spacing: 2px;
 }
 
+/* Résultats et parcours après l'épreuve */
 #resultat {
     color: var(--blue);
     margin-top: 1.5em;
 }
 
+/* Affichage du parcours avec les ronds de couleur */
 #parcours {
     color: var(--black);
     margin-top: 1.5em;
 }
 
+/* Liste des tours et des tirs */
 #listeTours {
-    margin-top: 2vh;
-    font-size: 0.85rem;
+    margin-top: 4vh;
+    font-size: 1.2rem;
     color: var(--black);
     text-align: center;
-    font-weight: 600;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.05); /* Un léger fond pour structurer l'espace */
 }
 
+/* Zone de saisie pour le Tir Efficience */
+#tirs {
+    display: flex;
+    flex-direction: column; /* Aligne le texte au-dessus de l'input */
+    align-items: center;
+    gap: 5px;
+}
+
+/* Style pour les éléments de tir (ex: "Tir 1", "Tir 2", etc.) */
 #tirs p {
-    font-size: 0.85rem;
+    font-size: 1.5rem;
     color: var(--black);
-    font-weight: 600;
+    font-weight: bold;
+    margin: 0;
+    max-width: 280px; /* Aligne les inputs verticalement */
 }
 
+/* Style pour les champs de saisie des tirs (ex: "Tir 1", "Tir 2", etc.) */
 #tirs input {
     width: 100px;
-    font-size: 1em;
+    font-size: 1.2em;
     text-align: center;
     padding: 5px;
     border-radius: 8px;
     border: 1px solid var(--grey);
+    margin: 0.5rem;
+    touch-action: manipulation; /* Supprime le zoom auto sur mobile */
 }
 
+/* Masquer les résultats et le parcours par défaut */
 #resultats {
     display: none;
 }
@@ -135,23 +204,19 @@ footer .info {
     }
 
     #chrono {
-        font-size: 30px;
-    }
-
-    .button {
-        width: 160px;
-        font-size: 0.9rem;
-        padding: 12px 0;
+        font-size: 3.5rem;
+        margin-bottom: 20px;
     }
 }
 
+/* Petits écrans (smartphones) */
 @media (max-width: 480px) {
     #container {
         padding: 30px;
     }
 
     #chrono {
-        font-size: 25px;
+        font-size: 3.5rem;
         margin-bottom: 20px;
     }
 
@@ -161,9 +226,9 @@ footer .info {
     }
 
     .button {
-        width: 100%;
-        max-width: 300px;
-        font-size: 0.85rem;
+        font-size: 0.9rem; /* On garde une taille lisible */
+        padding: 20px 0;
+        max-width: 100%; /* Le bouton prend toute la largeur disponible */
     }
 }
 
@@ -217,11 +282,14 @@ footer .info {
 /* Contenu de la fenêtre */
 .modal-content {
     background-color: white;
-    padding: 25px;
+    padding: 40px;          /* Augmenté pour plus d'espace interne */
     border-radius: 15px;
     text-align: center;
-    width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+
+    /* PARTIE RESPONSIVE */
+    width: 90%;             /* Prend presque toute la largeur sur mobile */
+    max-width: 500px;       /* Limite la taille sur PC/Tablette paysage */
 
     /* Animation de surgissement */
     transform: scale(0.7);
@@ -234,8 +302,29 @@ footer .info {
     transform: scale(1);
     opacity: 1;
 }
-.btn-confirm { background-color: #2ecc71; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; margin-right: 20px; }
-.btn-cancel { background-color: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; }
+.btn-confirm { font-size: 1.2rem; background-color: #2ecc71; color: white; border: none; padding: 16px 40px; border-radius: 5px; cursor: pointer; margin-right: 20px; }
+.btn-cancel { font-size: 1.2rem; background-color: #e74c3c; color: white; border: none; padding: 16px 40px; border-radius: 5px; cursor: pointer; }
+
+/* Texte à l'intérieur de la modale */
+.modal-content p {
+    font-size: 1.2rem;       /* Taille de base confortable */
+}
+
+/* Titre de la modale (si tu en as un) */
+.modal-content h3 {
+    font-size: 1.6rem;
+}
+
+/* Adaptation pour les petits écrans */
+@media (max-width: 480px) {
+    .modal-content p {
+        font-size: 1.1rem;   /* Légèrement plus petit sur smartphone */
+    }
+
+    .modal-content h2 {
+        font-size: 1.4rem;
+    }
+}
 
 /* --- Nouveautés pour le Hub de Séance --- */
 
@@ -246,6 +335,15 @@ footer .info {
     border-radius: 15px;
     border: 1px dashed var(--grey);
     margin-bottom: 20px;
+}
+
+/* Conteneur pour mettre les boutons côte à côte sans collision */
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;    /* Permet de passer à la ligne proprement si l'écran est trop petit */
+    justify-content: center;
+    gap: 15px;          /* Gère l'espace entre les boutons sans margin compliquée */
+    width: 100%;
 }
 
 /* Titres des sections (ex: "Évaluation") */
@@ -270,95 +368,570 @@ footer .info {
 
 /* Bouton vert pour l'épreuve finale */
 .btn-eval {
-    background-color: #2ecc71 !important;
+    background-color: #2ecc71;
     font-weight: bold;
     box-shadow: 0 4px 0 #27ae60;
 }
 .btn-eval:hover {
-    background-color: #27ae60 !important;
+    background-color: #27ae60;
     transform: translateY(-2px);
 }
 
 /* Bouton rouge pour le retour */
 .btn-back {
     background-color: #e74c3c !important;
-    max-width: 180px;
-    font-size: 0.9rem;
-    margin-top: 20px;
-}
-
-#tir-series {
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-}
-
-#input-tir {
-    margin-left: 2vw;
-    margin-right: 2vw;
-}
-
-/* ========================================= */
-/*      RECHERCHE AUTOCOMPLÉTÉE BINÔMES      */
-/* ========================================= */
-
-.search-container {
-    position: relative;
-    display: inline-block;
     width: 100%;
-    max-width: 320px;
+    max-width: 300px;
+    font-size: 1.2rem;
+    margin-top: 3vh;
+}
+
+/* Petits écrans (smartphones) */
+@media (max-width: 480px) {
+    .btn-back {
+        background-color: #e74c3c !important;
+        width: 100%;
+        font-size: 0.9rem;
+        margin-top: 3vh;
+    }
+}
+
+/* Classes d'état pour le message de pénalité */
+.danger { color: #e74c3c; font-weight: bold; }
+.success { color: #2ecc71; font-weight: bold; }
+
+/* Style d'erreur pour l'input */
+.input-error {
+    border: 3px solid #e74c3c;
+    animation: secouer 0.3s; /* Petit effet visuel si tu veux */
+}
+
+/* Animation de secousse pour les erreurs d'input */
+@keyframes secouer {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
+/* Le conteneur de résultat */
+.result-box {
+    display: none; /* géré par le JS pour l'apparition */
+    margin-top: 25px;
+    padding: 25px;
+    border-radius: 20px;
+    background: #ffffff; /* Fond blanc */
+    border: 2px solid var(--grey);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Le message de pénalité (h2) */
+#penalite-msg {
+    font-size: 1.6rem; /* Texte bien gros */
     margin-bottom: 15px;
+    font-weight: 900;
+}
+
+/* Les détails du tir (p) */
+#details-tir {
+    font-size: 1.3rem; /* Taille augmentée pour la lecture à distance */
+    font-weight: 600;
+    color: var(--night-blue);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Bouton "Nouvelle série" spécifique */
+.btn-retry {
+    background-color: var(--blue);
+    max-width: 250px;
+    padding: 15px 10px;
+    font-size: 1.1rem;
+}
+
+/* Carte de profil haut de page */
+.profile-card {
+    background: var(--blue);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Contenu de la carte de profil */
+.profile-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Texte à gauche dans la carte de profil */
+.profile-text {
     text-align: left;
 }
 
-.input-search {
+/* Label de rôle */
+.role-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin: 0;
+    opacity: 0.8;
+    letter-spacing: 1px;
+}
+
+/* Informations de nom et genre */
+.name-info {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+/* Nom de l'élève */
+#current-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* Genre de l'élève */
+#current-gender {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Bouton d'inversion spécifique */
+.btn-switch {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    background: var(--blue);
+    margin: 0;
+    border: 3px solid rgba(255,255,255,0.4);
+}
+
+/* Effet de survol pour le bouton d'inversion */
+.btn-switch:hover {
+    background: #3f45ac;
+    transform: scale(1.02);
+}
+
+/* Classe utilitaire pour forcer l'empilement vertical propre */
+/* On utilise important pour s'assurer que ce style prévaut sur les autres règles de flexbox */
+.flex-column {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
     width: 100%;
-    padding: 12px;
-    font-size: 1rem;
-    font-family: inherit;
-    color: var(--black);
+}
+
+/* On s'assure que les titres dans ce conteneur prennent toute la largeur */
+.flex-column h2 {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Conteneur de la carte de résultat */
+.vma-card {
+    background: #ffffff; /* Fond blanc */
+    border-radius: 20px;
+    padding: 25px;
+    margin: 25px auto;
+    max-width: 450px;
+    text-align: center;
     border: 2px solid var(--grey);
-    border-radius: 8px;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
-    background-color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-.input-search:focus {
-    border-color: var(--blue);
-    outline: none;
-}
-
-.suggestions-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: #ffffff;
-    border: 1px solid var(--grey);
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    z-index: 1000;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-}
-
-.suggestion-item {
-    padding: 12px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--white);
+/* Texte "VMA réelle" */
+.vma-label {
+    margin: 0;
     color: var(--black);
-    font-size: 1rem;
-    transition: background-color 0.2s ease;
-}
-
-.suggestion-item:last-child {
-    border-bottom: none;
-}
-
-.suggestion-item:hover {
-    background-color: var(--white);
-    color: var(--night-blue);
+    font-size: 1.2rem;
+    text-transform: uppercase;
     font-weight: bold;
+}
+
+/* Chiffre de la VMA arrondie (élément central) */
+.vma-main-val {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--blue);
+    margin: 10px 0;
+}
+
+/* Badge de parcours */
+.parcours-badge {
+    padding: 12px;
+    border-radius: 10px;
+    color: black;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Classes de couleurs dynamiques */
+.bg-jaune { background-color: #f1c40f; }
+.bg-vert  { background-color: #2ecc71; }
+.bg-bleu  { background-color: #3498db; }
+.bg-rouge { background-color: #e74c3c; }
+.bg-noir  { background-color: #2d3436; }
+
+/* Conteneur du bouton de sauvegarde */
+#zone-actions-vma {
+    text-align: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Bouton vert pour l'épreuve finale */
+#btn-save-vma {
+    display: none; /* Caché par défaut, activé par le JS */
+    background-color: #2ecc71;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #27ae60;
+}
+#btn-save-vma:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px);
+}
+
+/* --- Styles pour le Tir Efficience --- */
+.tir-popup {
+    text-align: center;
+    padding: 30px;
+    border: 4px solid var(--blue);
+}
+
+/* Conteneur pour les inputs de tir */
+.tir-inputs-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* Boutons de score pour les tirs */
+.btn-score {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid var(--blue);
+    background: white;
+}
+
+/* Classe pour indiquer le score sélectionné (ex: 0, 1 ou 2 points) */
+.btn-score.selected {
+    background: var(--blue);
+    color: white;
+}
+
+/* Boutons principaux */
+.button-green {
+    background: var(--green);
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 25px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #202122;
+}
+
+/* Effet de survol pour les boutons */
+.button-green:hover {
+    background: #27ae60;
+    transform: translateY(-3px);
+}
+
+/* Adaptation pour les petits écrans */
+@media (max-width: 480px) {
+    .button-green {
+        font-size: 0.9rem; /* On garde une taille lisible */
+        padding: 20px 0;
+        max-width: 100%; /* Le bouton prend toute la largeur disponible */
+    }
+}
+
+/* Conteneur pour le bouton de validation de l'épreuve */
+.terminerEpreuve {
+    display: flex;
+    justify-content: center;
+    max-width: 90%;
+    margin: 10vh auto 5vh auto; /* "auto" sur les côtés aide au centrage si une largeur est définie */
+}
+
+/* Conteneur pour les résultats détaillés du Tir Efficience */
+.resultats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+/* Carte individuelle pour chaque tir */
+.resultat-card {
+    background: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--grey);
+    text-align: left;
+}
+
+/* titre pour chaque partie  */
+.resultat-card h3 {
+    font-size: 1.2rem;
+    color: var(--blue);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+}
+
+/* Détails pour chaque catégorie */
+.valeur {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+.detail {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+.note {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin: 2px 0;
+}
+
+/* Affichage de la note finale */
+.note span {
+    color: var(--green);
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Style pour les médailles  */
+.medaille {
+    display: block;
+    color: white;
+    text-align: center;
+    margin: 8px 0 0 0;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Couleurs spécifiques pour les médailles */
+.total-final {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin: 15px 0;
+}
+
+/* Conteneur pour le bouton de retour après l'épreuve */
+.retourSeance {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+/* --- Styles pour l'Audit Élève (Modal Ressenti) --- */
+
+.audit-section {
+    margin-bottom: 15px; /* Aligné sur la marge des cartes du bilan */
+    text-align: left;
+}
+
+/* Titre de section : Calqué sur le h3 de .resultat-card */
+.audit-section p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+}
+
+.btn-group-audit {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+/* Bouton d'option : Calqué sur la taille .valeur / .note */
+.btn-audit {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--grey);
+    border-radius: 10px;
+    padding: 10px 5px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--black);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 0 var(--grey);
+    line-height: 1.2;
+}
+/* On cible l'emoji (qui est souvent interprété comme du texte ou un symbole) */
+.btn-audit::first-line {
+    font-size: 1.5rem; /* Augmente la taille de l'emoji sur la première ligne */
+}
+
+
+/* État sélectionné : Reprend le style de tes médailles ou boutons bleus */
+.btn-audit.selected {
+    background: var(--blue);
+    color: white;
+    transform: translateY(2px);
+    box-shadow: none;
+    border-color: var(--night-blue);
+}
+
+/* Indicateurs visuels (Essoufflement) */
+#group-intensite .btn-audit:nth-child(1) { border-bottom: 4px solid #2ecc71; }
+#group-intensite .btn-audit:nth-child(2) { border-bottom: 4px solid #f1c40f; }
+#group-intensite .btn-audit:nth-child(3) { border-bottom: 4px solid #e67e22; }
+#group-intensite .btn-audit:nth-child(4) { border-bottom: 4px solid #e74c3c; }
+
+/* Adaptation pour les textes de boutons sur très petits écrans */
+@media (max-width: 480px) {
+    .btn-audit {
+        font-size: 0.85rem;
+        padding: 8px 2px;
+    }
+}
+
+/* Conteneur du rappel de parcours */
+.vma-card-display {
+    display: none; /* Affiché via JS uniquement si les données existent */
+    background: var(--white);
+    border: 2px solid var(--blue);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px auto;
+    width: 95%;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Petit label au-dessus du badge */
+.vma-display-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+    margin: 0 0 8px 0;
+    letter-spacing: 1px;
+}
+
+/* Le badge de couleur (dynamique) */
+.parcours-badge {
+    padding: 12px;
+    border-radius: 10px;
+    color: var(--black); /* Texte noir pour lisibilité sur les fonds clairs */
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-transform: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* On s'assure que le texte est blanc sur les badges foncés */
+.bg-bleu, .bg-rouge, .bg-noir {
+    color: white !important;
+}
+
+/* Boite de règle simplifiée */
+.regle-simple {
+    background: rgba(48, 53, 134, 0.05);
+    border: 1px solid var(--blue);
+    border-radius: 12px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.regle-simple p {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--night-blue);
+}
+
+/* Barre de progression horizontale */
+.progression-visuelle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+}
+
+@media (max-width: 480px) {
+    .progression-visuelle {
+        font-size: 0.75rem;
+        gap: 3px;
+    }
+}
+
+.progression-visuelle span {
+    background: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--grey);
+}
+
+/* Conteneur Card Simple */
+.action-card-simple {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centre le bouton horizontalement */
+    justify-content: center;
+    background: var(--blanc);
+    border: 1px solid var(--blue);
+    border-radius: 15px;
+    padding: 25px 15px;
+    margin: 20px auto;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Ombre très légère */
+}
+
+/* Consigne d'étape (Texte) */
+.etape-titre {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--blue);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+/* Bouton Principal */
+#btn-principal {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    border-radius: 10px;
+    max-width: 400px;
+}
+
+/* Style du message d'attente dans la liste des tours */
+#msg-attente {
+    text-align: center;
+    color: var(--black);
+    margin-top: 4vh;
+    padding: 10px;
+    font-style: italic;
+    font-size: 1.2rem;
+    border: 1px dashed var(--black); /* Bordure en pointillés pour l'aspect "zone vide" */
+    border-radius: 10px;
 }

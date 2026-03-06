@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let chronoDisplay = document.getElementById("chrono");
     let startBtn = document.getElementById("start");
     let stopBtn = document.getElementById("stop");
+    const input = document.getElementById("reussites");
 
     // Nouveaux éléments pour la gestion 4ème
     let sectionSaisie = document.getElementById("section-saisie");
@@ -67,6 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Une fois arrêté, on affiche la zone pour saisir le score de la série
         sectionSaisie.style.display = "block";
+
+        // Focus automatique sur l'input
+        setTimeout(() => input.focus(), 100); // Un léger délai assure que l'élément est visible
     };
 
 
@@ -102,8 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Ecouteur pour la touche Entrée sur l'input (ergonomie)
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            calculerEtAfficher();
+        }
+    });
+
     function calculerEtAfficher() {
-        const input = document.getElementById("reussites");
         let reussites = parseInt(input.value);
 
         if (!isNaN(reussites)) {
@@ -111,22 +121,27 @@ document.addEventListener("DOMContentLoaded", () => {
             reussites = Math.min(Math.max(reussites, 0), 5);
             input.value = reussites;
 
+            // Cacher la saisie après validation pour éviter les doubles clics ---
+            sectionSaisie.style.display = "none";
             let fautes = 5 - reussites;
+            // Calcul de la note d'efficience exacte
+            let noteExacte = calculerNoteEfficience(tempsTotalEnSecondes, reussites);
 
             // Affichage du résultat final et des pénalités
             resultatBox.style.display = "block";
             const msgPenalite = document.getElementById("penalite-msg");
             const detailsTir = document.getElementById("details-tir");
 
-            // Calcul de la note d'efficience exacte
-            let noteExacte = calculerNoteEfficience(tempsTotalEnSecondes, reussites);
+            // On remet le style par défaut avant d'appliquer le nouveau
+            msgPenalite.classList.remove("success", "danger");
 
             // Règle 4ème : 1 faute = 1 tour de pénalité
             if (fautes > 0) {
                 msgPenalite.textContent = `RÉALISE ${fautes} TOUR(S) DE PÉNALITÉ`;
+                msgPenalite.classList.add("danger");
             } else {
                 msgPenalite.textContent = "AUCUNE PÉNALITÉ !";
-                msgPenalite.style.color = "#2ecc71";
+                msgPenalite.classList.add("success");
             }
 
             detailsTir.innerHTML = `Réussites : ${reussites}/5 <br>
@@ -135,6 +150,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Envoi des données
             envoyerResultat4eme(reussites, fautes, tempsTotalEnSecondes, noteExacte);
+
+            // On vide l'input pour la prochaine série
+            input.value = "";
+            input.classList.remove("input-error");
+        } else {
+            input.classList.add("input-error"); // Ajoute une bordure rouge
+            alert("Veuillez entrer un nombre valide de réussites (0 à 5).");
         }
     }
 
