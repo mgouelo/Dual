@@ -33,6 +33,8 @@ const btnAnnuler = document.getElementById("btn-annuler");
 let minutes = 0; // On part de 0 pour le sprint 4ème
 let secondes = 0;
 let millisecondes = 0;
+let tempsEcouleSession = 0; //Temps total accumulé en millisecondes
+let dateDepart = null;      //Moment précis où on a cliqué sur Start
 let timeout;
 let estArrete = true;
 
@@ -50,24 +52,28 @@ let tirsData = { serie1: 0, serie2: 0 };
 const defilerTemps = () => {
     if (estArrete) return;
 
-    millisecondes += 10;
+    // Calcul du temps réel écoulé depuis le dernier "Start"
+    const maintenant = Date.now();
+    const difference = maintenant - dateDepart;
+    const totalMs = tempsEcouleSession + difference;
 
-    if (millisecondes >= 1000) {
-        millisecondes = 0;
-        secondes++;
-    }
+    // Conversion pour l'affichage
+    let totalSecondes = Math.floor(totalMs / 1000);
+    let msAffiche = Math.floor((totalMs % 1000) / 10);
+    let sAffiche = totalSecondes % 60;
+    let mAffiche = Math.floor(totalSecondes / 60);
 
-    if (secondes >= 60) {
-        secondes = 0;
-        minutes++;
-    }
+    // Affichage formaté
+    chrono.textContent =
+        mAffiche.toString().padStart(2, '0') + ":" +
+        sAffiche.toString().padStart(2, '0') + ":" +
+        msAffiche.toString().padStart(2, '0');
 
-    // Affichage formaté avec padStart
-    let m = minutes.toString().padStart(2, '0');
-    let s = secondes.toString().padStart(2, '0');
-    let ms = Math.floor(millisecondes / 10).toString().padStart(2, '0');
+    // On stocke les valeurs dans tes anciennes variables pour ne pas casser le reste de ton code
+    minutes = mAffiche;
+    secondes = sAffiche;
+    millisecondes = totalMs % 1000;
 
-    chrono.textContent = `${m}:${s}:${ms}`;
     timeout = setTimeout(defilerTemps, 10);
 };
 
@@ -75,9 +81,10 @@ const defilerTemps = () => {
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
+        dateDepart = Date.now(); //On fige l'heure de départ
         defilerTemps();
-        startBtn.style.display = "none";
-        stopBtn.style.display = "block";
+        if(startBtn) startBtn.style.display = "none";
+        if(stopBtn) stopBtn.style.display = "block";
     }
 };
 
@@ -88,57 +95,87 @@ const arreter = async()=> {
         if (!estArrete) {
             estArrete = true;
             clearTimeout(timeout);
-            startBtn.style.display = "block";
-            stopBtn.style.display = "none";
+
+            //On sauvegarde le temps parcouru depuis le dernier "Start"
+            tempsEcouleSession += (Date.now() - dateDepart);
+
+            if(startBtn) startBtn.style.display = "block";
+            if(stopBtn) stopBtn.style.display = "none";
         }
     }
 };
 
 /* Arrête le chronomètre si il est en cours. */
-const arreterEpreuve = ()=> {
+const arreterEpreuve = () => {
     if (!estArrete) {
         estArrete = true;
         clearTimeout(timeout);
+        // On enregistre définitivement le temps écoulé jusqu'ici
+        tempsEcouleSession += (Date.now() - dateDepart);
     }
 };
 
 /* Réinitialise le chronomètre après confirmation. */
+/* Réinitialise l'épreuve après confirmation (Version 4ème corrigée) */
 const reset = async() => {
     const confirmationAction = await demanderConfirmation("Réinitialiser l'épreuve ?");
+
     if (confirmationAction) {
+        //Arrêt du moteur de rendu
         estArrete = true;
-        clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout);
+
+        //RESET DU SYSTÈME DE TEMPS RÉEL (Crucial pour Date.now)
+        tempsEcouleSession = 0;
+        dateDepart = null;
+
+        //Reset des variables de temps classiques
         minutes = 0;
         secondes = 0;
         millisecondes = 0;
         chrono.textContent = "00:00:00";
 
-        // Réinitialisation des données de l'épreuve
+        //Réinitialisation des données de l'épreuve
         etapeActuelle = 0;
         pointsPassage = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         tirsData = { serie1: 0, serie2: 0 };
         autoEval = {intensite: "", durer: "", lucidite: ""};
 
-        // Remise à zéro de l'interface (Bouton et Consigne)
-        btnPrincipal.style.display = "block";
-        btnPrincipal.textContent = "DÉMARRER";
-        btnPrincipal.className = "button-green"; // On s'assure qu'il redevient vert
-        consigne.textContent = "Prêt pour le départ ?";
+        //Remise à zéro de l'interface (Bouton et Consigne)
+        if (btnPrincipal) {
+            btnPrincipal.style.display = "block";
+            btnPrincipal.textContent = "DÉMARRER";
+            btnPrincipal.className = "button-green"; // Retour au vert
+        }
 
-        // Cacher les contrôles de secours au reset
-        document.getElementById("buttonTraining").style.display = "none";
-        startBtn.style.display = "none";
-        stopBtn.style.display = "none";
+        if (consigne) {
+            consigne.textContent = "Prêt pour le départ ?";
+        }
 
-        // Nettoyage de la liste des tours et remise du message d'attente
-        liste.innerHTML = "";
-        const p = document.createElement("p");
-        p.id = "msg-attente";
-        p.textContent = "En attente de l'arrivée au premier pas de tir...";
-        liste.appendChild(p);
+        if (btnAnnuler) {
+            btnAnnuler.style.display = "none";
+        }
 
-        // On redéfinit la variable globale msgAttente pour les prochains clics
-        window.msgAttente = msgAttente
+        //Cacher les contrôles de secours et le bouton terminer
+        const buttonTraining = document.getElementById("buttonTraining");
+        if (buttonTraining) buttonTraining.style.display = "none";
+
+        if (startBtn) startBtn.style.display = "none";
+        if (stopBtn) stopBtn.style.display = "none";
+        if (terminerBtn) terminerBtn.style.display = "none";
+
+        //Nettoyage de la liste des tours et remise du message d'attente
+        if (liste) {
+            liste.innerHTML = "";
+            const p = document.createElement("p");
+            p.id = "msg-attente";
+            p.textContent = "En attente de l'arrivée au premier pas de tir...";
+            liste.appendChild(p);
+            // On s'assure que la référence globale est mise à jour
+            window.msgAttente = p;
+        }
+
+        console.log("Épreuve 4ème réinitialisée avec succès.");
     }
 };
 
@@ -148,9 +185,9 @@ const reset = async() => {
 const resetCompletSansDemander = () => {
     estArrete = true;
     clearTimeout(timeout);
-    minutes = 0;
-    secondes = 0;
-    millisecondes = 0;
+    tempsEcouleSession = 0;
+    dateDepart = null;
+    minutes = secondes = millisecondes = 0;
     chrono.textContent = "00:00:00";
 
     // Réinitialisation des données de l'épreuve
@@ -245,9 +282,6 @@ function selectAudit(element, categorie, valeur) {
  */
 const afficherParcoursVMA = () => {
     const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
-    // On force le niveau 4ème ici ou on le récupère
-    const niveau = localStorage.getItem("niveau") || "4eme";
-
     const displayZone = document.getElementById("vma-result-display");
     const badgeZone = document.getElementById("badge-parcours");
 
@@ -259,7 +293,7 @@ const afficherParcoursVMA = () => {
             let badge = "";
             let parcours = "";
 
-            // --- LOGIQUE BARÈME 4ÈME (Complet) ---
+            // --- LOGIQUE BARÈME UNIQUE (Harmonisation 4ème/6ème) ---
             if (vma <= 10) {
                 badge = "bg-jaune"; parcours = "Coupelles Jaunes (250m)";
             } else if (vma <= 11) {
@@ -278,11 +312,11 @@ const afficherParcoursVMA = () => {
 
             // Mise à jour de l'interface
             badgeZone.textContent = parcours;
+            // On s'assure de bien concaténer la classe de couleur
             badgeZone.className = "parcours-badge " + badge;
-            badgeZone.style.backgroundColor = "";
             badgeZone.style.color = "white";
 
-            console.log(`Affichage Parcours 4ème - VMA: ${vma}`);
+            console.log(`Parcours harmonisé - VMA: ${vma}`);
         } else {
             badgeZone.textContent = "Test VMA non réalisé";
             badgeZone.className = "parcours-badge";
@@ -460,44 +494,63 @@ const validerRessentis = async() => {
 const terminerEpreuve4eme = () => {
     const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
 
-    // Récupération des données avec valeurs de secours pour éviter le "NaN"
+    // Récupération des données avec valeurs de secours
     const vmaRef = (coureur && coureur.vma) ? parseFloat(coureur.vma) : 10;
-    const genreEleve = coureur ? coureur.genre : "M"; // "M" par défaut
+    const genreEleve = coureur ? coureur.genre : "M";
     const distanceTour = (coureur && coureur.vma_distance) ? parseInt(coureur.vma_distance) : 250;
 
-    // --- CALCUL INTENSITÉ (% VMA) ---
-    const tempsTotalSec = pointsPassage.E; // Temps final figé à l'arrivée
-
-    // Calcul de la distance : 6 tours de piste + pénalités (30m par cible ratée)
+    // --- CALCULS ---
+    const tempsTotalSec = pointsPassage.E;
     const fautesTotales = (10 - (tirsData.serie1 + tirsData.serie2));
     const distanceTotaleM = (distanceTour * 6) + (fautesTotales * 30);
-
-    // Calcul vitesse en km/h : (Distance / Temps) * 3.6
     const vitesseRealiseeKmh = (distanceTotaleM / tempsTotalSec) * 3.6;
     const pourcentageVMA = (vitesseRealiseeKmh / vmaRef) * 100;
 
-    // Barème Intensité (sur 4 pts)
-    let noteIntensite = 0;
-    if (pourcentageVMA > 110) noteIntensite = 4;
-    else if (pourcentageVMA >= 106) noteIntensite = 3.5;
-    else if (pourcentageVMA >= 101) noteIntensite = 3;
-    else if (pourcentageVMA >= 96)  noteIntensite = 2.5;
-    else if (pourcentageVMA >= 91)  noteIntensite = 2;
-    else if (pourcentageVMA >= 86)  noteIntensite = 1.5;
-    else if (pourcentageVMA >= 81)  noteIntensite = 1;
-    else if (pourcentageVMA >= 76)  noteIntensite = 0.5;
-    else noteIntensite = 0;
-
-    // EFFICIENCE TIR (Le nouveau barème croisé)
-    // Temps cumulé passé sur le pas de tir (A->B + C->D)
+    // Calcul des notes (Intensité, Efficience, VMA)
+    let noteIntensite = calculerNoteIntensite(pourcentageVMA);
     const tempsTirTotal = (pointsPassage.B - pointsPassage.A) + (pointsPassage.D - pointsPassage.C);
     const scoreTirTotal = tirsData.serie1 + tirsData.serie2;
     const noteEfficience = calculerNoteEfficience(tempsTirTotal, scoreTirTotal);
-
-    // --- POINTS VMA (sur 2 pts) ---
     const noteVmaPoints = calculerNoteVMA(vmaRef, genreEleve);
 
-    afficherResultats4eme(pourcentageVMA.toFixed(1), noteIntensite, vitesseRealiseeKmh, scoreTirTotal, tempsTirTotal, noteEfficience, vmaRef, noteVmaPoints);};
+    const noteFinale = parseFloat((noteIntensite + noteEfficience + noteVmaPoints).toFixed(2));
+
+    // --- ENVOI DES DONNÉES AU SERVEUR (Pour l'export prof) ---
+    const bilanData = {
+        type: "RESULTAT_EPREUVE_FINALE",
+        studentId: `${coureur.prenom} ${coureur.nom}`,
+        payload: {
+            note_finale: noteFinale,
+            cibles_touchees: scoreTirTotal,
+            vma_realisee: parseFloat(vitesseRealiseeKmh.toFixed(2)),
+            pourcentage_vma: parseFloat(pourcentageVMA.toFixed(1)),
+            temps_tir_total: tempsTirTotal
+        }
+    };
+
+    fetch('/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bilanData)
+    })
+    .then(response => console.log("Données transmises pour l'export prof"))
+    .catch(error => console.error("Erreur transmission export:", error));
+
+    // Affichage de la modale de bilan pour l'élève
+    afficherResultats4eme(pourcentageVMA.toFixed(1), noteIntensite, vitesseRealiseeKmh, scoreTirTotal, tempsTirTotal, noteEfficience, vmaRef, noteVmaPoints);
+};
+
+const calculerNoteIntensite = (pourcentageVMA) => {
+    if (pourcentageVMA > 110) return 4;
+    if (pourcentageVMA >= 106) return 3.5;
+    if (pourcentageVMA >= 101) return 3;
+    if (pourcentageVMA >= 96)  return 2.5;
+    if (pourcentageVMA >= 91)  return 2;
+    if (pourcentageVMA >= 86)  return 1.5;
+    if (pourcentageVMA >= 81)  return 1;
+    if (pourcentageVMA >= 76)  return 0.5;
+    return 0;
+};
 
 /**
  * Calcule la note d'efficience au tir par croisement (Moyenne Temps/Réussite)

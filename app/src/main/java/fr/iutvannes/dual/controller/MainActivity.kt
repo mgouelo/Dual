@@ -33,17 +33,36 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.text.replace
 
+/**
+ * Activité principale de l'application.
+ *
+ * @see ConnexionFragment
+ * @see ClassesFragment
+ * @see ProfilFragment
+ * @see TableauDeBordFragment
+ * @see AppDatabase
+ * @see R.layout.activity_main
+ */
 class MainActivity : AppCompatActivity() {
 
-    // Vues pour la barre de navigation et son conteneur
+    // Views for the navigation bar and its container
+
+    /* Variable to manage the navigation bar */
     private lateinit var navBarContainer: ConstraintLayout
+
+    /* Variable to manage the navigation buttons */
     private lateinit var navHomeButton: LinearLayout
+
+    /* Variable to manage the navigation buttons */
     private lateinit var navClassesButton: LinearLayout
+
+    /* Variable to manage the top bar */
     private lateinit var topBarContainer: ConstraintLayout
 
-    /** SharedPreferences pour la connexion cela permet de garder l'email même après un redémarrage */
+    /* SharedPreferences for the connection allows you to keep your email even after a restart */
     private lateinit var sharedPref: SharedPreferences
-    /** Base de données */
+
+    /* Database */
     private lateinit var db: AppDatabase
 
     var countInitialSession: Int = 0
@@ -51,9 +70,14 @@ class MainActivity : AppCompatActivity() {
     var classeSelectionnee: String? = null
 
 
+    /**
+     * Method called when the activity is created.
+     *
+     * @param savedInstanceState Saved state data
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Code pour le plein écran...
+        // Code for full screen...
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val insetsController = WindowInsetsControllerCompat(window, window.decorView)
         insetsController.hide(WindowInsetsCompat.Type.systemBars())
@@ -62,20 +86,17 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-
-
-        // --- GESTION DE LA NAVIGATION ---
-
-        // Récupérer les vues globales de la barre de navigation
+        // --- NAVIGATION MANAGEMENT ---
+        // Retrieve global views of the navigation bar
         navBarContainer = findViewById(R.id.bottomNav)
         navHomeButton = findViewById(R.id.nav_home_button)
         navClassesButton = findViewById(R.id.nav_classes_button)
 
-        // --- GESTION DU PROFIL ---
+        // --- PROFILE MANAGEMENT ---
         topBarContainer = findViewById(R.id.topBar)
 
 
-        // Définir les actions des clics
+        // Define the actions of clicks
         navHomeButton.setOnClickListener {
             if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) !is TableauDeBordFragment) {
                 showFragment(TableauDeBordFragment(), true, true)
@@ -87,11 +108,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Initialiser la base
+        // Initialize the database
         DatabaseProvider.init(this)
         db = DatabaseProvider.db
 
-        // Récupère les SharedPreferences sécurisées
+        // Retrieve secure SharedPreferences
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
@@ -105,16 +126,16 @@ class MainActivity : AppCompatActivity() {
         )
         val isRemembered = sharedPref.getBoolean("rememberMe", false)
 
-        // Premier essai de chargement
+        // First loading test
         chargerUtilisateur()
 
-        // Listener pour le bouton de profil
+        // Listener for the profile button
         val profileButton = findViewById<ImageButton>(R.id.profileImage)
         profileButton.setOnClickListener {
             showFragment(ProfilFragment(), false, false)
         }
 
-        // --- ÉTAT INITIAL ---
+        // --- INITIAL STATE ---
         if (savedInstanceState == null) {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
@@ -126,48 +147,54 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Remplace le fragment actuel ET gère la visibilité de la barre de navigation.
+     * Replaces the current fragment AND manages the visibility of the navigation bar.
+     *
+     * @param fragment The fragment to display
+     * @param withNavigation Whether to display the navigation bar or not
+     * @param withTopBar Whether to display the top bar or not
      */
     fun showFragment(fragment: Fragment, withNavigation: Boolean, withTopBar: Boolean) {
 
-        // Gérer la visibilité de la barre de navigation
+        // Manage the visibility of the navigation bar
         findViewById<View>(R.id.bottomNav)?.apply {
             visibility = if (withNavigation) View.VISIBLE else View.GONE
         }
 
-        // Gérer la visibilité de la top bar
+        // Manage the visibility of the top bar
         findViewById<View>(R.id.topBar)?.apply {
             visibility = if (withTopBar) View.VISIBLE else View.GONE
         }
 
-        // --- Met à jour la sélection du bouton de navigation ---
+        // --- Updates the navigation button selection ---
         when (fragment) {
             is TableauDeBordFragment -> selectNavItem(navHomeButton)
             is ClassesFragment -> selectNavItem(navClassesButton)
             else -> {
-                // aucun bouton sélectionné (profil, connexion, etc.)
+                // No button selected (profile, login, etc.)
                 navHomeButton.isSelected = false
                 navClassesButton.isSelected = false
             }
         }
 
-        // Afficher le fragment
+        // Show fragment
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
-                R.anim.slide_in_right, // entrée
-                R.anim.fade_out,       // sortie
-                R.anim.fade_in,        // retour
-                R.anim.slide_out_right // retour inverse
+                R.anim.slide_in_right, // entrance
+                R.anim.fade_out,       // exit
+                R.anim.fade_in,        // back
+                R.anim.slide_out_right // reverse back
             )
             .replace(R.id.fragmentContainer, fragment)
-            .addToBackStack(null) // Permet le retour avec le bouton retour
+            .addToBackStack(null) // Allows return using the return button
             .commit()
     }
 
     /**
-     * Gère la sélection visuelle des boutons (change la couleur).
-     * Met les boutons à false et le bouton passé en paramètre à true afin d'éviter les problèmes de couleur.
-     * Ensuite on affiche la configuration actuelle avec itemToSelect à true (le bouton selectionner change de couleur).
+     * Manages the visual selection of buttons (changes the color).
+     * Sets the buttons to false and the button passed as a parameter to true to avoid color issues.
+     * Then displays the current configuration with itemToSelect set to true (the select button changes color).
+     *
+     * @param itemToSelect The button to select
      */
     private fun selectNavItem(itemToSelect: LinearLayout) {
         navHomeButton.isSelected = false
@@ -176,7 +203,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Charge l'utilisateur depuis la base de données et met à jour la top bar.
+     * Loads the user from the database and updates the top bar.
      */
     fun chargerUtilisateur() {
         val email = sharedPref.getString("email", null)
@@ -203,24 +230,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * Loads the photo of the user.
+     *
+     * @param context The context of the activity.
+     * @param pdp The ImageView to display the photo.
+     * @param nom The user's name.
+     * @param prenom The user's first name.
+     * @param photoUri The URI of the user's photo.
+     */
     fun chargerPhotoProfil(context: Context, pdp: ImageButton, nom: String, prenom: String, photoUri: String?) {
 
-        //
         val imageACharger: Any = if (photoUri != null) {
-            // l'utilisateur a une photo perso alors on prend l'uri
+            // The user has a personal photo, so we take the URI.
             Uri.parse(photoUri)
         } else {
-            // pas de photo alors on génère l'url de la pfp par défaut pour l'appel API
+            // No photo, so we generate the default PFP URL for the API call.
             "https://ui-avatars.com/api/?name=$prenom+$nom&background=random&color=fff&size=128&bold=true"
         }
 
-        // Le plugin glide s'occupe de l'affichage de la photo
+        // The glide plugin handles the display of the photo.
         Glide.with(context)
             .load(imageACharger)
             .circleCrop() // format circulaire
-            .placeholder(R.drawable.pfp) // image pendant le chargement
-            .error(R.drawable.pfp)       // image si erreur
+            .placeholder(R.drawable.pfp) // Image while loading
+            .error(R.drawable.pfp)       // Image if error
             .into(pdp)
     }
 }

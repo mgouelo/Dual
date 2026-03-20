@@ -10,7 +10,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
@@ -20,73 +19,94 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment d'ajout de classe
+ * Fragment for adding a new class.
+ * This fragment is used to create a new class in the database by selecting
+ * a level and a letter. During validation, the fragment checks if a class already exists or
+ * needs to be created.
+ * Toasts are displayed to inform the user of the different results.
+ * The layout used is fragment_ajout_classe.xml.
+ *
+ * @see AppDatabase
+ * @see MainActivity
+ * @see Classe
+ * @see R.layout.fragment_ajout_classe
  */
 class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
-    private var oldClasseNom: String? = null // Ancien nom de la classe si on est en mode édition sinon, en mode création c'est à null
+    /* Variable for the old class name */
+    private var oldClasseNom: String? = null // The class's former name if in edit mode; otherwise, in design mode, it's null.
 
+    /**
+     * This method is called when the fragment is created.
+     *
+     * @param savedInstanceState The saved data of the fragment.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // On récupère les arguments passés via newInstanceForEdit
+        // We retrieve the arguments passed via newInstanceForEdit
         oldClasseNom = arguments?.getString("oldName")
     }
 
     /**
-     * A la création de la vue...
+     * This method is called when the fragment is created.
+     * Handles clicks on the back and submit buttons.
+     * Creates a new class based on the selected level and letter.
+     *
+     * @param view The fragment view.
+     * @param savedInstanceState The saved data of the fragment.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Titre, bouton de retour, bouton de validation
+        // Title, back button, submit button
         val title = view.findViewById<TextView>(R.id.page_title)
         val buttonBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
         val buttonValider = view.findViewById<Button>(R.id.btn_valider)
 
-        // Groupe de bouton radio pour la sélection du type de nommage --> Soit le nom est une lettre (6e A) soit un mot (6e Ouessant)
+        // Radio button group for selecting the naming type --> Either the name is a letter (6th grade A) or a word (6th grade Ouessant)
         val radioGroup = view.findViewById<RadioGroup>(R.id.radio_mode_nommage)
 
-        // Les toggles sont les sélecteurs à choix prédéfini comme le niveau ou la lettre
+        // Toggles are selectors with predefined choices, such as level or letter.
         val toggleNiveau = view.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.toggle_group_niveau)
         val toggleLettre = view.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.toggle_group_lettre)
 
-        // Input dans le cas où le nom de la classe est un mot
+        // Input in the case where the class name is a word.
         val inputLibre = view.findViewById<EditText>(R.id.input_nom_libre)
 
-        // Contient la logique de nommage par lettre
+        // Contains the letter-based naming logic
         val containerNommageLettre = view.findViewById<View>(R.id.container_nom_lettre)
 
-        // Contient la lgoique de nommage par mot
+        // Contains the naming logic by word
         val containerNommageLibre = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.container_nom_libre)
 
-        // Cas spécial : on modifie une classe existante
-        if (oldClasseNom != null) { // Si l'ancien de nom de classe n'est pas null --> alors on modifie une classe existante
+        // Special case: modifying an existing class
+        if (oldClasseNom != null) { // If the old class name is not null, then we modify an existing class.
 
-            // On change le titre et le bouton de 'valider' à 'modifier' pour moins d'ambiguité
+            // We're changing the title and the button from 'validate' to 'edit' for less ambiguity.
             title.setText("Modifier la classe " + oldClasseNom)
             buttonValider.text = "Modifier"
 
-            // On découpe le nom actuel de la classe en 2 parties séparées d'un espace :
-            // 1ère partie : Niveau'e'
-            // 2ème partie : Nom
+            // The current class name is divided into two parts separated by a space:
+            // Part 1: Level
+            // Part 2: Name
             val parts = oldClasseNom!!.split(" ", limit = 2)
 
             if (parts.size >= 2) {
-                val niveauStr = parts[0] // ex: "6e"
-                val suiteStr = parts[1]  // ex: "A" ou "Ouessant"
+                val niveauStr = parts[0] // e.g., "6th"
+                val suiteStr = parts[1]  // e.g., "A" or "Ouessant"
 
-                // On préselectionne le niveau pour plus de cohérance + meilleur UX
+                // We pre-select the level for greater consistency and better UX
                 selectionnerBoutonParTexte(toggleNiveau, niveauStr)
 
-                // On choisit la méthode de nommage utilisée pour l'ancien nom.
-                // Si suiteStr à une taille exactement de 1 alors c'est une simple lettre
+                // We choose the naming method used for the old name.
+                // If suiteStr has a size exactly of 1, then it is a simple letter.
                 if (suiteStr.length == 1 && suiteStr[0].isLetter()) {
                     containerNommageLettre.visibility = View.VISIBLE
                     containerNommageLibre.visibility = View.GONE
                     radioGroup.check(R.id.radio_nommage_lettre)
                     selectionnerBoutonParTexte(toggleLettre, suiteStr)
 
-                } else { // sinon c'est un mot
+                } else { // Otherwise it's a word
                     containerNommageLettre.visibility = View.GONE
                     containerNommageLibre.visibility = View.VISIBLE
                     radioGroup.check(R.id.radio_nommage_libre)
@@ -96,48 +116,49 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
             }
         }
 
-        // Cas standart : on créer une nouvelle classe
+        // Standard case: we create a new class
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == R.id.radio_nommage_lettre) {
-                // Mode Standard : On affiche les boutons, on cache le texte
+                // Standard Mode: Buttons are displayed, text is hidden
                 containerNommageLettre.visibility = View.VISIBLE
                 containerNommageLibre.visibility = View.GONE
             } else {
-                // Mode Libre : On cache les boutons, on affiche le texte
+                // Free Mode: The buttons are hidden, the text is displayed
                 containerNommageLettre.visibility = View.GONE
                 containerNommageLibre.visibility = View.VISIBLE
             }
         }
 
+        // Managing clicks on the back button
         buttonBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // logique du bouton de validation (vérification, validation et ecriture en base)
+        // Managing the click on the validation button
         buttonValider.setOnClickListener {
             var nomFinal = ""
             val idNiveau = toggleNiveau.checkedButtonId
 
-            // Aucun niveau a été sélectionné
+            // No level was selected
             if (idNiveau == -1) {
                 Toast.makeText(requireContext(), "Veuillez sélectionner un niveau", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val niveau = view.findViewById<Button>(idNiveau).text.toString()
-            // On vérifie quel mode est choisi
+            // We check which mode is chosen
             if (radioGroup.checkedRadioButtonId == R.id.radio_nommage_lettre) {
 
                 val idLettre = toggleLettre.checkedButtonId
-                if (idLettre == -1) { // aucune lettre est sélectionnée
+                if (idLettre == -1) { // No letter is selected
                     Toast.makeText(requireContext(), "Veuillez sélectionner une lettre", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
 
                 val lettre = view.findViewById<Button>(idLettre).text.toString()
-                nomFinal = "${niveau[0]}e $lettre" // Ex: "6A"
+                nomFinal = "${niveau[0]}e $lettre" // Example: "6A"
 
-            } else { // sinon c'est en nommage libre
+            } else { // Otherwise it's in free naming
                 nomFinal = inputLibre.text.toString().trim()
                 nomFinal = "${niveau[0]}e " + inputLibre.text.toString().trim()
 
@@ -147,18 +168,34 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 }
             }
 
-            // sauvegarde en bdd
+            // Backup to database
             sauvegarderClasse(nomFinal)
         }
     }
 
+    /**
+     * Creates a new instance of the fragment.
+     *
+     * @return A new instance of the fragment.
+     */
     companion object {
-        // Pour une création simple (pas d'arguments)
+        // For a simple creation (no arguments)
+        /**
+         * Creates a new instance of the fragment.
+         *
+         * @return A new instance of the fragment.
+         */
         fun newInstance(): AjoutClasseFragment {
             return AjoutClasseFragment()
         }
 
-        // Pour une édition (on passe le nom actuel de la classe que l'on veut modifier)
+        // For an edit (pass the current name of the class you want to modify)
+        /**
+         * Creates a new instance of the fragment.
+         *
+         * @param nomActuel The name of the class you want to modify.
+         * @return A new instance of the fragment.
+         */
         fun newInstanceForEdit(nomActuel: String): AjoutClasseFragment {
             val fragment = AjoutClasseFragment()
             val args = Bundle()
@@ -168,31 +205,44 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
         }
     }
 
+    /**
+     * Inserts a new class into the database.
+     *
+     * @param db The database.
+     * @param nom The name of the class.
+     */
     private fun insererEtQuitter(db: AppDatabase, nom: String) {
+        // Opening a coroutine on the I/O thread to add the class to the database
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             db.classeDao().insert(Classe(nom = nom))
+            // Displaying a message if the class already exists via the main thread
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Classe $nom ajoutée", Toast.LENGTH_SHORT).show() // toast de retour utilisateur
-                (activity as MainActivity).onBackPressed() // retour a l'écran précédent
+                Toast.makeText(requireContext(), "Classe $nom ajoutée", Toast.LENGTH_SHORT).show() // User feedback toast
+                (activity as MainActivity).onBackPressed() // Return to previous screen
             }
         }
     }
 
+    /**
+     * Saves the class to the database.
+     *
+     * @param nouveauNom The name of the class.
+     */
     private fun sauvegarderClasse(nouveauNom: String) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val db = DatabaseProvider.db
 
-            // Cas 1 : modification
+            // Case 1: Modification
             if (oldClasseNom != null) {
                 if (oldClasseNom == nouveauNom) {
-                    // L'utilisateur n'a rien changé
+                    // The user hasn't changed anything.
                     withContext(Dispatchers.Main) {
                         requireActivity().onBackPressed()
                     }
                     return@launch
                 }
 
-                // On vérifie si le nouveau nom est déjà pris par une autre classe pour éviter les doublons
+                // We check if the new name is already taken by another class to avoid duplicates.
                 val existeDeja = db.classeDao().getClasseByName(nouveauNom) != null
                 if (existeDeja) {
                     withContext(Dispatchers.Main) {
@@ -201,25 +251,25 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                     return@launch
                 }
 
-                // Tout est ok on fait la mise à jour en base
+                // Everything is OK, we're doing the database update
                 db.classeDao().updateNomClasse(oldClasseNom!!, nouveauNom)
 
-                // On met à jour également la classe de chaque élève en base avec le nouveau nom
+                // We also update each student's class in the database with the new name.
                 db.EleveDao().updateClasseEleves(oldClasseNom!!, nouveauNom)
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Classe modifiée", Toast.LENGTH_SHORT).show() // feedback utilisateur
+                    Toast.makeText(requireContext(), "Classe modifiée", Toast.LENGTH_SHORT).show() // User feedback
                     requireActivity().onBackPressed()
                 }
 
             } else {
-                // Cas 2 : insertion
-                val existe = db.classeDao().getClasseByName(nouveauNom) != null // retourne un boolean pour vérifier l'existence
+                // Case 2: Insertion
+                val existe = db.classeDao().getClasseByName(nouveauNom) != null // Returns a boolean to check for existence
                 if (existe) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "La classe $nouveauNom existe déjà", Toast.LENGTH_SHORT).show() // feedback utilisateur
+                        Toast.makeText(requireContext(), "La classe $nouveauNom existe déjà", Toast.LENGTH_SHORT).show() // User feedback
                     }
-                } else { // existe pas --> pas de doublon en vu
+                } else { // Does not exist --> no duplicate found
                     insererEtQuitter(db, nouveauNom)
                 }
             }
@@ -227,7 +277,10 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
     }
 
     /**
-     * Cherche un bouton dans le ToggleGroup par son texte et le coche.
+     * Selects a button in a group based on its text.
+     *
+     * @param group The group of buttons.
+     * @param texte The text of the button to select.
      */
     private fun selectionnerBoutonParTexte(group: com.google.android.material.button.MaterialButtonToggleGroup, texte: String) {
         for (i in 0 until group.childCount) {

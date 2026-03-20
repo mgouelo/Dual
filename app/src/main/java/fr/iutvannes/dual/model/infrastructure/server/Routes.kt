@@ -1,7 +1,7 @@
 package fr.iutvannes.dual.infrastructure.server
 
 /**
- * Reçoit les évènements, valide, periste et diffuse via SSE
+ * Receives, validates, persists, and distributes events via SSE
  */
 class Routes {
 

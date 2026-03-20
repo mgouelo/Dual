@@ -2,9 +2,22 @@ package fr.iutvannes.dual.model.persistence
 
 import androidx.room.*
 
+/**
+ * Class representing a result
+ *
+ * @param id_resultat unique identifier of the result
+ * @param id_eleve student associated with the result
+ * @param id_seance session associated with the result
+ * @param temp_course race time
+ * @param cibles_touchees number of targets hit
+ * @param penalites penalties
+ * @param vma vma
+ * @param note_finale final grade
+ * @param classement ranking
+ */
 @Entity(
     tableName = "Resultat",
-    /** A refaire plus tard au moment de la création des séances
+    /** To be done again later when creating the sessions
     foreignKeys = [
         ForeignKey(
             entity = Eleve::class,

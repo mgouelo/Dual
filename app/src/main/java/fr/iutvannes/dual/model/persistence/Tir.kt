@@ -7,6 +7,15 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
+/**
+ * Class representing a tir
+ *
+ * @param id_tir unique identifier of the class
+ * @param id_seance unique identifier of the class
+ * @param id_eleve unique identifier of the class
+ * @param note_tir tir note
+ * @param note_regularite regularite note
+ */
 @Entity(tableName = "Tir")
 data class Tir(
     @PrimaryKey(autoGenerate = true)
@@ -18,6 +27,15 @@ data class Tir(
 )
 
 // table enfant (Les informations de chaque passage au pas de tir)
+/**
+ * Class representing a salve tir
+ *
+ * @param id_passage unique identifier of the class
+ * @param id_tir unique identifier of the class
+ * @param numero_passage passage number
+ * @param nb_tir_reussi number of successful shots
+ * @param temps_au_pas_de_tir_ms time in milliseconds
+ */
 @Entity(
     tableName = "SalveTir",
     foreignKeys = [
@@ -40,6 +58,12 @@ data class SalveTir(
 )
 
 // récupérer facilement les données dans le DAO
+/**
+ * Class representing a tir with its passages
+ *
+ * @param tir tir
+ * @param liste_passages list of passages
+ */
 data class TirAvecPassages(
     @Embedded
     var tir: Tir,

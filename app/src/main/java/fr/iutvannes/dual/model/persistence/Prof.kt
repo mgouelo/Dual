@@ -3,6 +3,15 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
 
+/**
+ * Class representing a teacher
+ *
+ * @param id_prof unique teacher identifier
+ * @param nom teacher's name
+ * @param prenom teacher's first name
+ * @param email teacher's email
+ * @param password professor's password
+ */
 @Entity(
     tableName = "Prof",
     indices = [Index(value = ["email"], unique = true)]
