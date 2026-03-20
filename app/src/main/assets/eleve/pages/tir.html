@@ -2,15 +2,70 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Entraînement Tir</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Entraînement Tir</title>
     <link rel="stylesheet" href="../css/style.css"/>
+    <style>
+        #tirs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .serie-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            gap: 12px;
+        }
+
+        .serie-label {
+            font-weight: 600;
+            font-size: 1rem;
+            white-space: nowrap;
+            color: #333;
+            min-width: 72px;
+        }
+
+        .serie-card input[type="number"] {
+            flex: 1;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 8px 0;
+            width: 100%;
+            max-width: 120px;
+            -moz-appearance: textfield;
+        }
+
+        .serie-card input[type="number"]::-webkit-outer-spin-button,
+        .serie-card input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .action-bar .button { flex: 1; }
+    </style>
 </head>
 <body>
 <div id="container">
 
     <header>
         <h1>Tir</h1>
-        <p>Réalise 6 tirs de 5 balles </p>
+        <p>Réalise tes séries et enregistre ton score</p>
     </header>
 
     <div id="tirs"></div>
@@ -21,20 +76,19 @@
     </div>
 
     <div id="resultats" style="display: none; margin-top: 20px;">
-        <p style=" font-size: 1.6rem;">Total réussites : <span id="total" style="font-weight: bold;">-</span> / 30</p>
-
+        <p style="font-size: 1.6rem;">
+            Total réussites : <span id="total" style="font-weight: bold;">-</span>
+        </p>
         <div id="medaille-display" style="margin-top: 15px; font-weight: bold;"></div>
     </div>
 
-    <button id="btn-envoyer" class="button" style="display: none; margin-top: 20px; background-color: #27ae60;">
-        Envoyer les résultats
-    </button>
-
-    <button class="button btn-back" onclick="location.href='seance.html'" style="margin-top: 20px;">Retour séance</button>
-
-
     <footer>
-        <p class="info">Connecté au serveur local</p>
+        <button id="btn-envoyer" class="button" style="display: none; background-color: #27ae60;">
+            Envoyer les résultats
+        </button>
+        <button class="button btn-back" onclick="location.href='seance.html'">
+            Retour séance
+        </button>
     </footer>
 
 </div>

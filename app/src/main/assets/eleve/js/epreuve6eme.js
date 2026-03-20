@@ -366,9 +366,59 @@ const declencherFinEpreuve = async () => {
     }
 };
 
+/**
+ * Envoie le bilan final de l'épreuve 6ème au serveur Ktor via /event.
+ * @param nbTours - Nombre de tours réalisés
+ * @param notePerf - Note de performance /5
+ * @param noteRegul - Note de régularité /5
+ * @param noteTir - Note d'efficacité tir /5
+ * @param noteFinale - Note finale /15
+ * @param totalTir - Total des cibles touchées
+ * @param ecartMax - Écart max entre tours (régularité)
+ */
+async function envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinale, totalTir, ecartMax) {
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+
+    if (!coureur) {
+        console.warn("Pas de coureur actif en localStorage, envoi annulé.");
+        return;
+    }
+
+    const event = {
+        type: "RESULTAT_EPREUVE_FINALE",
+        studentId: `${coureur.prenom} ${coureur.nom}`,
+        payload: {
+            note_finale:   parseFloat(noteFinale),
+            nb_tours:      nbTours,
+            note_perf:     notePerf,
+            note_regul:    noteRegul,
+            note_tir:      noteTir,
+            cibles_touchees: totalTir,
+            ecart_max_course: ecartMax,
+            timestamp:     Date.now()
+        }
+    };
+
+    try {
+        const response = await fetch('/event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event)
+        });
+        if (response.ok) {
+            console.log("Bilan 6ème transmis au serveur prof.");
+        } else {
+            console.error("Erreur serveur lors de l'envoi bilan 6ème :", response.status);
+        }
+    } catch (error) {
+        console.error("Erreur réseau envoi bilan 6ème :", error);
+    }
+}
+
 const afficherResultatsFinaux = (nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir) => {
     // Calcul de la note totale sur 15
     const noteFinale = (parseFloat(notePerf) + parseFloat(noteRegul) + parseFloat(noteTir)).toFixed(1);
+    envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinale, totalTir, ecartMax);
 
     // fonction utilitaire pour mettre à jour le texte d'un élément par son ID
     const majTexte = (id, texte) => {

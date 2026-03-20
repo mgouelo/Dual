@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Entraînement Tir 4ème</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Entraînement Tir 4ème</title>
     <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
@@ -29,17 +30,18 @@
         <button id="valider-tir" class="button btn-eval" style="margin-top: 15px;">Enregistrer le tir</button>
     </div>
 
-    <div id="resultat-4eme" class="result-box">
+    <div id="resultat-4eme" class="result-box" style="display:none;">
         <h2 id="penalite-msg"></h2>
         <p id="details-tir"></p>
-
-        <!-- bouton pour recommencer une nouvelle série -->
-        <button class="button btn-retry" onclick="location.reload()">Nouvelle série</button>
     </div>
 
+    <button id="enregistrer-session" class="button" style="margin-top: 20px; background-color: #27ae60;">Enregistrer la session</button>
+    <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+
     <footer>
-        <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+        <p class="info">Connecté au serveur local</p>
     </footer>
+
 </div>
 
 <script src="../js/tir_4eme.js"></script>

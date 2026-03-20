@@ -80,46 +80,51 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                 val coursesExist = db.courseDao().getAllTour(eleveId)
 
                 if (eleveExist != null) {
-                    val dataTirs = tirsExist.map { tirAvecPassages ->
+                    val dataTirs = tirsExist.mapNotNull { tirAvecPassages ->
                         val date = db.seanceDao()
                             .getSeanceById(tirAvecPassages.tir.id_seance)
                             ?.date ?: "Inconnu"
 
-                        val totalReussi = tirAvecPassages.liste_passages
-                            .sumOf { it.nb_tir_reussi }
+                        val passages = tirAvecPassages.liste_passages
+                        if (passages.isEmpty()) return@mapNotNull null
 
-                        Pair("Séance du $date", totalReussi.toFloat())
+                        val parts = date.split("-")
+                        val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
+
+                        val moyenne = passages.map { it.nb_tir_reussi }.average().toFloat()
+                        Pair(dateFormatee, moyenne)
                     }
 
                     val vmaEleve = eleveExist.vma
 
                     val distance = db.courseDao().getCourseByIdEleve(eleveId)!!.distance_tour
 
-                    val dataCourse = coursesExist.map { courseAvecTours ->
+                    val dataCourse = coursesExist.mapNotNull { courseAvecTours ->
 
                         val date = db.seanceDao()
                             .getSeanceById(courseAvecTours.course.id_seance)
                             ?.date ?: "Inconnu"
 
-                        val moyenneTempsMs = if (courseAvecTours.liste_tours.isNotEmpty())
-                            courseAvecTours.liste_tours
-                                .map { it.temps_ms }
-                                .filter { it > 0 }
-                                .average()
-                        else 0.0
+                        val toursValides = courseAvecTours.liste_tours
+                            .map { it.temps_ms }
+                            .filter { it > 0 }
+
+                        if (toursValides.isEmpty()) return@mapNotNull null
+
+                        val moyenneTempsMs = toursValides.average()
 
                         val calculatedValue = if (moyenneTempsMs > 0 && vmaEleve > 0) {
-
                             val tempsSecondes = moyenneTempsMs / 1000
                             val vitesse = (distance / tempsSecondes) * 3.6
-
                             (vitesse / vmaEleve * 100).toFloat()
-
-                        } else 0f
+                        } else return@mapNotNull null
 
                         val pourcentageVMA = min(130f, calculatedValue)
 
-                        Pair("Séance du $date", pourcentageVMA)
+                        val parts = date.split("-")
+                        val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
+
+                        Pair(dateFormatee, pourcentageVMA)
                     }
 
                     withContext(Dispatchers.Main) {
@@ -139,6 +144,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             } else {
                                 resultExamen.visibility = View.GONE
                                 resultGraph.visibility = View.VISIBLE
+                                resultGraph.yLabels = null
                                 resultGraph.yMin = 0
                                 resultGraph.yMax = 5
                                 resultGraph.lineColor = ContextCompat.getColor(requireContext(), R.color.vert)

@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Bouton retour -->
     <ImageButton
         android:id="@+id/arrow_back_button"
         android:layout_width="40dp"
@@ -17,6 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+    <!-- Nom de l'élève -->
     <TextView
         android:id="@+id/result_eleve"
         android:layout_width="0dp"
@@ -29,8 +31,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/arrow_back_button"
         app:layout_constraintBottom_toBottomOf="@id/arrow_back_button"
-        tools:ignore="RtlSymmetry" />
+        tools:ignore="RtlSymmetry"/>
 
+    <!-- Titre de la catégorie sélectionnée -->
     <TextView
         android:id="@+id/result_titre"
         android:layout_width="0dp"
@@ -40,19 +43,60 @@
         android:textStyle="bold"
         android:paddingStart="8dp"
         android:layout_marginTop="15dp"
-        app:layout_constraintTop_toBottomOf="@+id/result_eleve"
-        app:layout_constraintStart_toStartOf="@+id/arrow_back_button"
-        app:layout_constraintEnd_toEndOf="@+id/result_eleve"
-        tools:ignore="RtlSymmetry" />
+        app:layout_constraintTop_toBottomOf="@id/result_eleve"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="RtlSymmetry"/>
 
+    <!-- Boutons de navigation en bas, ancrés au bas de l'écran -->
+    <LinearLayout
+        android:id="@+id/footer_layout"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <Button
+            android:id="@+id/btnTirs"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tirs"
+            android:layout_marginEnd="8dp"/>
 
+        <Button
+            android:id="@+id/btnCourse"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/course"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btnExamen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/examen"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Zone graphe/texte : remplit l'espace entre le titre et les boutons -->
     <FrameLayout
         android:id="@+id/containerResult"
         android:layout_width="0dp"
-        android:layout_height="750dp"
+        android:layout_height="0dp"
         android:layout_marginTop="10dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintTop_toBottomOf="@id/result_titre"
+        app:layout_constraintBottom_toTopOf="@id/footer_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -71,46 +115,5 @@
             android:textStyle="bold"/>
 
     </FrameLayout>
-
-
-    <LinearLayout
-        android:id="@+id/footer_layout"
-        style="?android:attr/buttonBarStyle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="12dp"
-        android:weightSum="3"
-        app:layout_constraintTop_toBottomOf="@id/containerResult"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Button
-            android:id="@+id/btnTirs"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/tirs"
-            android:layout_marginEnd="8dp" />
-
-        <Button
-            android:id="@+id/btnCourse"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/course"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp" />
-
-        <Button
-            android:id="@+id/btnExamen"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/examen"
-            android:layout_marginStart="8dp" />
-
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

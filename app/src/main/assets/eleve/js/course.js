@@ -9,50 +9,25 @@ const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
 
-let minutes = 0;
-let secondes = 0;
-let millisecondes = 0;
 let timeout;
 let estArrete = true;
+let dateDepart = null;
+let tempsEcoule = 0;
 let tourActuel = 1;
 
 /* Cette fonction gère le déroulement du temps.
 Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arrêté. */
 const defilerTemps = () => {
     if (estArrete) return;
-
-    millisecondes += 10;
-
-    if (millisecondes === 1000) {
-        millisecondes = 0;
-        secondes++;
-    }
-
-    if (secondes === 60) {
-        secondes = 0;
-        minutes++;
-    }
-
-    // Initialiser les variables pour l'affichage
-    let m = minutes;
-    let s = secondes;
-    let ms = Math.floor(millisecondes / 10);
-
-    // Ajouter un 0 si inférieur à 10
-    if(m < 10) {
-        m = "0" + m;
-    }
-
-    if(s < 10) {
-        s = "0" + s;
-    }
-
-    if(ms < 10) {
-        ms = "0" + ms;
-    }
-
-    chrono.textContent = `${m}:${s}:${ms}`;
-
+    const totalMs  = tempsEcoule + (Date.now() - dateDepart);
+    const totalSec = Math.floor(totalMs / 1000);
+    const m  = Math.floor(totalSec / 60);
+    const s  = totalSec % 60;
+    const ms = Math.floor((totalMs % 1000) / 10);
+    chrono.textContent =
+        String(m).padStart(2,'0') + ':' +
+        String(s).padStart(2,'0') + ':' +
+        String(ms).padStart(2,'0');
     timeout = setTimeout(defilerTemps, 10);
 };
 
@@ -60,6 +35,7 @@ const defilerTemps = () => {
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
+        dateDepart = Date.now();
         defilerTemps();
     }
 };
@@ -69,6 +45,7 @@ const arreter = () => {
     if (!estArrete) {
         estArrete = true;
         clearTimeout(timeout);
+        tempsEcoule += Date.now() - dateDepart;
     }
 };
 
@@ -79,7 +56,8 @@ const reset = async() => {
     if (confirmation) {
         estArrete = true;
         clearTimeout(timeout);
-        minutes = secondes = millisecondes = 0;
+        tempsEcoule = 0;
+        dateDepart = null;
         chrono.textContent = "00:00:00";
     }
 
@@ -182,16 +160,16 @@ enregistrerSessionBtn.addEventListener("click", async () => {
 
 async function envoyerCourseAuServeur() {
 
-    const identite = localStorage.getItem("eleve_identite");
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
 
-    if (!identite) {
+    if (!coureur?.nomComplet) {
         alert("Identité élève introuvable.");
         return;
     }
 
-    const parts = identite.trim().split(" ");
+    const parts = coureur.nomComplet.trim().split(" ");
     const prenom = parts[0] || "";
-    const nom = parts[1] || "";
+    const nom = parts.slice(1).join(" ") || "";
 
     if (!prenom || !nom) {
         alert("Identité invalide.");
@@ -223,8 +201,8 @@ async function envoyerCourseAuServeur() {
     const request = {
         prenom,
         nom,
+        distance: coureur.vma_distance ? parseFloat(coureur.vma_distance) : 0,
         nbTours: tempsAuTour.length,
-        nbCibles: 0,
         nbTirsReussi: [],
         tempsAuPasDeTir: [],
         tempsAuTour
