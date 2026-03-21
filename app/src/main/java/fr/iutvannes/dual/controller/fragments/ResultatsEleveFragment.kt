@@ -138,7 +138,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
                         // Affichage des résultats de l'élève dans la catégorie "Tirs"
                         btnTirs.setOnClickListener {
-                            resultTitre.text = "Progression de tirs"
+                            resultTitre.text = "Progression de tirs (moyenne sur 5 tirs)"
                             if (dataTirs.isEmpty()) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
@@ -159,7 +159,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
                         // Affichage des résultats de l'élève dans la catégorie "Course"
                         btnCourse.setOnClickListener {
-                            resultTitre.text = "Progression de course"
+                            resultTitre.text = "Progression de course (% de VMA)"
                             if (dataCourse.isEmpty()) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
@@ -178,7 +178,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
                         // Affichage des résultats de l'élève à l'examen
                         btnExamen.setOnClickListener {
-                            resultTitre.text = "Résultat de l'exament"
+                            resultTitre.text = "Résultat de l'examen"
                             if (resultatExist.isEmpty() || resultatExist[0].note_finale == 0F) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
