@@ -227,29 +227,44 @@ fun Application.module(appContext: Context) {
                         val payload = jsonElement["payload"]?.jsonObject
                         val noteFinale = payload?.get("note_finale")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
                         val cibles = payload?.get("cibles_touchees")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-                        val vmaCalculée = payload?.get("vma_realisee")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+                        val vmaRealisee = payload?.get("vma_realisee")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+                        val nbTours = payload?.get("nb_tours")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val ecartRegul = payload?.get("ecart_max_course")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
 
-                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        // Recherche de l'élève dans la base de données
+                        val eleve = withContext(Dispatchers.IO) {
+                            DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        }
+
+                        Log.d("KtorServer", "Recherche élève: prenom='$prenom' nom='${nom.uppercase()}' → trouvé: ${eleve != null}")
+
                         if (eleve != null) {
                             val resultatEpreuve = fr.iutvannes.dual.model.persistence.Resultat(
                                 id_eleve = eleve.id_eleve,
                                 id_seance = KtorServer.idSeanceActuelle,
                                 cibles_touchees = cibles,
-                                temp_course = vmaCalculée, // On détourne ce champ ou on en utilise un dédié
-                                note_finale = noteFinale // Assure-toi que ce champ existe dans ton entité Resultat
+                                temp_course = vmaRealisee,
+                                note_finale = noteFinale,
+                                nbTours = nbTours,
+                                ecart_max_course = ecartRegul
                             )
-                            DatabaseProvider.db.resultatDao().insert(resultatEpreuve)
-                            call.respond(HttpStatusCode.Accepted)
+                            withContext(Dispatchers.IO) {
+                                DatabaseProvider.db.resultatDao().insert(resultatEpreuve)
+                            }
+                            call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
                         } else {
-                            call.respond(HttpStatusCode.NotFound)
+                            Log.e("KtorServer", "ÉLÈVE NON TROUVÉ : prenom='$prenom' nom='${nom.uppercase()}'")
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Eleve non trouve"))
                         }
                     }
                     "TIR_RESULTAT_6EME" -> {
                         val payload = jsonElement["payload"]?.jsonObject
-                        val scoreRaw = payload?.get("total")?.jsonPrimitive?.content ?: "0"
-                        val scoreInt = scoreRaw.toIntOrNull() ?: 0
+                        val scoreInt = payload?.get("total")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
 
-                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        val eleve = withContext(Dispatchers.IO) {
+                            DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        }
+
                         if (eleve != null) {
                             val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
                                 id_eleve = eleve.id_eleve,
@@ -257,7 +272,9 @@ fun Application.module(appContext: Context) {
                                 cibles_touchees = scoreInt,
                                 temp_course = 0F
                             )
-                            DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                            withContext(Dispatchers.IO) {
+                                DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                            }
                             Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
                             call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
                         } else {
@@ -424,7 +441,10 @@ fun Application.module(appContext: Context) {
         get("/api/admin/export") {
             try {
                 val idActuel = KtorServer.idSeanceActuelle
-                val seance = DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
+                val seance = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
+                }
+
 
                 if (seance == null) {
                     call.respond(HttpStatusCode.NotFound, "Aucune séance active.")
@@ -436,51 +456,78 @@ fun Application.module(appContext: Context) {
                 val nomFichier = "Bilan_${seance.type}_${seance.classe}_$dateClean.csv"
 
                 //Récupération des résultats
-                val resultats = DatabaseProvider.db.resultatDao().getBySeance(idActuel)
+                val resultats = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.resultatDao().getBySeance(idActuel)
+                }
                 val csv = StringBuilder()
 
                 //Personnalisation du contenu selon le type de séance
                 when (seance.type) {
-                    "Épreuve Finale" -> {
-                        csv.append("BILAN ÉVALUATION FINALE - CLASSE : ${seance.classe}\n")
-                        csv.append("Date;${seance.date}\n\n")
-                        //Ajout de la colonne Note Finale
-                        csv.append("Nom;Prenom;Genre;Cibles;VMA Ref;VMA Épreuve;Note Finale\n")
 
-                        resultats.forEach { res ->
-                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
-                            if (eleve != null) {
-                                csv.append("${eleve.nom.uppercase()};")
-                                csv.append("${eleve.prenom};")
-                                csv.append("${eleve.genre};")
-                                csv.append("${res.cibles_touchees};")
-                                csv.append("${eleve.vma};")
-                                csv.append("${res.temp_course};") //C'est la vitesse réalisée stockée plus haut
-                                csv.append("${res.note_finale}\n")
-                            }
-                        }
-                    }
                     "Test VMA" -> {
-                        csv.append("RÉSULTATS TEST VMA - CLASSE : ${seance.classe}\n")
-                        csv.append("Date;${seance.date}\n\n")
-                        csv.append("Nom;Prenom;VMA (km/h)\n") //Uniquement l'essentiel pour le test VMA
+                        csv.append("Test VMA - ${seance.classe} - ${seance.date}\n\n")
+                        csv.append("Nom;Prénom;VMA (km/h)\n")
 
                         resultats.forEach { res ->
-                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            val eleve = withContext(Dispatchers.IO) {
+                                DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            }
                             if (eleve != null) {
-                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${eleve.vma}\n")
+                                val vma = eleve.vma?.let { String.format("%.1f", it) } ?: "-"
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};$vma\n")
                             }
                         }
                     }
-                    else -> { //Mode Entraînement par défaut
-                        csv.append("SUIVI ENTRAÎNEMENT - CLASSE : ${seance.classe}\n")
-                        csv.append("Date;${seance.date}\n\n")
-                        csv.append("Nom;Prenom;Cibles Touchees;VMA\n")
+
+                    "Épreuve Finale" -> {
+                        val is4eme = resultats.all { it.ecart_max_course == 0 && it.nbTours == 6 }
+
+                        if (is4eme) {
+                            csv.append("Épreuve Finale 4ème - ${seance.classe} - ${seance.date}\n\n")
+                            csv.append("Nom;Prénom;VMA ref (km/h);Vitesse épreuve (km/h);% VMA;Cibles touchées (/10);Note /12\n")
+
+                            resultats.forEach { res ->
+                                val eleve = withContext(Dispatchers.IO) {
+                                    DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                                }
+                                if (eleve != null) {
+                                    val vmaRef = eleve.vma?.let { String.format("%.1f", it) } ?: "-"
+                                    val vitesse = String.format("%.2f", res.temp_course)
+                                    val pctVma = if ((eleve.vma ?: 0f) > 0f)
+                                        String.format("%.0f%%", (res.temp_course / eleve.vma!!) * 100)
+                                    else "-"
+                                    val note = String.format("%.2f", res.note_finale)
+                                    csv.append("${eleve.nom.uppercase()};${eleve.prenom};$vmaRef;$vitesse;$pctVma;${res.cibles_touchees};$note\n")
+                                }
+                            }
+                        } else {
+                            csv.append("Épreuve Finale 6ème - ${seance.classe} - ${seance.date}\n\n")
+                            csv.append("Nom;Prénom;VMA (km/h);Nb tours;Écart max (s);Cibles touchées;Note /15\n")
+
+                            resultats.forEach { res ->
+                                val eleve = withContext(Dispatchers.IO) {
+                                    DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                                }
+                                if (eleve != null) {
+                                    val vma = eleve.vma?.let { String.format("%.1f", it) } ?: "-"
+                                    val note = String.format("%.2f", res.note_finale)
+                                    csv.append("${eleve.nom.uppercase()};${eleve.prenom};$vma;${res.nbTours};${res.ecart_max_course};${res.cibles_touchees};$note\n")
+                                }
+                            }
+                        }
+                    }
+
+                    else -> {
+                        csv.append("Entraînement - ${seance.classe} - ${seance.date}\n\n")
+                        csv.append("Nom;Prénom;Cibles touchées;VMA (km/h)\n")
 
                         resultats.forEach { res ->
-                            val eleve = DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            val eleve = withContext(Dispatchers.IO) {
+                                DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
+                            }
                             if (eleve != null) {
-                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${res.cibles_touchees};${eleve.vma}\n")
+                                val vma = eleve.vma?.let { String.format("%.1f", it) } ?: "-"
+                                csv.append("${eleve.nom.uppercase()};${eleve.prenom};${res.cibles_touchees};$vma\n")
                             }
                         }
                     }

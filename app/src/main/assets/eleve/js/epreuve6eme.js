@@ -385,9 +385,13 @@ async function envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinal
         return;
     }
 
+    const parts = (coureur.nomComplet || "").split(" ");
+    const prenom = parts[0] || "";
+    const nom = parts.slice(1).join(" ");
+
     const event = {
         type: "RESULTAT_EPREUVE_FINALE",
-        studentId: `${coureur.prenom} ${coureur.nom}`,
+        studentId: `${prenom} ${nom}`,
         payload: {
             note_finale:   parseFloat(noteFinale),
             nb_tours:      nbTours,

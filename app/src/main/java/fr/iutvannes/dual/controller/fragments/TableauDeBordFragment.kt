@@ -112,19 +112,14 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val nbResultat = view.findViewById<TextView>(R.id.text_resultats_count)
         val btnExport = view.findViewById<Button>(R.id.btn_download_excel)
 
-        // Opening a coroutine in the I/O thread to count the results
+        //Opening a coroutine in the I/O thread to count the results
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
-                if (sessionViewModel.running.value) {
-                    val totalRecords = withContext(Dispatchers.IO) {
-                        val idSeance = KtorServer.idSeanceActuelle
-                        val nbTirs    = DatabaseProvider.db.tirDao().countBySeance(idSeance)
-                        val nbCourses = DatabaseProvider.db.courseDao().countBySeance(idSeance)
-                        if (nbTirs > nbCourses) nbTirs else nbCourses
+                if (sessionViewModel.running.value && KtorServer.idSeanceActuelle != 0) {
+                    val nbBilans = withContext(Dispatchers.IO) {
+                        DatabaseProvider.db.resultatDao().countBySeance(KtorServer.idSeanceActuelle)
                     }
-
-                    //On met à jour le nb de perfs enregistrés
-                    nbResultat.text = "$totalRecords"
+                    nbResultat.text = "$nbBilans"
                 }
                 kotlinx.coroutines.delay(2000)
             }
@@ -150,7 +145,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
 
 
-        // Opening a coroutine in the I/O thread to handle the session start button
+        //Opening a coroutine in the I/O thread to handle the session start button
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.running.collect { running ->
                 if (running) {

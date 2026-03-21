@@ -45,5 +45,7 @@ data class Resultat (
     var penalites: Float = 0F,
     var vma: Float = 0F,
     var note_finale: Float = 0F,
-    var classement: Int = 0
+    var classement: Int = 0,
+    var nbTours: Int = 0,
+    var ecart_max_course: Int = 0
 )

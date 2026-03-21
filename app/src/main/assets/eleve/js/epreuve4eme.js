@@ -492,9 +492,21 @@ const validerRessentis = async() => {
  * Calcule le bilan final avec la distance personnalisée récupérée du parcours
  */
 const terminerEpreuve4eme = () => {
-    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    const coureurData = localStorage.getItem("coureur_actif_objet");
 
-    // Récupération des données avec valeurs de secours
+    if (!coureurData) {
+        confirmation("Erreur : Aucun coureur actif trouvé. Impossible d'envoyer les résultats.");
+        return;
+    }
+
+     const coureur = JSON.parse(coureurData);
+
+     //On vérifie que les données sont bien présentes
+     const parts = (coureur.nomComplet || "").split(" ");
+     const prenom = parts[0] || "Inconnu";
+     const nom = parts.slice(1).join(" ") || "Anonyme";
+
+    //Récupération des données avec valeurs de secours
     const vmaRef = (coureur && coureur.vma) ? parseFloat(coureur.vma) : 10;
     const genreEleve = coureur ? coureur.genre : "M";
     const distanceTour = (coureur && coureur.vma_distance) ? parseInt(coureur.vma_distance) : 250;
@@ -518,13 +530,13 @@ const terminerEpreuve4eme = () => {
     // --- ENVOI DES DONNÉES AU SERVEUR (Pour l'export prof) ---
     const bilanData = {
         type: "RESULTAT_EPREUVE_FINALE",
-        studentId: `${coureur.prenom} ${coureur.nom}`,
+        studentId: `${prenom} ${nom}`,
         payload: {
             note_finale: noteFinale,
             cibles_touchees: scoreTirTotal,
             vma_realisee: parseFloat(vitesseRealiseeKmh.toFixed(2)),
-            pourcentage_vma: parseFloat(pourcentageVMA.toFixed(1)),
-            temps_tir_total: tempsTirTotal
+            nb_tours: 6,
+            ecart_max_course: 0
         }
     };
 
@@ -533,10 +545,14 @@ const terminerEpreuve4eme = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bilanData)
     })
-    .then(response => console.log("Données transmises pour l'export prof"))
+    .then(response => {
+        if (response.ok) {
+            console.log("Données transmises avec succès pour : " + prenom);
+        }
+    })
     .catch(error => console.error("Erreur transmission export:", error));
 
-    // Affichage de la modale de bilan pour l'élève
+    // Affichage du bilan élève
     afficherResultats4eme(pourcentageVMA.toFixed(1), noteIntensite, vitesseRealiseeKmh, scoreTirTotal, tempsTirTotal, noteEfficience, vmaRef, noteVmaPoints);
 };
 
