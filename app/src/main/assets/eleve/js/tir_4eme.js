@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let sectionSaisie = document.getElementById("section-saisie");
     let validerBtn    = document.getElementById("valider-tir");
     let resultatBox   = document.getElementById("resultat-4eme");
-    let btnSession    = document.getElementById("enregistrer-session");
+    let btnSession    = document.getElementById("btn-envoyer");
 
     let timeout;
     let estArrete = true;

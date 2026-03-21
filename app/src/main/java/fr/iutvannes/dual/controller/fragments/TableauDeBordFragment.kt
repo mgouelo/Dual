@@ -116,15 +116,15 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
                 if (sessionViewModel.running.value) {
-                    val totalEnBase = withContext(Dispatchers.IO) {
-                        DatabaseProvider.db.resultatDao().getCount()
+                    val totalRecords = withContext(Dispatchers.IO) {
+                        val idSeance = KtorServer.idSeanceActuelle
+                        val nbTirs    = DatabaseProvider.db.tirDao().countBySeance(idSeance)
+                        val nbCourses = DatabaseProvider.db.courseDao().countBySeance(idSeance)
+                        if (nbTirs > nbCourses) nbTirs else nbCourses
                     }
 
-                    val depart = (activity as? MainActivity)?.countInitialSession ?: 0
-                    val resultatsSeance = totalEnBase - depart
-
                     //On met à jour le nb de perfs enregistrés
-                    nbResultat.text = "$resultatsSeance"
+                    nbResultat.text = "$totalRecords"
                 }
                 kotlinx.coroutines.delay(2000)
             }

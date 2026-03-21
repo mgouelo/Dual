@@ -16,6 +16,7 @@ import fr.iutvannes.dual.model.components.GraphView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.xmlbeans.impl.xb.xsdschema.TopLevelAttribute
 import kotlin.collections.map
 
 /**
@@ -97,9 +98,8 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
                     val vmaEleve = eleveExist.vma
 
-                    val distance = db.courseDao().getCourseByIdEleve(eleveId)!!.distance_tour
-
                     val dataCourse = coursesExist.mapNotNull { courseAvecTours ->
+                        val distance = courseAvecTours.course.distance_tour
 
                         val date = db.seanceDao()
                             .getSeanceById(courseAvecTours.course.id_seance)
@@ -125,6 +125,10 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                         val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
 
                         Pair(dateFormatee, pourcentageVMA)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "dataCourse size=${dataCourse.size} val=${dataCourse.firstOrNull()?.second}", Toast.LENGTH_LONG).show()
                     }
 
                     withContext(Dispatchers.Main) {
@@ -183,7 +187,8 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                             } else {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
-                                resultExamen.text = "Note finale : ${resultatExist[0].note_finale}"
+                                resultExamen.text = "Note finale : ${resultatExist[0].note_finale} / 20"
+                                resultExamen.textSize = 48f
                             }
                         }
                     }

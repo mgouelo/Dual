@@ -84,7 +84,16 @@ class GraphView(
         fun xOf(i: Int) = if (data.size == 1) marginLeft + paddingX + drawWidth / 2f
         else marginLeft + paddingX + i * (drawWidth / (data.size - 1).toFloat())
 
-        fun yOf(v: Float) = marginTop + drawHeight - ((v - yMin) / heightRange) * drawHeight
+        fun yOf(v: Float): Float {
+            return if (yLabels != null) {
+                val labMin = yLabels!!.first()
+                val labMax = yLabels!!.last()
+                val range = if (labMax != labMin) labMax - labMin else 1f
+                marginTop + drawHeight - ((v - labMin) / range) * drawHeight
+            } else {
+                marginTop + drawHeight - ((v - yMin) / heightRange) * drawHeight
+            }
+        }
 
         data.forEachIndexed { i, pair ->
             canvas.drawCircle(xOf(i), yOf(pair.second), textSize * 0.4f, pointPaint)

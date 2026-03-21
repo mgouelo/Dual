@@ -85,6 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (btnEnvoyer) {
                 btnEnvoyer.style.display = "block";
+                btnEnvoyer.style.margin = "0 auto";
+                btnEnvoyer.style.marginTop = "20px";
                 btnEnvoyer.onclick = () => {
                     btnEnvoyer.disabled = true;
                     btnEnvoyer.textContent = "Envoi en cours...";

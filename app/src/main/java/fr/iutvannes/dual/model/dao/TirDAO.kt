@@ -69,4 +69,13 @@ interface TirDAO {
     @Transaction
     @Query("SELECT * FROM Tir WHERE id_eleve = :idEleve")
     suspend fun getTousLesTirs(idEleve: Int): List<TirAvecPassages>
+
+    /**
+     * Counts the number of tirs in the database for a specific seance.
+     *
+     * @param idSeance The identifier of the seance.
+     * @return The number of tirs.
+     */
+    @Query("SELECT COUNT(DISTINCT id_eleve) FROM Tir WHERE id_seance = :idSeance")
+    fun countBySeance(idSeance: Int): Int
 }

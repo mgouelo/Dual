@@ -61,4 +61,13 @@ interface CourseDAO {
     @Transaction
     @Query("SELECT * FROM Course WHERE id_eleve = :idEleve")
     suspend fun getAllTour(idEleve: Int): List<CourseAvecTours>
+
+    /**
+     * Counts the number of courses in the database for a specific seance.
+     *
+     * @param idSeance The identifier of the seance.
+     * @return The number of courses.
+     */
+    @Query("SELECT COUNT(DISTINCT id_eleve) FROM Course WHERE id_seance = :idSeance")
+    fun countBySeance(idSeance: Int): Int
 }
