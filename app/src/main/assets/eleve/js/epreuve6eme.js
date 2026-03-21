@@ -16,12 +16,11 @@ const btnVoirBilan = document.getElementById("btnVoirBilan");
 // Variable pour savoir quand l'élève a commencé à courir (initialement à 20:00:00)
 let tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
 
-let minutes = 20;
-let secondes = 0;
-let millisecondes = 0;
+let dureeTotaleEpreuve = 20 * 60 * 1000;
+let tempsRestantAuRepos = dureeTotaleEpreuve;
+let dateDepart = null;
 let timeout;
 let estArrete = true;
-let tourActuel = 1;
 
 // Stockage des données pour le bilan final
 let historiqueEpreuve = []; // Résultats de chaque tour (temps et score de tir)
@@ -33,36 +32,28 @@ Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arr
 const defilerTemps = () => {
     if (estArrete) return;
 
-    millisecondes -= 10;
+    // Calcul du temps écoulé depuis le dernier Start
+    const maintenant = Date.now();
+    const tempsEcouleDepuisStart = maintenant - dateDepart;
 
-    if (millisecondes < 0) {
-        millisecondes = 990;
-        secondes--;
-    }
+    // Temps restant réel
+    const tempsActuelMs = tempsRestantAuRepos - tempsEcouleDepuisStart;
 
-    if (secondes < 0) {
-        secondes = 59;
-        minutes--;
-    }
-
-    // Arrêt automatique à zéro
-    // Ajout d'une sécurité pour le chron afin de éviter les valeurs négatives en cas de bug ou de manipulation rapide des boutons
-    if (minutes < 0 || (minutes === 0 && secondes === 0 && millisecondes <= 0)) {
-        minutes = 0;
-        secondes = 0;
-        millisecondes = 0;
-        estArrete = true;
-        clearTimeout(timeout);
-        chrono.textContent = "00:00:00";
-        confirmation("Temps écoulé ! Fin de l'épreuve.");
+    if (tempsActuelMs <= 0) {
+        finAutomatique();
         return;
     }
 
-    // Affichage formaté avec des zéros, padStart pemet de faire ça facilement en convertissant les nombres en chaînes de caractères et en ajoutant des zéros devant si nécessaire
+    // Conversion pour l'affichage
+    let totalSecondes = Math.floor(tempsActuelMs / 1000);
+    minutes = Math.floor(totalSecondes / 60);
+    secondes = totalSecondes % 60;
+    millisecondes = tempsActuelMs % 1000;
+
+    // Affichage formaté
     let m = minutes.toString().padStart(2, '0');
     let s = secondes.toString().padStart(2, '0');
     let ms = Math.floor(millisecondes / 10).toString().padStart(2, '0');
-
     chrono.textContent = `${m}:${s}:${ms}`;
 
     timeout = setTimeout(defilerTemps, 10);
@@ -72,6 +63,7 @@ const defilerTemps = () => {
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
+        dateDepart = Date.now();
         defilerTemps();
     }
 };
@@ -81,7 +73,16 @@ const arreter = () => {
     if (!estArrete) {
         estArrete = true;
         clearTimeout(timeout);
+        tempsRestantAuRepos -= (Date.now() - dateDepart);
     }
+};
+
+const finAutomatique = () => {
+    minutes = 0; secondes = 0; millisecondes = 0;
+    estArrete = true;
+    clearTimeout(timeout);
+    chrono.textContent = "00:00:00";
+    confirmation("Temps écoulé ! Fin de l'épreuve.");
 };
 
 /* Réinitialise le chronomètre et les tours après confirmation de l'utilisateur. */

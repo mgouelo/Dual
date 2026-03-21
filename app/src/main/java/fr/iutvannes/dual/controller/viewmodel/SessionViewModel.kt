@@ -30,12 +30,21 @@ class SessionViewModel : ViewModel() {
     /* Variable used to determine the URL of the Ktor server without the possibility of modification */
     val url: StateFlow<String?> = _url
 
+    /* Variables used to determine the URL of the Ktor server without the possibility of modification */
+    val nomClasse = MutableStateFlow("")
+    val typeSeance = MutableStateFlow("")
+
     /**
      * Start the Ktor server
      * @param context Application context
      */
-    fun startSession(context: Context) {
+    fun startSession(context: Context, classe: String, type: String) {
         KtorServer.start(context.applicationContext)
+
+        //On stocke les infos reçues
+        nomClasse.value = classe
+        typeSeance.value = type
+
         val ip = Utils.getLocalIpAddress() ?: "127.0.0.1"
         val url = "http://$ip:8080/"
         _url.value = url
@@ -50,5 +59,9 @@ class SessionViewModel : ViewModel() {
         KtorServer.stop()
         _running.value = false
         _url.value = null
+
+        //On vide les infos reçues
+        nomClasse.value = ""
+        typeSeance.value = ""
     }
 }

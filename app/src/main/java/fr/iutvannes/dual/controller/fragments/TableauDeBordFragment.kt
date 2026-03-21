@@ -162,10 +162,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     cardResultats.visibility = View.VISIBLE
                     btnExport.visibility = View.VISIBLE
 
-                    //Mise à jour du texte du bouton export
-                    val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(java.util.Date())
-                    btnExport.text = "Télécharger les résultats (séance $dateAujourdhui - $classeActuelle)"
+                    //Récupếration des infos du ViewModel
+                    val classe = sessionViewModel.nomClasse.value
+                    val type = sessionViewModel.typeSeance.value
+                    val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(Date())
 
+                    //Mise à jour du texte du bouton avec les données persistantes
+                    btnExport.text = "Télécharger les résultats ($type - $classe - $dateAujourdhui)"
                 } else {
                     sessionBtn.text = "Lancer une séance"
                     val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
@@ -235,7 +238,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
             }
             (activity as MainActivity).countInitialSession = count
 
-            sessionViewModel.startSession(requireContext())
+            sessionViewModel.startSession(requireContext(), classe, type)
 
             Toast.makeText(requireContext(), "Séance $type ($classe) lancée", Toast.LENGTH_SHORT).show()
         }
