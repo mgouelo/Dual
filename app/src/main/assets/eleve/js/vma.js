@@ -378,28 +378,42 @@ const demanderConfirmation = (message) => {
 };
 
 /**
- * Envoie la VMA calculée au serveur pour la sauvegarder dans la base de données.
- * @param eleveId L'identifiant de l'élève pour lequel on sauvegarde la VMA
- * @param vmaValeur La valeur de la VMA à sauvegarder (en km/h)
- * @returns {Promise<void>} Une promesse qui se résout lorsque la requête est terminée
+ * Envoie la VMA calculée au serveur via le système d'événement (Event Bus).
+ * Cela permet de mettre à jour la fiche élève ET d'enregistrer la performance dans la séance active.
  */
 async function sauvegarderVmaServeur(eleveId, vmaValeur, nomClasse) {
+    // 1. On récupère le nom de l'élève actif pour correspondre aux attentes de Ktor
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    if (!coureur) return;
+
+    const parts = (coureur.nomComplet || "").split(" ");
+    const prenom = parts[0] || "Inconnu";
+    const nom = parts.slice(1).join(" ") || "Anonyme";
+
+    // 2. On prépare l'événement avec le type "VMA_RESULTAT" (comme dans KtorServer.kt)
+    const event = {
+        type: "VMA_RESULTAT",
+        studentId: `${prenom} ${nom}`,
+        payload: {
+            vma: vmaValeur
+        }
+    };
+
     try {
-        const response = await fetch('/api/eleves/update-vma', {
+        // 3. On envoie tout à la route /event (et plus à /api/eleves/update-vma)
+        const response = await fetch('/event', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                id: eleveId,
-                vma: vmaValeur
-            })
+            body: JSON.stringify(event)
         });
 
         if (response.ok) {
-            console.log("VMA synchronisée avec la base de données.");
+            console.log("VMA synchronisée avec le profil élève ET ajoutée à la séance.");
 
             // Actualiser l'affichage de la VMA sur la page après sauvegarde
+            const vmaActuelleAff = document.getElementById("vma-actuelle");
             if (vmaActuelleAff) {
                 vmaActuelleAff.textContent = vmaValeur.toFixed(1);
                 vmaActuelleAff.style.color = "#27ae60";
