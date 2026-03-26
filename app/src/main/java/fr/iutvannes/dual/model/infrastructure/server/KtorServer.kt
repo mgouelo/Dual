@@ -48,7 +48,10 @@ data class EleveDTO(
     val id_eleve: Int,
     val nomComplet: String,
     val genre: String,
-    val vma: Float?
+    val vma: Float?,
+    val vma_distance: Int?,
+    val vma_badge: String?,
+    val vma_parcours: String?
 )
 
 /**
@@ -157,6 +160,25 @@ fun Application.module(appContext: Context) {
             call.respond(mapOf("join" to base))
         }
 
+        get("/api/seance/active") {
+            val idActuel = KtorServer.idSeanceActuelle
+            if (idActuel == 0) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Aucune séance active"))
+                return@get
+            }
+            val seance = withContext(Dispatchers.IO) {
+                DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
+            }
+            if (seance != null) {
+                call.respond(mapOf(
+                    "classe" to seance.classe,
+                    "type" to seance.type
+                ))
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
+
         // Route to send all existing classes
         get("/api/classes/all") {
             val classes = DatabaseProvider.db.classeDao().getAllClasses()
@@ -182,7 +204,40 @@ fun Application.module(appContext: Context) {
                         id_eleve = it.id_eleve,
                         nomComplet = "${it.prenom} ${it.nom.uppercase()}",
                         genre = it.genre,
-                        vma = it.vma
+                        vma = it.vma,
+                        vma_distance = it.vma?.let { vma ->
+                            when {
+                                vma <= 10f -> 250
+                                vma <= 11f -> 275
+                                vma <= 12f -> 300
+                                vma <= 13f -> 325
+                                vma <= 14f -> 350
+                                vma <= 15f -> 375
+                                else       -> 400
+                            }
+                        },
+                        vma_badge = it.vma?.let { vma ->
+                            when {
+                                vma <= 10f -> "bg-jaune"
+                                vma <= 11f -> "bg-vert"
+                                vma <= 12f -> "bg-bleu"
+                                vma <= 13f -> "bg-bleu"
+                                vma <= 14f -> "bg-rouge"
+                                vma <= 15f -> "bg-rouge"
+                                else       -> "bg-noir"
+                            }
+                        },
+                        vma_parcours = it.vma?.let { vma ->
+                            when {
+                                vma <= 10f -> "Coupelles Jaunes (250m)"
+                                vma <= 11f -> "Plots Verts (275m)"
+                                vma <= 12f -> "Coupelles Bleues (300m)"
+                                vma <= 13f -> "Plots Bleus (325m)"
+                                vma <= 14f -> "Coupelles Rouges (350m)"
+                                vma <= 15f -> "Plots Rouges (375m)"
+                                else       -> "Grand Tour (400m)"
+                            }
+                        }
                     )
                 }
                 call.respond(dataEleves)
@@ -400,6 +455,24 @@ fun Application.module(appContext: Context) {
 
                         DatabaseProvider.db.tourCourseDao().insert(tour)
                     }
+
+                    // ----- RÉSULTAT -----
+                    val totalCibles = nbTirsReussi.sum()
+                    val existant = DatabaseProvider.db.resultatDao().getResultatByEleveEtSeance(
+                        eleve.id_eleve, seanceId
+                    )
+                    if (existant != null) {
+                        existant.cibles_touchees += totalCibles
+                        DatabaseProvider.db.resultatDao().update(existant)
+                    } else {
+                        val marquage = fr.iutvannes.dual.model.persistence.Resultat(
+                            id_eleve        = eleve.id_eleve,
+                            id_seance       = seanceId,
+                            cibles_touchees = totalCibles,
+                            temp_course     = 0F
+                        )
+                        DatabaseProvider.db.resultatDao().insert(marquage)
+                    }
                 }
 
                 call.respond(HttpStatusCode.Created)
@@ -440,7 +513,8 @@ fun Application.module(appContext: Context) {
         // CSV export route for the teacher
         get("/api/admin/export") {
             try {
-                val idActuel = KtorServer.idSeanceActuelle
+                val idParam = call.request.queryParameters["seanceId"]?.toIntOrNull()
+                val idActuel = idParam ?: KtorServer.idSeanceActuelle
                 val seance = withContext(Dispatchers.IO) {
                     DatabaseProvider.db.seanceDao().getSeanceById(idActuel)
                 }

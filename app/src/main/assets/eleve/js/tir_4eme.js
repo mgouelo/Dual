@@ -1,4 +1,18 @@
+// Force le rechargement si la page vient du cache (navigation arrière/avant)
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
+    //Reset du bouton au cas où la page viendrait du cache
+    const btnSession = document.getElementById("btn-envoyer");
+    if (btnSession) {
+        btnSession.disabled = false;
+        btnSession.textContent = "Enregistrer la session";
+        btnSession.style.backgroundColor = "#27ae60";
+    }
 
     let chronoDisplay = document.getElementById("chrono");
     let startBtn      = document.getElementById("start");
@@ -17,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let series = []; // [{reussites, temps, note}]
 
-    // ─── NOTE EFFICIENCE ─────────────────────────────────────────────────────
+    // NOTE EFFICIENCE
 
     function calculerNoteEfficience(temps, reussites) {
         if (reussites === 0) return 0;
@@ -35,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return 0.5;
     }
 
-    // ─── CHRONO ───────────────────────────────────────────────────────────────
+    // CHRONO
 
     const defilerTemps = () => {
         if (estArrete) return;
@@ -69,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => input.focus(), 100);
     };
 
-    // ─── VALIDATION D'UN TIR ─────────────────────────────────────────────────
+    // VALIDATION D'UN TIR
 
     function calculerEtAfficher() {
         let reussites = parseInt(input.value);
@@ -95,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tempsTotalEnSecondes = 0;
     }
 
-    // ─── AFFICHAGE DE LA LISTE ────────────────────────────────────────────────
+    // AFFICHAGE DE LA LISTE
 
     function afficherSeries() {
         resultatBox.style.display = "block";
@@ -117,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
         detailsTir.innerHTML = html;
     }
 
-    // ─── ENVOI FINAL ─────────────────────────────────────────────────────────
+    // ENVOI FINAL
 
     async function envoyerSession() {
         if (series.length === 0) { alert("Aucun tir enregistré."); return; }
@@ -166,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ─── ÉCOUTEURS ───────────────────────────────────────────────────────────
+    // ÉCOUTEURS
 
     startBtn.addEventListener("click", demarrerChrono);
     stopBtn.addEventListener("click", arreterChrono);

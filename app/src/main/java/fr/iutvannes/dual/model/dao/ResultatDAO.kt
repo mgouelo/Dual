@@ -81,10 +81,14 @@ interface ResultatDAO {
      * @return A list of results
      */
     @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
-    fun getBySeance(idSeance: Int): List<Resultat>
+    suspend fun getBySeance(idSeance: Int): List<Resultat>
 
     @Query("SELECT COUNT(*) FROM Resultat WHERE id_seance = :idSeance")
-    fun countBySeance(idSeance: Int) : Int
+    suspend fun countBySeance(idSeance: Int): Int
 
+    @Query("SELECT * FROM Resultat WHERE id_eleve = :idEleve AND id_seance = :idSeance LIMIT 1")
+    suspend fun getResultatByEleveEtSeance(idEleve: Int, idSeance: Int): Resultat?
 
+    @Query("DELETE FROM Resultat WHERE id_seance = :idSeance")
+    suspend fun deleteBySeance(idSeance: Int): Int
 }

@@ -74,8 +74,8 @@ const demanderConfirmation = (message) => {
     document.getElementById("confirm-message").textContent = message;
 
     modal.style.display = "flex";
-    // Petit timeout pour laisser le navigateur appliquer le display:flex
-    // avant de lancer l'animation CSS
+    //Petit timeout pour laisser le navigateur appliquer le display:flex
+    //avant de lancer l'animation CSS
     setTimeout(() => {
         modal.classList.add("show");
     }, 10);
@@ -155,7 +155,6 @@ enregistrerBtn.addEventListener("click", enregistrer);
 supprimerBtn.addEventListener("click", supprimer);
 enregistrerSessionBtn.addEventListener("click", async () => {
     await envoyerCourseAuServeur();
-    alert("Session complète envoyée au serveur !");
 });
 
 async function envoyerCourseAuServeur() {
@@ -187,14 +186,11 @@ async function envoyerCourseAuServeur() {
 
     const tempsAuTour = Array.from(listeTours).map(span => {
 
-        const texte = span.textContent.split(": ")[1]; // "mm:ss:ms"
+        const texte = span.textContent.split(": ")[1]; //"mm:ss:ms"
 
         if (!texte) return 0;
 
         const [m, s, cs] = texte.split(":").map(Number);
-
-        // votre affichage est en centièmes (00-99)
-        // conversion correcte vers millisecondes
         return (m * 60000) + (s * 1000) + (cs * 10);
     });
 
@@ -223,11 +219,7 @@ async function envoyerCourseAuServeur() {
             return;
         }
 
-        alert("Session envoyée avec succès.");
-
-        setTimeout(() => {
-            window.location.href = "seance.html";
-        }, 1000);
+        window.location.href = "seance.html";
 
     } catch (e) {
         console.error("Erreur fetch course :", e);

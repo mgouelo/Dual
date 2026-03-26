@@ -26,6 +26,7 @@ import fr.iutvannes.dual.controller.fragments.ConnexionFragment
 import fr.iutvannes.dual.controller.fragments.ClassesFragment
 import fr.iutvannes.dual.controller.fragments.InscriptionFragment
 import fr.iutvannes.dual.controller.fragments.ProfilFragment
+import fr.iutvannes.dual.controller.fragments.ResultatsFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
 import fr.iutvannes.dual.model.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,9 @@ class MainActivity : AppCompatActivity() {
 
     /* Variable to manage the navigation buttons */
     private lateinit var navClassesButton: LinearLayout
+
+    /* Variable to manage the navigation buttons */
+    private lateinit var navResultatsButton: LinearLayout
 
     /* Variable to manage the top bar */
     private lateinit var topBarContainer: ConstraintLayout
@@ -91,6 +95,7 @@ class MainActivity : AppCompatActivity() {
         navBarContainer = findViewById(R.id.bottomNav)
         navHomeButton = findViewById(R.id.nav_home_button)
         navClassesButton = findViewById(R.id.nav_classes_button)
+        navResultatsButton = findViewById(R.id.nav_resultats_button)
 
         // --- PROFILE MANAGEMENT ---
         topBarContainer = findViewById(R.id.topBar)
@@ -105,6 +110,12 @@ class MainActivity : AppCompatActivity() {
         navClassesButton.setOnClickListener {
             if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) !is ClassesFragment) {
                 showFragment(ClassesFragment(), true, true)
+            }
+        }
+
+        navResultatsButton.setOnClickListener {
+            if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) !is ResultatsFragment) {
+                showFragment(ResultatsFragment(), true, true)
             }
         }
 
@@ -169,6 +180,7 @@ class MainActivity : AppCompatActivity() {
         when (fragment) {
             is TableauDeBordFragment -> selectNavItem(navHomeButton)
             is ClassesFragment -> selectNavItem(navClassesButton)
+            is ResultatsFragment -> selectNavItem(navResultatsButton)
             else -> {
                 // No button selected (profile, login, etc.)
                 navHomeButton.isSelected = false
@@ -199,6 +211,7 @@ class MainActivity : AppCompatActivity() {
     private fun selectNavItem(itemToSelect: LinearLayout) {
         navHomeButton.isSelected = false
         navClassesButton.isSelected = false
+        navResultatsButton.isSelected = false
         itemToSelect.isSelected = true
     }
 

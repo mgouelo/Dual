@@ -70,4 +70,8 @@ interface CourseDAO {
      */
     @Query("SELECT COUNT(DISTINCT id_eleve) FROM Course WHERE id_seance = :idSeance")
     fun countBySeance(idSeance: Int): Int
+
+    @Transaction
+    @Query("SELECT * FROM Course WHERE id_seance = :idSeance AND id_eleve = :idEleve")
+    suspend fun getCoursesBySeanceEtEleve(idSeance: Int, idEleve: Int): List<CourseAvecTours>
 }

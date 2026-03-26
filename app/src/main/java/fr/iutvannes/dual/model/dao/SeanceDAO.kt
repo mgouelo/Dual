@@ -52,4 +52,15 @@ interface SeanceDAO {
      */
     @Update
     suspend fun update(seance: Seance): Int
+
+    /**
+     * Retrieves all sessions for a specific class and type.
+     * The sessions are ordered by date in descending order.
+     *
+     * @param classe The class to retrieve sessions for.
+     * @param type The type of sessions to retrieve.
+     */
+    @Query("SELECT * FROM Seance WHERE classe = :classe AND type = :type ORDER BY date DESC")
+    suspend fun getSeancesByClasseEtType(classe: String, type: String): List<Seance>
+
 }
