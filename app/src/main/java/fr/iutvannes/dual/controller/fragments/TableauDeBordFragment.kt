@@ -389,6 +389,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
             // Charger TOUS les élèves en IO avant d'ouvrir le dialog
             data class LigneResultat(
+                val idEleve: Int,
                 val prenom: String,
                 val nom: String,
                 val emoji: String,
@@ -448,7 +449,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         }
                     }
 
-                    LigneResultat(eleve.prenom, eleve.nom, emoji, detail)
+                    LigneResultat(eleve.id_eleve, eleve.prenom, eleve.nom, emoji, detail)
                 }
             }
 
@@ -486,14 +487,235 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
             } else {
                 lignes.forEach { ligne ->
                     val item = layoutInflater.inflate(R.layout.item_dialog_choix, innerContainer, false)
-                    item.isClickable = false
                     item.findViewById<TextView>(R.id.item_icon).text = ligne.emoji
                     item.findViewById<TextView>(R.id.item_label).apply {
                         text = "${ligne.prenom} ${ligne.nom.uppercase()}\n${ligne.detail}"
                         setTextColor(android.graphics.Color.WHITE)
                     }
+                    // Cliquable seulement pour l'entraînement
+                    if (type == "Entraînement") {
+                        item.setOnClickListener {
+                            afficherGraphsEleve(ligne.idEleve, ligne.prenom, ligne.nom)
+                        }
+                    } else {
+                        item.isClickable = false
+                    }
                     innerContainer.addView(item)
                 }
+            }
+
+            container.addView(scrollView)
+
+            view.findViewById<TextView>(R.id.dialog_cancel).apply {
+                text = "Fermer"
+                setOnClickListener { dialog.dismiss() }
+            }
+
+            // Rafraîchissement automatique toutes les 3 secondes
+            val job = viewLifecycleOwner.lifecycleScope.launch {
+                while (true) {
+                    kotlinx.coroutines.delay(3000)
+
+                    val nouveauxResultats = withContext(Dispatchers.IO) {
+                        DatabaseProvider.db.resultatDao().getBySeance(KtorServer.idSeanceActuelle)
+                    }
+
+                    // Recharge uniquement si le nombre a changé
+                    if (nouveauxResultats.size != resultats.size) {
+                        dialog.dismiss()
+                        afficherDialogResultatsEnDirect(type, classe, nouveauxResultats)
+                        return@launch
+                    }
+                }
+            }
+
+            // On arrête la coroutine quand le dialog se ferme
+            dialog.setOnDismissListener {
+                job.cancel()
+            }
+
+            dialog.show()
+        }
+    }
+
+    private fun afficherGraphsEleve(idEleve: Int, prenom: String, nom: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            val idSeance = KtorServer.idSeanceActuelle
+
+            data class DonneesTir(val series: List<Pair<String, Float>>)
+            data class DonneesCourse(val tours: List<Pair<String, Float>>)
+
+            val (donneesTir, donneesCourse) = withContext(Dispatchers.IO) {
+                // --- TIR : moyenne par salve ---
+                val tirs = DatabaseProvider.db.tirDao()
+                    .getTirsBySeanceEtEleve(idSeance, idEleve)
+                val seriesTir = tirs.flatMapIndexed { tirIdx, tirAvec ->
+                    tirAvec.liste_passages.mapIndexed { passageIdx, passage ->
+                        "S${tirIdx + 1}.${passageIdx + 1}" to passage.nb_tir_reussi.toFloat()
+                    }
+                }
+
+                // --- COURSE : temps de chaque tour en secondes ---
+                val courses = DatabaseProvider.db.courseDao()
+                    .getCoursesBySeanceEtEleve(idSeance, idEleve)
+                val toursCourse = courses.flatMapIndexed { courseIdx, courseAvec ->
+                    courseAvec.liste_tours.mapIndexed { tourIdx, tour ->
+                        "T${courseIdx + 1}.${tourIdx + 1}" to (tour.temps_ms / 1000f)
+                    }
+                }
+
+                DonneesTir(seriesTir) to DonneesCourse(toursCourse)
+            }
+
+            // Construction du dialog
+            val dialog = android.app.Dialog(requireContext())
+            dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+
+            val view = layoutInflater.inflate(R.layout.dialog_lancer_seance, null)
+            dialog.setContentView(view)
+
+            dialog.window?.setBackgroundDrawable(
+                android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            )
+            dialog.window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.95).toInt(),
+                (resources.displayMetrics.heightPixels * 0.85).toInt()
+            )
+
+            view.findViewById<TextView>(R.id.dialog_subtitle).text =
+                "$prenom ${nom.uppercase()}"
+
+            val container = view.findViewById<android.widget.LinearLayout>(R.id.dialog_choices_container)
+            val scrollView = android.widget.ScrollView(requireContext())
+            val inner = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(0, 8, 0, 8)
+            }
+            scrollView.addView(inner)
+
+            // --- Graphe TIR ---
+            val titreTir = TextView(requireContext()).apply {
+                text = "🎯 Tir — réussites par passage"
+                setTextColor(android.graphics.Color.WHITE)
+                textSize = 14f
+                setPadding(8, 16, 8, 8)
+            }
+            inner.addView(titreTir)
+
+            val graphTir = fr.iutvannes.dual.model.components.GraphView(requireContext()).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 300
+                )
+                data = donneesTir.series
+                yMin = 0
+                yMax = 5
+                lineColor = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.vert)
+                labelColor = android.graphics.Color.WHITE
+                gridColor  = android.graphics.Color.argb(80, 255, 255, 255)
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            }
+            inner.addView(graphTir)
+
+            if (donneesTir.series.isEmpty()) {
+                val tv = TextView(requireContext()).apply {
+                    text = "Aucune donnée de tir"
+                    setTextColor(android.graphics.Color.argb(150, 255, 255, 255))
+                    textSize = 13f
+                    setPadding(8, 4, 8, 8)
+                }
+                inner.addView(tv)
+            }
+
+            // Séparateur
+            val sep = View(requireContext()).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 1
+                ).also { it.setMargins(0, 16, 0, 16) }
+                setBackgroundColor(android.graphics.Color.argb(60, 255, 255, 255))
+            }
+            inner.addView(sep)
+
+            // --- Tableau COURSE ---
+            val titreCourse = TextView(requireContext()).apply {
+                text = "🏃 Course — temps par tour"
+                setTextColor(android.graphics.Color.WHITE)
+                textSize = 14f
+                setPadding(8, 8, 8, 8)
+            }
+            inner.addView(titreCourse)
+
+            if (donneesCourse.tours.isEmpty()) {
+                val tv = TextView(requireContext()).apply {
+                    text = "Aucune donnée de course"
+                    setTextColor(android.graphics.Color.argb(150, 255, 255, 255))
+                    textSize = 13f
+                    setPadding(8, 4, 8, 8)
+                }
+                inner.addView(tv)
+            } else {
+                // En-tête du tableau
+                val entete = android.widget.TableLayout(requireContext()).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    setColumnStretchable(0, true)
+                    setColumnStretchable(1, true)
+                }
+
+                fun makeCell(texte: String, bold: Boolean = false, couleur: Int = android.graphics.Color.WHITE): TextView {
+                    return TextView(requireContext()).apply {
+                        text = texte
+                        setTextColor(couleur)
+                        textSize = 13f
+                        if (bold) setTypeface(null, android.graphics.Typeface.BOLD)
+                        setPadding(12, 8, 12, 8)
+                        gravity = android.view.Gravity.CENTER
+                    }
+                }
+
+                // Ligne d'en-tête
+                val rowEntete = android.widget.TableRow(requireContext())
+                rowEntete.addView(makeCell("Tour", bold = true, couleur = android.graphics.Color.argb(180, 255, 255, 255)))
+                rowEntete.addView(makeCell("Temps", bold = true, couleur = android.graphics.Color.argb(180, 255, 255, 255)))
+                entete.addView(rowEntete)
+
+                // Séparateur sous l'en-tête
+                val sepEntete = View(requireContext()).apply {
+                    layoutParams = android.widget.TableLayout.LayoutParams(
+                        android.widget.TableLayout.LayoutParams.MATCH_PARENT, 1
+                    )
+                    setBackgroundColor(android.graphics.Color.argb(80, 255, 255, 255))
+                }
+                entete.addView(sepEntete)
+
+                // Calcul du meilleur tour pour le mettre en valeur
+                val meilleurTemps = donneesCourse.tours.minOf { it.second }
+
+                // Lignes de données
+                donneesCourse.tours.forEachIndexed { index, (label, secondes) ->
+                    val min = (secondes / 60).toInt()
+                    val sec = (secondes % 60).toInt()
+                    val ms = ((secondes % 1) * 100).toInt()
+                    val tempsFormate = if (min > 0) "%d'%02d\"%02d".format(min, sec, ms)
+                    else "%d\"%02d".format(sec, ms)
+
+                    val isMeilleur = secondes == meilleurTemps
+                    val couleurLigne = if (isMeilleur)
+                        android.graphics.Color.parseColor("#2ECC71")
+                    else
+                        android.graphics.Color.WHITE
+
+                    val row = android.widget.TableRow(requireContext()).apply {
+                        if (index % 2 == 0) setBackgroundColor(android.graphics.Color.argb(20, 255, 255, 255))
+                    }
+                    row.addView(makeCell(label, couleur = couleurLigne))
+                    row.addView(makeCell(if (isMeilleur) "⭐ $tempsFormate" else tempsFormate, couleur = couleurLigne))
+                    entete.addView(row)
+                }
+
+                inner.addView(entete)
             }
 
             container.addView(scrollView)
