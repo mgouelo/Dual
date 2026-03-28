@@ -21,11 +21,11 @@ let tempsRestantAuRepos = dureeTotaleEpreuve;
 let dateDepart = null;
 let timeout;
 let estArrete = true;
+let tourActuel = 1; // Compteur de tours
 
 // Stockage des données pour le bilan final
 let historiqueEpreuve = []; // Résultats de chaque tour (temps et score de tir)
 let autoEval = {intensite: "", durer: "", lucidite: ""};
-
 
 /* Cette fonction gère le déroulement du temps.
 Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arrêté. */

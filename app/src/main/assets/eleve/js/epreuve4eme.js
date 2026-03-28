@@ -447,27 +447,19 @@ const validerTir4eme = () => {
 
     // Si ok, on récupère le score
     const score = parseInt(scoreTemp.value);
-    const fautes = 5 - score;
-
-    if (etapeActuelle === 1) tirsData.serie1 = score;
-    else tirsData.serie2 = score;
 
     // Fermeture et suite du processus
     modalTir.style.display = "none";
     modalTir.classList.remove("show");
 
-    if (fautes > 0) {
-        confirmation(`Tu as fait ${fautes} faute(s). Effectue tes ${fautes} tour(s) de pénalité avant de cliquer sur Sortie.`);
-    } else {
-        confirmation("ZÉRO FAUTE ! Clique directement sur Sortie.");
-    }
-
     // Mise à jour de l'étape
     if (etapeActuelle === 1) {
+        tirsData.serie1 = score;
         btnPrincipal.textContent = "SORTIE TIR 1 (B)";
         consigne.textContent = "Pénalités en cours...";
         etapeActuelle = 2;
     } else {
+        tirsData.serie2 = score;
         btnPrincipal.textContent = "SORTIE TIR 2 (D)";
         consigne.textContent = "Pénalités en cours...";
         etapeActuelle = 4;

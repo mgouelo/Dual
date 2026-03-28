@@ -128,12 +128,6 @@ document.getElementById('retirerTir').addEventListener('click', () => {
     }
 });
 
-// // Validation de la série en cours
-// const validerTourBtn = document.getElementById('valider-serie').addEventListener('click', () => {
-//     const score = inputTir.value;
-//
-// });
-
 startBtn.addEventListener("click", demarrer);
 resetBtn.addEventListener("click", reset);
 enregistrerBtn.addEventListener("click", enregistrer);
