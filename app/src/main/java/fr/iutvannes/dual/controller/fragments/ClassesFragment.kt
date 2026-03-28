@@ -32,7 +32,7 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
     private lateinit var adapter: ClasseAdapter
 
     /* Variable for the database */
-    private val db = DatabaseProvider.db
+    private val db get() = DatabaseProvider.db
 
     /**
      * This method is called when the fragment is created.

@@ -2,6 +2,7 @@ package fr.iutvannes.dual.infrastructure.server
 
 import android.content.Context
 import android.util.Log
+import fr.iutvannes.dual.model.persistence.Resultat
 import fr.iutvannes.dual.model.persistence.Seance
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -81,6 +82,8 @@ object KtorServer {
 
     /* Variable for the application context */
     private lateinit var appContext: Context
+
+    val ressentis = mutableMapOf<Int, Triple<String, String, String>>()
 
     /**
      * Starts the server
@@ -285,6 +288,20 @@ fun Application.module(appContext: Context) {
                         val vmaRealisee = payload?.get("vma_realisee")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
                         val nbTours = payload?.get("nb_tours")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
                         val ecartRegul = payload?.get("ecart_max_course")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val ressentiIntensite = payload?.get("ressenti_intensite")?.jsonPrimitive?.content ?: ""
+                        val ressentiDurer = payload?.get("ressenti_durer")?.jsonPrimitive?.content ?: ""
+                        val ressentiLucidite = payload?.get("ressenti_lucidite")?.jsonPrimitive?.content ?: ""
+                        val tempsA = payload?.get("temps_A")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val tempsB = payload?.get("temps_B")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val tempsC = payload?.get("temps_C")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val tempsD = payload?.get("temps_D")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val tempsE = payload?.get("temps_E")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val tir1 = payload?.get("tir1")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val tir2 = payload?.get("tir2")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        val noteIntensite = payload?.get("note_intensite")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+                        val noteEfficience = payload?.get("note_efficience")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+                        val noteVma = payload?.get("note_vma")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
+                        val toursArray = payload?.get("tours")?.jsonArray
 
                         // Recherche de l'élève dans la base de données
                         val eleve = withContext(Dispatchers.IO) {
@@ -294,18 +311,55 @@ fun Application.module(appContext: Context) {
                         Log.d("KtorServer", "Recherche élève: prenom='$prenom' nom='${nom.uppercase()}' → trouvé: ${eleve != null}")
 
                         if (eleve != null) {
-                            val resultatEpreuve = fr.iutvannes.dual.model.persistence.Resultat(
+                            val resultatEpreuve = Resultat(
                                 id_eleve = eleve.id_eleve,
                                 id_seance = KtorServer.idSeanceActuelle,
                                 cibles_touchees = cibles,
                                 temp_course = vmaRealisee,
                                 note_finale = noteFinale,
                                 nbTours = nbTours,
-                                ecart_max_course = ecartRegul
+                                ecart_max_course = ecartRegul,
+                                temps_A = tempsA,
+                                temps_B = tempsB,
+                                temps_C = tempsC,
+                                temps_D = tempsD,
+                                temps_E = tempsE,
+                                tir1 = tir1,
+                                tir2 = tir2,
+                                note_intensite = noteIntensite,
+                                note_efficience = noteEfficience,
+                                note_vma = noteVma,
+                                ressenti_intensite = ressentiIntensite,
+                                ressenti_durer     = ressentiDurer,
+                                ressenti_lucidite  = ressentiLucidite
                             )
                             withContext(Dispatchers.IO) {
                                 DatabaseProvider.db.resultatDao().insert(resultatEpreuve)
+
+                                if (toursArray != null) {
+                                    val course = fr.iutvannes.dual.model.persistence.Course(
+                                        id_seance     = KtorServer.idSeanceActuelle,
+                                        id_eleve      = eleve.id_eleve,
+                                        distance_tour = 0.0
+                                    )
+                                    val courseId = DatabaseProvider.db.courseDao().insert(course).toInt()
+                                    toursArray.forEachIndexed { index, tourEl ->
+                                        val tourObj = tourEl.jsonObject
+                                        val numero  = tourObj["numero"]?.jsonPrimitive?.content?.toIntOrNull() ?: (index + 1)
+                                        val tempsMs = tourObj["temps_ms"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+                                        DatabaseProvider.db.tourCourseDao().insert(
+                                            fr.iutvannes.dual.model.persistence.TourCourse(
+                                                id_course   = courseId,
+                                                numero_tour = numero,
+                                                temps_ms    = tempsMs
+                                            )
+                                        )
+                                    }
+                                }
                             }
+
+                            KtorServer.ressentis[eleve.id_eleve] = Triple(ressentiIntensite, ressentiDurer, ressentiLucidite)
+
                             call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
                         } else {
                             Log.e("KtorServer", "ÉLÈVE NON TROUVÉ : prenom='$prenom' nom='${nom.uppercase()}'")

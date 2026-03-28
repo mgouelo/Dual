@@ -74,4 +74,6 @@ interface CourseDAO {
     @Transaction
     @Query("SELECT * FROM Course WHERE id_seance = :idSeance AND id_eleve = :idEleve")
     suspend fun getCoursesBySeanceEtEleve(idSeance: Int, idEleve: Int): List<CourseAvecTours>
+
+
 }

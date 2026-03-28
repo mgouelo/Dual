@@ -1,7 +1,25 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // On récupère les infos déduites par main.js
+document.addEventListener("DOMContentLoaded", async () => {
+    // On récupère le niveau depuis le localStorage
     const niveau = localStorage.getItem("niveau") || "6eme";
-    const typeSeance = localStorage.getItem("seance_type") || "Entraînement";
+
+    // On demande TOUJOURS au serveur le type de séance en cours.
+    // Le paramètre ?t= force le navigateur Android à ne pas utiliser le cache.
+    let typeSeance = "Entraînement";
+    try {
+        const rep = await fetch('/api/seance/active?t=' + Date.now(), {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" }
+        });
+        if (rep.ok) {
+            const seance = await rep.json();
+            typeSeance = seance.type;
+            localStorage.setItem("seance_type", seance.type);
+        } else {
+            typeSeance = localStorage.getItem("seance_type") || "Entraînement";
+        }
+    } catch (e) {
+        typeSeance = localStorage.getItem("seance_type") || "Entraînement";
+    }
 
     // --- 1. NETTOYAGE ABSOLU DE L'INTERFACE ---
     // On détruit tous les cadres gris inutiles
@@ -22,11 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Au clic, on vide la mémoire des élèves et on retourne à l'accueil
         boutonRougeRetour.onclick = (e) => {
-            e.preventDefault(); // Empêche le comportement par défaut
+            e.preventDefault();
             localStorage.removeItem("eleve1");
             localStorage.removeItem("eleve2");
             localStorage.removeItem("active_index");
-            window.location.href = "../index.html"; // Retour à la liste des élèves
+            window.location.href = "../index.html";
         };
     }
 
@@ -83,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ]);
     }
 
-    // --- 5. GESTION DU BINÔME (DÉJÀ FONCTIONNELLE) ---
+    // --- 5. GESTION DU BINÔME ---
     let e1 = JSON.parse(localStorage.getItem("eleve1"));
     let e2 = JSON.parse(localStorage.getItem("eleve2"));
     let indexActif = parseInt(localStorage.getItem("active_index") || "0");

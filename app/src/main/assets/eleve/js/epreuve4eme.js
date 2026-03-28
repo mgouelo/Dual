@@ -536,9 +536,30 @@ const terminerEpreuve4eme = () => {
             cibles_touchees: scoreTirTotal,
             vma_realisee: parseFloat(vitesseRealiseeKmh.toFixed(2)),
             nb_tours: 6,
-            ecart_max_course: 0
+            ecart_max_course: 0,
+            ressenti_intensite: autoEval.intensite,
+            ressenti_durer: autoEval.durer,
+            ressenti_lucidite: autoEval.lucidite,
+            // données détaillées
+            temps_A: pointsPassage.A,
+            temps_B: pointsPassage.B,
+            temps_C: pointsPassage.C,
+            temps_D: pointsPassage.D,
+            temps_E: pointsPassage.E,
+            tir1: tirsData.serie1,
+            tir2: tirsData.serie2,
+            note_intensite: noteIntensite,
+            note_efficience: noteEfficience,
+            note_vma: noteVmaPoints,
+            tours: [
+                { numero: 1, temps_ms: pointsPassage.A * 1000 },
+                { numero: 2, temps_ms: (pointsPassage.C - pointsPassage.B) * 1000 },
+                { numero: 3, temps_ms: (pointsPassage.E - pointsPassage.D) * 1000 }
+            ]
         }
     };
+
+    console.log("Payload envoyé :", JSON.stringify(bilanData));
 
     fetch('/event', {
         method: 'POST',

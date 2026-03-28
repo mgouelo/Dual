@@ -3,6 +3,7 @@ package fr.iutvannes.dual.controller.fragments
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -90,7 +91,6 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val layoutUrl = view.findViewById<View>(R.id.layoutUrl)
         val cardResultats = view.findViewById<View>(R.id.cardResultats)
         val nbResultat = view.findViewById<TextView>(R.id.text_resultats_count)
-        val btnExport = view.findViewById<Button>(R.id.btn_download_excel)
 
         cardResultats.setOnClickListener {
             if (KtorServer.idSeanceActuelle != 0) {
@@ -129,7 +129,6 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     qrCode.visibility = View.VISIBLE
                     sessionUrl.visibility = View.VISIBLE
                     nbResultat.visibility = View.VISIBLE
-                    btnExport.visibility = View.VISIBLE
                     sessionUrl.text = url
                     qrCode.setImageBitmap(genererQRCode(url))
                 }
@@ -148,15 +147,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     qrCode.visibility = View.VISIBLE
                     layoutUrl.visibility = View.VISIBLE
                     cardResultats.visibility = View.VISIBLE
-                    btnExport.visibility = View.VISIBLE
 
                     //Récupếration des infos du ViewModel
                     val classe = sessionViewModel.nomClasse.value
                     val type = sessionViewModel.typeSeance.value
                     val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(Date())
 
-                    //Mise à jour du texte du bouton avec les données persistantes
-                    btnExport.text = "Télécharger les résultats ($type - $classe - $dateAujourdhui)"
+
                 } else {
                     sessionBtn.text = "Lancer une séance"
                     val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
@@ -165,21 +162,6 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     layoutUrl.visibility = View.GONE
                     cardResultats.visibility = View.GONE
                 }
-            }
-        }
-
-        // Managing clicks on the export button
-        btnExport.setOnClickListener {
-            val currentUrl = sessionViewModel.url.value
-            if (currentUrl != null) {
-                // We construct the download URL
-                val downloadUrl = "$currentUrl/api/admin/export"
-
-                // We open the tablet's browser to start the download
-                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(downloadUrl))
-                startActivity(intent)
-            } else {
-                Toast.makeText(requireContext(), "Démarrez une session d'abord", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -493,12 +475,14 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         setTextColor(android.graphics.Color.WHITE)
                     }
                     // Cliquable seulement pour l'entraînement
-                    if (type == "Entraînement") {
-                        item.setOnClickListener {
+                    when (type) {
+                        "Entraînement" -> item.setOnClickListener {
                             afficherGraphsEleve(ligne.idEleve, ligne.prenom, ligne.nom)
                         }
-                    } else {
-                        item.isClickable = false
+                        "Épreuve Finale" -> item.setOnClickListener {
+                            afficherDetailEpeuveFinale(ligne.idEleve, ligne.prenom, ligne.nom)
+                        }
+                        else -> item.isClickable = false
                     }
                     innerContainer.addView(item)
                 }
@@ -727,5 +711,452 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
             dialog.show()
         }
+    }
+
+    private fun afficherDetailEpeuveFinale(idEleve: Int, prenom: String, nom: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            val idSeance = KtorServer.idSeanceActuelle
+
+            data class DetailEpreuve(
+                val eleve: fr.iutvannes.dual.model.persistence.Eleve?,
+                val resultat: fr.iutvannes.dual.model.persistence.Resultat?
+            )
+
+            val detail = withContext(Dispatchers.IO) {
+                val eleve = DatabaseProvider.db.EleveDao().getEleveById(idEleve)
+                val resultat = DatabaseProvider.db.resultatDao()
+                    .getResultatByEleveEtSeance(idEleve, idSeance)
+                DetailEpreuve(eleve, resultat)
+            }
+
+            val dialog = android.app.Dialog(requireContext())
+            dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+            val dialogView = layoutInflater.inflate(R.layout.dialog_lancer_seance, null)
+            dialog.setContentView(dialogView)
+            dialogView.findViewById<TextView>(R.id.dialog_header_title).visibility = View.GONE
+            dialog.window?.setBackgroundDrawable(
+                android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            )
+            dialog.window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.95).toInt(),
+                (resources.displayMetrics.heightPixels * 0.85).toInt()
+            )
+
+            dialogView.findViewById<TextView>(R.id.dialog_subtitle).text = "$prenom ${nom.uppercase()}"
+
+            val container = dialogView.findViewById<android.widget.LinearLayout>(R.id.dialog_choices_container)
+            val scrollView = android.widget.ScrollView(requireContext())
+            val inner = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(0, 8, 0, 8)
+            }
+            scrollView.addView(inner)
+
+            val eleve = detail.eleve
+            val res = detail.resultat
+
+            if (eleve == null || res == null) {
+                inner.addView(TextView(requireContext()).apply {
+                    text = "Résultat non encore enregistré"
+                    setTextColor(android.graphics.Color.argb(150, 255, 255, 255))
+                    textSize = 14f
+                    setPadding(8, 16, 8, 8)
+                })
+            } else {
+                val is4eme = res.ecart_max_course == 0 && res.nbTours == 6
+                val vmaRef = eleve.vma ?: 0f
+
+                // Tableau des données
+                val table = android.widget.TableLayout(requireContext()).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    setColumnStretchable(0, true)
+                    setColumnStretchable(1, true)
+                }
+
+                fun makeRow(label: String, valeur: String, couleur: Int = android.graphics.Color.WHITE) {
+                    val row = android.widget.TableRow(requireContext())
+                    val tvLabel = TextView(requireContext()).apply {
+                        text = label
+                        setTextColor(android.graphics.Color.argb(180, 255, 255, 255))
+                        textSize = 13f
+                        setPadding(12, 10, 12, 10)
+                    }
+                    val tvVal = TextView(requireContext()).apply {
+                        text = valeur
+                        setTextColor(couleur)
+                        textSize = 13f
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setPadding(12, 10, 12, 10)
+                        gravity = android.view.Gravity.END
+                    }
+                    row.addView(tvLabel)
+                    row.addView(tvVal)
+                    table.addView(row)
+
+                    // Séparateur fin
+                    table.addView(View(requireContext()).apply {
+                        layoutParams = android.widget.TableLayout.LayoutParams(
+                            android.widget.TableLayout.LayoutParams.MATCH_PARENT, 1
+                        )
+                        setBackgroundColor(android.graphics.Color.argb(30, 255, 255, 255))
+                    })
+                }
+
+                // VMA de référence
+                makeRow("VMA de référence", if (vmaRef > 0) "%.1f km/h".format(vmaRef) else "-",
+                    android.graphics.Color.parseColor("#9BA3E8"))
+
+                if (is4eme) {
+                    val vmaRef = eleve.vma ?: 0f
+                    val pctVal = if (vmaRef > 0) (res.temp_course / vmaRef) * 100 else 0f
+
+                    val parcours = when {
+                        vmaRef <= 10f -> "Coupelles Jaunes (250m)"
+                        vmaRef <= 11f -> "Plots Verts (275m)"
+                        vmaRef <= 12f -> "Coupelles Bleues (300m)"
+                        vmaRef <= 13f -> "Plots Bleus (325m)"
+                        vmaRef <= 14f -> "Coupelles Rouges (350m)"
+                        vmaRef <= 15f -> "Plots Rouges (375m)"
+                        else          -> "Grand Tour (400m)"
+                    }
+
+                    fun dp(v: Float) = (v * resources.displayMetrics.density).toInt()
+                    fun color(hex: String) = android.graphics.Color.parseColor(hex)
+
+                    val white      = color("#FFFFFF")
+                    val textPrim   = color("#FFFFFF")
+                    val textMuted  = color("#9BA3E8")
+                    val cardBg     = color("#242660")
+                    val surfaceBg  = color("#1C1E4E")
+                    val divider    = color("#303586")
+
+                    // ── En-tête nom + note finale ─────────────────────────────────────────────
+                    val headerRow = android.widget.LinearLayout(requireContext()).apply {
+                        orientation = android.widget.LinearLayout.HORIZONTAL
+                        gravity = android.view.Gravity.CENTER_VERTICAL
+                        setPadding(0, 0, 0, dp(16f))
+                    }
+
+                    // Avatar initiales
+                    val initiales = "${eleve.prenom.firstOrNull() ?: ""}${eleve.nom.firstOrNull() ?: ""}".uppercase()
+                    headerRow.addView(TextView(requireContext()).apply {
+                        text = initiales
+                        textSize = 14f
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setTextColor(color("#9BA3E8"))
+                        gravity = android.view.Gravity.CENTER
+                        setBackgroundColor(color("#303586"))
+                        layoutParams = android.widget.LinearLayout.LayoutParams(dp(40f), dp(40f)).also {
+                            it.marginEnd = dp(12f)
+                        }
+                    })
+
+                    // Nom + parcours
+                    val nameCol = android.widget.LinearLayout(requireContext()).apply {
+                        orientation = android.widget.LinearLayout.VERTICAL
+                        layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    }
+                    nameCol.addView(TextView(requireContext()).apply {
+                        text = "${eleve.prenom} ${eleve.nom.uppercase()}"
+                        textSize = 15f
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setTextColor(white)
+                    })
+                    nameCol.addView(TextView(requireContext()).apply {
+                        text = "VMA %.1f km/h · %s".format(vmaRef, parcours)
+                        textSize = 12f
+                        setTextColor(textMuted)
+                    })
+                    headerRow.addView(nameCol)
+
+                    // Badge note finale
+                    val badgeNote = android.widget.LinearLayout(requireContext()).apply {
+                        orientation = android.widget.LinearLayout.VERTICAL
+                        gravity = android.view.Gravity.CENTER
+                        setBackgroundColor(cardBg)
+                        setPadding(dp(14f), dp(6f), dp(14f), dp(6f))
+                        layoutParams = android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                        ).also { it.marginStart = dp(12f) }
+                    }
+                    badgeNote.addView(TextView(requireContext()).apply {
+                        text = "note finale"
+                        textSize = 11f
+                        setTextColor(textMuted)
+                        gravity = android.view.Gravity.CENTER
+                    })
+                    badgeNote.addView(TextView(requireContext()).apply {
+                        text = "%.2f".format(res.note_finale)
+                        textSize = 22f
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setTextColor(white)
+                        gravity = android.view.Gravity.CENTER
+                    })
+                    badgeNote.addView(TextView(requireContext()).apply {
+                        text = "/ 12"
+                        textSize = 12f
+                        setTextColor(textMuted)
+                        gravity = android.view.Gravity.CENTER
+                    })
+                    headerRow.addView(badgeNote)
+                    inner.addView(headerRow)
+
+                    // ── 3 cartes métriques ────────────────────────────────────────────────────
+                    val metricsRow = android.widget.LinearLayout(requireContext()).apply {
+                        orientation = android.widget.LinearLayout.HORIZONTAL
+                        setPadding(0, 0, 0, dp(12f))
+                    }
+
+                    fun metricCard(label: String, value: String, max: String, sub: String): android.widget.LinearLayout {
+                        return android.widget.LinearLayout(requireContext()).apply {
+                            orientation = android.widget.LinearLayout.VERTICAL
+                            setBackgroundColor(cardBg)
+                            setPadding(dp(12f), dp(12f), dp(12f), dp(12f))
+                            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also {
+                                it.marginEnd = dp(6f)
+                            }
+                            addView(TextView(requireContext()).apply {
+                                text = label; textSize = 11f; setTextColor(textMuted)
+                            })
+                            val valRow = android.widget.LinearLayout(requireContext()).apply {
+                                orientation = android.widget.LinearLayout.HORIZONTAL
+                                gravity = android.view.Gravity.BOTTOM
+                            }
+                            valRow.addView(TextView(requireContext()).apply {
+                                text = value; textSize = 20f
+                                setTypeface(null, android.graphics.Typeface.BOLD)
+                                setTextColor(white)
+                            })
+                            valRow.addView(TextView(requireContext()).apply {
+                                text = " /$max"; textSize = 12f; setTextColor(textMuted)
+                            })
+                            addView(valRow)
+                            addView(TextView(requireContext()).apply {
+                                text = sub; textSize = 11f; setTextColor(textMuted)
+                                setPadding(0, dp(4f), 0, 0)
+                            })
+                        }
+                    }
+
+                    val tempsTirTotal = (res.temps_B - res.temps_A) + (res.temps_D - res.temps_C)
+                    val minTir = tempsTirTotal / 60; val secTir = tempsTirTotal % 60
+                    val tempsTirStr = "%d'%02d\"".format(minTir, secTir)
+
+                    metricsRow.addView(metricCard("intensité", "%.1f".format(res.note_intensite), "4", "%.1f%% VMA".format(pctVal)))
+                    metricsRow.addView(metricCard("efficience tir", "%.1f".format(res.note_efficience), "6", "${res.cibles_touchees}/10 · $tempsTirStr"))
+                    metricsRow.addView(android.widget.LinearLayout(requireContext()).apply {
+                        orientation = android.widget.LinearLayout.VERTICAL
+                        setBackgroundColor(cardBg)
+                        setPadding(dp(12f), dp(12f), dp(12f), dp(12f))
+                        layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                        addView(TextView(requireContext()).apply { text = "vma"; textSize = 11f; setTextColor(textMuted) })
+                        val valRow = android.widget.LinearLayout(requireContext()).apply {
+                            orientation = android.widget.LinearLayout.HORIZONTAL; gravity = android.view.Gravity.BOTTOM
+                        }
+                        valRow.addView(TextView(requireContext()).apply {
+                            text = "%.2f".format(res.note_vma); textSize = 20f
+                            setTypeface(null, android.graphics.Typeface.BOLD); setTextColor(white)
+                        })
+                        valRow.addView(TextView(requireContext()).apply { text = " /2"; textSize = 12f; setTextColor(textMuted) })
+                        addView(valRow)
+                        addView(TextView(requireContext()).apply {
+                            text = "%.1f km/h".format(vmaRef); textSize = 11f; setTextColor(textMuted)
+                            setPadding(0, dp(4f), 0, 0)
+                        })
+                    })
+                    inner.addView(metricsRow)
+
+                    // ── Helper tableau ────────────────────────────────────────────────────────
+                    fun ajouterTableau(titre: String, lignes: List<Pair<String, String>>) {
+                        val card = android.widget.LinearLayout(requireContext()).apply {
+                            orientation = android.widget.LinearLayout.VERTICAL
+                            setBackgroundColor(surfaceBg)
+                            layoutParams = android.widget.LinearLayout.LayoutParams(
+                                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                            ).also { it.bottomMargin = dp(10f) }
+                        }
+                        card.addView(TextView(requireContext()).apply {
+                            text = titre; textSize = 12f; setTextColor(textMuted)
+                            setPadding(dp(14f), dp(10f), dp(14f), dp(10f))
+                            setBackgroundColor(surfaceBg)
+                        })
+                        card.addView(View(requireContext()).apply {
+                            layoutParams = android.widget.LinearLayout.LayoutParams(
+                                android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 1)
+                            setBackgroundColor(divider)
+                        })
+                        lignes.forEachIndexed { i, (label, valeur) ->
+                            val row = android.widget.LinearLayout(requireContext()).apply {
+                                orientation = android.widget.LinearLayout.HORIZONTAL
+                                gravity = android.view.Gravity.CENTER_VERTICAL
+                                setPadding(dp(14f), dp(9f), dp(14f), dp(9f))
+                                if (i % 2 == 1) setBackgroundColor(cardBg)
+                            }
+                            row.addView(TextView(requireContext()).apply {
+                                text = label; textSize = 13f; setTextColor(textMuted)
+                                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                            })
+                            row.addView(TextView(requireContext()).apply {
+                                text = valeur; textSize = 13f
+                                setTypeface(null, android.graphics.Typeface.BOLD)
+                                setTextColor(white)
+                            })
+                            card.addView(row)
+                            if (i < lignes.size - 1) {
+                                card.addView(View(requireContext()).apply {
+                                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 1)
+                                    setBackgroundColor(divider)
+                                })
+                            }
+                        }
+                        inner.addView(card)
+                    }
+
+                    // ── Tableau segments ──────────────────────────────────────────────────────
+                    fun fmtSec(sec: Int): String {
+                        val m = sec / 60; val s = sec % 60
+                        return if (m > 0) "%d'%02d\"".format(m, s) else "%d\"".format(s)
+                    }
+
+                    Log.d("DEBUG_BILAN", "temps_A=${res.temps_A} temps_B=${res.temps_B} temps_C=${res.temps_C} temps_D=${res.temps_D} temps_E=${res.temps_E}")
+
+                    if (res.temps_A > 0) {
+                        val tc1 = res.temps_A
+                        val tt1 = res.temps_B - res.temps_A
+                        val tc2 = res.temps_C - res.temps_B
+                        val tt2 = res.temps_D - res.temps_C
+                        val tc3 = res.temps_E - res.temps_D
+
+                        val segLignes = mutableListOf<Pair<String, String>>()
+                        if (tc1 > 0) segLignes.add("Course 1  (2 tours)" to fmtSec(tc1))
+                        if (tt1 > 0) segLignes.add("Tir 1" to fmtSec(tt1))
+                        if (tc2 > 0) segLignes.add("Course 2  (2 tours + pén.)" to fmtSec(tc2))
+                        if (tt2 > 0) segLignes.add("Tir 2" to fmtSec(tt2))
+                        if (tc3 > 0) segLignes.add("Course 3  (2 tours + pén.)" to fmtSec(tc3))
+
+                        ajouterTableau("temps par segment", segLignes)
+                    }
+
+                    // ── Tableau tir ───────────────────────────────────────────────────────────
+                    ajouterTableau("tir", listOf(
+                        "Série 1" to "${res.tir1} / 5",
+                        "Série 2" to "${res.tir2} / 5"
+                    ))
+
+                } else {
+                    // 6ème — inchangé
+                    val medailleTours = when {
+                        res.nbTours >= 7 -> "💎 DIAMANT"
+                        res.nbTours >= 6 -> "🏆 OR"
+                        res.nbTours >= 5 -> "🥈 ARGENT"
+                        res.nbTours >= 4 -> "🥉 BRONZE"
+                        else             -> "—"
+                    }
+                    val medailleEcart = when {
+                        res.ecart_max_course < 10  -> "💎 DIAMANT"
+                        res.ecart_max_course <= 15 -> "🏆 OR"
+                        res.ecart_max_course <= 20 -> "🥈 ARGENT"
+                        res.ecart_max_course <= 25 -> "🥉 BRONZE"
+                        else                       -> "—"
+                    }
+                    val medailleTir = when {
+                        res.cibles_touchees >= 21 -> "💎 DIAMANT"
+                        res.cibles_touchees >= 19 -> "🏆 OR"
+                        res.cibles_touchees >= 16 -> "🥈 ARGENT"
+                        res.cibles_touchees >= 12 -> "🥉 BRONZE"
+                        else                      -> "—"
+                    }
+
+                    makeRow("VMA référence", "%.1f km/h".format(vmaRef),
+                        android.graphics.Color.parseColor("#9BA3E8"))
+                    makeRow("Tours ($medailleTours)", "${res.nbTours} tours")
+                    makeRow("Régularité ($medailleEcart)", "Écart max : ${res.ecart_max_course} s")
+                    makeRow("Tir ($medailleTir)", "${res.cibles_touchees} cibles")
+                    makeRow("🏅 Note finale", "%.2f / 15".format(res.note_finale),
+                        android.graphics.Color.parseColor("#F1C40F"))
+
+                    inner.addView(table)
+                }
+
+                if (res.ressenti_intensite.isNotEmpty() || res.ressenti_durer.isNotEmpty() || res.ressenti_lucidite.isNotEmpty()) {
+
+                    inner.addView(View(requireContext()).apply {
+                        layoutParams = android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 1
+                        ).also { it.setMargins(0, 16, 0, 16) }
+                        setBackgroundColor(android.graphics.Color.argb(60, 255, 255, 255))
+                    })
+
+                    inner.addView(TextView(requireContext()).apply {
+                        text = "💬 Ressenti de l'élève"
+                        setTextColor(android.graphics.Color.WHITE)
+                        textSize = 14f
+                        setPadding(8, 8, 8, 12)
+                    })
+
+                    val tableRessenti = android.widget.TableLayout(requireContext()).apply {
+                        layoutParams = android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                        setColumnStretchable(0, true)
+                        setColumnStretchable(1, true)
+                    }
+
+                    fun ajouterLigneRessenti(label: String, valeur: String) {
+                        val row = android.widget.TableRow(requireContext())
+                        row.addView(TextView(requireContext()).apply {
+                            text = label
+                            setTextColor(android.graphics.Color.argb(180, 255, 255, 255))
+                            textSize = 13f
+                            setPadding(12, 10, 12, 10)
+                        })
+                        row.addView(TextView(requireContext()).apply {
+                            text = valeur
+                            setTextColor(android.graphics.Color.WHITE)
+                            textSize = 13f
+                            setTypeface(null, android.graphics.Typeface.BOLD)
+                            setPadding(12, 10, 12, 10)
+                            gravity = android.view.Gravity.END
+                        })
+                        tableRessenti.addView(row)
+                        tableRessenti.addView(View(requireContext()).apply {
+                            layoutParams = android.widget.TableLayout.LayoutParams(
+                                android.widget.TableLayout.LayoutParams.MATCH_PARENT, 1
+                            )
+                            setBackgroundColor(android.graphics.Color.argb(30, 255, 255, 255))
+                        })
+                    }
+
+                    if (res.ressenti_intensite.isNotEmpty()) ajouterLigneRessenti("Intensité", res.ressenti_intensite)
+                    if (res.ressenti_durer.isNotEmpty())     ajouterLigneRessenti("Durée",     res.ressenti_durer)
+                    if (res.ressenti_lucidite.isNotEmpty())  ajouterLigneRessenti("Lucidité",  res.ressenti_lucidite)
+
+                    inner.addView(tableRessenti)
+                }
+            }
+
+            container.addView(scrollView)
+            dialogView.findViewById<TextView>(R.id.dialog_cancel).apply {
+                text = "Fermer"
+                setOnClickListener { dialog.dismiss() }
+            }
+
+            dialog.show()
+        }
+    }
+
+    private fun creerTitreSection(texte: String) = TextView(requireContext()).apply {
+        text = texte
+        setTextColor(android.graphics.Color.WHITE)
+        textSize = 14f
+        setPadding(8, 16, 8, 8)
     }
 }

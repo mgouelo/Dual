@@ -37,15 +37,29 @@ import androidx.room.*
 )
 data class Resultat (
     @PrimaryKey(autoGenerate = true)
-    var id_resultat: Int=0,
-    var id_eleve : Int = 0,
+    var id_resultat: Int = 0,
+    var id_eleve: Int = 0,
     var id_seance: Int = 0,
-    var temp_course : Float = 0F,
+    var temp_course: Float = 0F,
     var cibles_touchees: Int = 0,
     var penalites: Float = 0F,
     var vma: Float = 0F,
     var note_finale: Float = 0F,
     var classement: Int = 0,
     var nbTours: Int = 0,
-    var ecart_max_course: Int = 0
+    var ecart_max_course: Int = 0,
+    // Détail épreuve 4ème
+    var temps_A: Int = 0,       // arrivée tir 1 (secondes)
+    var temps_B: Int = 0,       // sortie tir 1
+    var temps_C: Int = 0,       // arrivée tir 2
+    var temps_D: Int = 0,       // sortie tir 2
+    var temps_E: Int = 0,       // arrivée finale
+    var tir1: Int = 0,          // réussites série 1
+    var tir2: Int = 0,          // réussites série 2
+    var note_intensite: Float = 0F,
+    var note_efficience: Float = 0F,
+    var note_vma: Float = 0F,
+    var ressenti_intensite: String = "",
+    var ressenti_durer: String = "",
+    var ressenti_lucidite: String = ""
 )

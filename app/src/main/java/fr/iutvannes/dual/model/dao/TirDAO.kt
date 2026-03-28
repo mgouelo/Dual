@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import fr.iutvannes.dual.model.persistence.CourseAvecTours
 import fr.iutvannes.dual.model.persistence.SalveTir
 import fr.iutvannes.dual.model.persistence.Tir
 import fr.iutvannes.dual.model.persistence.TirAvecPassages
