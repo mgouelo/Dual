@@ -48,7 +48,7 @@ let pointsPassage = { A: 0, B: 0, C: 0, D: 0, E: 0 };
 let tirsData = { serie1: 0, serie2: 0 };
 
 /* === MOTEUR DU CHRONOMÈTRE (PROGRESSIF) === */
-/* Cette fonction gère le déroulement du temps en montant (Sprint). */
+/** Cette fonction gère le déroulement du temps en montant (Sprint). */
 const defilerTemps = () => {
     if (estArrete) return;
 
@@ -77,7 +77,7 @@ const defilerTemps = () => {
     timeout = setTimeout(defilerTemps, 10);
 };
 
-/* Démarre le chronomètre si il est arrêté. */
+/** Démarre le chronomètre si il est arrêté. */
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
@@ -88,7 +88,10 @@ const demarrer = () => {
     }
 };
 
-/* Arrête le chronomètre si il est en cours. */
+/**
+ * Arrête le chronomètre et affiche une confirmation avant de réinitialiser les valeurs et les tours.
+ * @returns {Promise<void>} une promesse qui se résout une fois que l'utilisateur a répondu à la confirmation et que les actions associées ont été effectuées.
+ */
 const arreter = async()=> {
     const confirmationAction = await demanderConfirmation("Mettre en pause l'épreuve ?");
     if (confirmationAction) {
@@ -105,7 +108,7 @@ const arreter = async()=> {
     }
 };
 
-/* Arrête le chronomètre si il est en cours. */
+/** Arrête le chronomètre si il est en cours. */
 const arreterEpreuve = () => {
     if (!estArrete) {
         estArrete = true;
@@ -115,8 +118,11 @@ const arreterEpreuve = () => {
     }
 };
 
-/* Réinitialise le chronomètre après confirmation. */
-/* Réinitialise l'épreuve après confirmation (Version 4ème corrigée) */
+/**
+ * Réinitialise le chronomètre après confirmation.
+ * Réinitialise l'épreuve après confirmation (Version 4ème corrigée)
+ * @returns {Promise<void>} une promesse qui se résout une fois que l'utilisateur a répondu à la confirmation et que les actions associées ont été effectuées.
+ */
 const reset = async() => {
     const confirmationAction = await demanderConfirmation("Réinitialiser l'épreuve ?");
 
@@ -220,7 +226,10 @@ const resetCompletSansDemander = () => {
 };
 
 /* === GESTION DU TIR (VISUEL) === */
-/* Colore le bouton de score sélectionné dans la modale. */
+/**
+ * Fonction premettant de colorer le bouton de score sélectionné dans la modale.
+ * @param {number} valeur - La valeur du score de lélève .
+ */
 function setScoreTir(valeur) {
     document.getElementById("score-temporaire").value = valeur;
     const boutons = document.querySelectorAll('.btn-score');
@@ -233,7 +242,11 @@ function setScoreTir(valeur) {
 }
 
 /* === SYSTÈME DE MODALES === */
-/* Boîte de confirmation avec OK / Annuler. */
+/**
+ * Boîte de confirmation avec OK / Annuler.
+ * @param {string} message - Le message à afficher dans la boîte de confirmation.
+ * @return {Promise<boolean>} Une promesse qui se résout en true si l'utilisateur confirme, ou false s'il annule.
+ * */
 const demanderConfirmation = (message) => {
     document.getElementById("confirm-message").textContent = message;
     modal.style.display = "flex";
@@ -253,7 +266,11 @@ const demanderConfirmation = (message) => {
     });
 };
 
-/* Boîte d'alerte simple avec OK. */
+/**
+ * Boîte d'alerte simple avec OK.
+ * @param {string} message - Le message à afficher dans la boîte d'alerte.
+ * @return {Promise<void>} Une promesse qui se résout une fois que l'utilisateur a cliqué sur OK.
+ * */
 const confirmation = (message) => {
     document.getElementById("confirm-message-normal").textContent = message;
     modalNormal.style.display = "flex";
@@ -269,7 +286,12 @@ const confirmation = (message) => {
 };
 
 /* === AUTO-ÉVALUATION === */
-/* Enregistre le choix de ressenti de l'élève. */
+/**
+ * Enregistre le choix de ressenti de l'élève.
+ * @param {HTMLElement} element - Le bouton cliqué par l'élève.
+ * @param {string} categorie - La catégorie de ressenti (intensité, durée, lucidité).
+ * @param {string} valeur - La valeur choisie par l'élève pour cette catégorie.
+ * */
 function selectAudit(element, categorie, valeur) {
     const parent = element.parentElement;
     parent.querySelectorAll('.btn-audit').forEach(btn => btn.classList.remove('selected'));
@@ -405,6 +427,8 @@ const gestionnaireEtape = () => {
 
 /**
  * Affiche visuellement le point figé dans la liste
+ * @param {string} label - Le label du point de passage (ex: "A - Arrivée Tir 1")
+ * @param {string} temps - Le temps affiché à côté du label (ex: "01:23:45")
  */
 function ajouterAlaListe(label, temps) {
     // On enlève de la liste le msg depart si elle ne contient pas encore de "tour-item"
@@ -426,6 +450,7 @@ function ajouterAlaListe(label, temps) {
 
 /**
  * Ouvre la modale et prépare la saisie pour le tir
+ * @param {number} numSerie - Le numéro de la série de tir (1 ou 2) pour adapter le titre de la modale
  */
 function ouvrirModaleTir(numSerie) {
     titreTir.textContent = `Tir Série n°${numSerie}`;
@@ -466,7 +491,10 @@ const validerTir4eme = () => {
     }
 };
 
-/* Valide les ressentis avant d'afficher le bilan spécifique 4ème. */
+/**
+ * Valide les ressentis avant d'afficher le bilan spécifique 4ème.
+ * @returns {Promise<void>} une promesse qui se résout une fois que les ressentis sont validés et que le bilan est affiché.
+ */
 const validerRessentis = async() => {
     if (!autoEval.intensite || !autoEval.durer || !autoEval.lucidite) {
         confirmation("Veuillez répondre aux 3 questions de ressenti.");
@@ -548,6 +576,11 @@ const terminerEpreuve4eme = () => {
     afficherResultats4eme(pourcentageVMA.toFixed(1), noteIntensite, vitesseRealiseeKmh, scoreTirTotal, tempsTirTotal, noteEfficience, vmaRef, noteVmaPoints);
 };
 
+/**
+ * Calcule la note d'intensité sur 4 points selon le pourcentage de VMA réalisée (Barème spécifique 4ème)
+ * @param pourcentageVMA - Le pourcentage de VMA réalisée par l'élève (vitesse réalisée / VMA de référence * 100)
+ * @returns {number} Note d'intensité sur 4 points selon le barème spécifique 4ème
+ */
 const calculerNoteIntensite = (pourcentageVMA) => {
     if (pourcentageVMA > 110) return 4;
     if (pourcentageVMA >= 106) return 3.5;
@@ -732,6 +765,7 @@ const afficherResultats4eme = (pourcentageVMA, noteIntensite, vitesseRealiseeKmh
 /**
  * Permet d'annuler la dernière étape.
  * Si on est à la première étape, cela déclenche un reset complet.
+ * @returns {Promise<void>} une promesse qui se résout une fois que l'annulation est traitée.
  */
 const annulerEtape = async () => {
     if (etapeActuelle === 0) return; // Sécurité
@@ -822,7 +856,7 @@ const retourSeance = () => {
     });
 }
 
-/* === GESTION DE LA FIN D'ÉPREUVE === */
+/** === GESTION DE LA FIN D'ÉPREUVE === */
 terminerBtn.addEventListener("click", () => {
     demanderConfirmation("Terminer l'épreuve ?").then(confirmation => {
         if (confirmation) {

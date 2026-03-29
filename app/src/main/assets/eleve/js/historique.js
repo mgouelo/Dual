@@ -4,14 +4,17 @@ const listeHistorique = document.getElementById("liste-historique");
 const msgChargement = document.getElementById("msg-chargement");
 const templateCarte = document.getElementById("template-carte-historique");
 
+/** Variable globale pour stocker les données de l'élève actif (initialisée dans initialiserProfil) */
 let eleveActif = null;
 
+/** Dictionnaires pour traduire les choix d'audit en labels avec emojis (différents pour 4ème et 6ème) */
 const auditDico4eme = {
     intensite: { 'Contrôlé': '🟢<br>Peu essoufflé', 'Intense': '🟡<br>Effort soutenu', 'Critique': '🟠<br>Gros souffle', 'Saturation': '🔴<br>Épuisé' },
     durer: { 'Régulier': '✅<br>Vitesse stable', 'Économie': '🐢<br>Gardé de la réserve', 'Décroissant': '📉<br>Fin course difficile' },
     lucidite: { 'Équilibré': '⚖️<br>Rapide et précis', 'Prudent': '🎯<br>Calme et appliqué', 'Instable': '🤠<br>Précipité / Tremblant' }
 };
 
+/** Dictionnaire pour les 6èmes avec des labels adaptés à leur vocabulaire d'audit (et des emojis plus "fun") */
 const auditDico6eme = {
     intensite: { 'Tranquille': '🟢<br>Je parle', 'Chaud': '🟡<br>Un peu dur', 'Essoufflé': '🟠<br>Je souffle', 'À bout': '🔴<br>À bout' },
     durer: { 'Lent': '🐢<br>Trop tranquille', 'Bien': '✅<br>Allure régulière', 'Vite': '🥵<br>Parti trop vite' },

@@ -40,6 +40,7 @@ async function chargerClasses() {
 let eleve1 = null; // Stocke le premier élève choisi
 /**
  * Classe pour charger les élèves de la classe sélectionnée (étape 2)
+ * @param nomClasse Le nom de la classe sélectionnée pour laquelle charger les élèves
  */
 async function chargerElevesDeLaClasse(nomClasse) {
     try {

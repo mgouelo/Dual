@@ -1,3 +1,4 @@
+// Récupération des éléments du DOM
 let chrono = document.getElementById("chrono");
 let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
@@ -11,6 +12,7 @@ const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
 
+// Variables pour le chronomètre et les paliers de VMA
 let minutes = 0;
 let secondes = 0;
 let millisecondes = 0;
@@ -19,8 +21,7 @@ let estArrete = true;
 let tempsEcoule = 0; // en secondes
 let currentIndex = 0;
 
-/// Données extraites de VMA.pdf
-// tempsCumule est converti en secondes (ex: 1.30 = 90 secondes)
+// Table de correspondance des paliers de VMA (vitesse en km/h, VMA en km/h, distance du tour en mètres, temps cumulé en secondes)
 let tableVma = [
     // Palier 8 km/h
     { vitesse: 8, vma: 7.00, distance: 50, tempsCumule: 23 },
@@ -126,6 +127,9 @@ if (coureurActif && nomCoureurActif) {
     }
 }
 
+/**
+ * Fonction principale qui fait défiler le temps et met à jour l'affichage de la VMA et de la distance en fonction des paliers définis dans tableVma
+ */
 const defilerTemps = () => {
     if (estArrete) return;
 
@@ -173,12 +177,16 @@ const defilerTemps = () => {
     timeout = setTimeout(defilerTemps, 10);
 };
 
+// Variables pour stocker les résultats temporaires avant validation
 const btnSaveVma = document.getElementById("btn-save-vma");
 let vmaTemporaire = 0; // Pour stocker la valeur avant validation
 let parcoursTexteTemporaire = "";
 let badgeTemporaire = "";
 let vmaDistanceTemporaire = 0; // Pour stocker la distance du tour associée au parcours
 
+/**
+ * Affiche le résultat de la VMA atteinte par le coureur après l'arrêt du chronomètre, en déterminant le parcours et le badge associés à la VMA réelle calculée
+ */
 const afficherResultatVMA = () => {
     // Définitions des parcours pour chaque niveau
     const coupellesJaunes = "Parcours : (coupelles jaunes – 250m)"
@@ -248,6 +256,10 @@ const afficherResultatVMA = () => {
     btnSaveVma.style.display = "inline-block";
 }
 
+/**
+ * Enregistre la nouvelle VMA du coureur après confirmation de l'utilisateur, en mettant à jour l'objet local, le localStorage pour le Hub, et en envoyant la VMA au serveur pour la sauvegarde permanente
+ * @returns {Promise<void>} Une promesse qui se résout lorsque l'enregistrement est terminé, avec gestion de la confirmation utilisateur et mise à jour de l'interface en conséquence
+ */
 const enregistrerNouvelleVMA = async () => {
     if (vmaTemporaire === 0 || !coureurActif) return;
 
@@ -283,6 +295,9 @@ const enregistrerNouvelleVMA = async () => {
 // Ajouter l'écouteur d'événement pour le bouton
 btnSaveVma.addEventListener("click", enregistrerNouvelleVMA);
 
+/**
+ * Démarre le chronomètre et le défilement des paliers de VMA, en réinitialisant les affichages de résultat et de parcours, et en mettant à jour l'état d'arrêt
+ */
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
@@ -292,6 +307,9 @@ const demarrer = () => {
     }
 };
 
+/**
+ * Arrête le chronomètre et le défilement, calcule la VMA réelle atteinte, affiche le résultat avec le parcours associé, et met à jour l'interface pour permettre la validation ou la reprise du test
+ */
 const arreter = () => {
     if (!estArrete) {
         estArrete = true;
@@ -312,6 +330,10 @@ const arreter = () => {
     }
 };
 
+/**
+ * Réinitialise le chronomètre et les variables associées, avec une confirmation de l'utilisateur, et remet l'interface dans l'état initial pour permettre un nouveau test
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la réinitialisation est terminée, avec gestion de la confirmation utilisateur et mise à jour de l'interface en conséquence
+ */
 const reset = async() => {
     const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
 
@@ -333,6 +355,10 @@ const reset = async() => {
     }
 };
 
+/**
+ * Permet de reprendre le test après un arrêt, en demandant une confirmation à l'utilisateur, et en remettant l'interface dans l'état de test en cours avec le défilement des paliers
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la reprise est terminée, avec gestion de la confirmation utilisateur et mise à jour de l'interface en conséquence
+ */
 const reprendre = async () => {
     const confirmation = await demanderConfirmation("Voulez-vous vraiment reprendre le test ?");
 
@@ -353,6 +379,11 @@ const reprendre = async () => {
     }
 };
 
+/**
+ * Affiche une boîte de confirmation personnalisée avec le message donné, et retourne une promesse qui se résout en true si l'utilisateur confirme, ou false s'il annule
+ * @param message Le message à afficher dans la boîte de confirmation
+ * @returns {Promise<unknown>} Une promesse qui se résout en true si l'utilisateur confirme, ou false s'il annule
+ */
 const demanderConfirmation = (message) => {
     document.getElementById("confirm-message").textContent = message;
 
