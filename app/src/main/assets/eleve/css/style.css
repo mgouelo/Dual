@@ -114,10 +114,94 @@ footer .info {
 
 /* Conteneur pour les boutons d'action */
 #buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
+}
+
+/* STYLE BARRE DE RECHERCHE POUR LA CONSTRUCTION DES BINOMES */
+
+.search-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
+}
+
+.search-label {
+    display: block;
+    font-weight: bold;
+    color: var(--night-blue);
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* zone de texte */
+.search-input {
+    width: 100%;
+    padding: 18px 15px;
+    font-size: 1.2rem;
+    font-family: inherit;
+    color: var(--black);
+    border: 2px solid var(--grey);
+    border-radius: 12px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: var(--blanc);
+}
+
+.search-input:focus {
+    border-color: var(--blue);
+    outline: none;
+    box-shadow: 0 0 10px rgba(48, 53, 134, 0.2);
+}
+
+/* conatiner de la liste des résultats suggérés */
+.suggestions-box {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--blanc);
+    border: 2px solid var(--blue);
+    border-radius: 12px;
+    margin-top: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+}
+
+/* style d'une suggestion de recherche*/
+.suggestion-item {
+    padding: 15px 18px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--black);
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: rgba(48, 53, 134, 0.08);
+    color: var(--blue);
+    font-weight: bold;
 }
 
 /* Conteneur pour les tirs d'efficience */
