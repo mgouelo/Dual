@@ -6,13 +6,16 @@
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
+    <!-- Page d'entraînement à la course pour les séances de biathlon -->
     <div id="container">
 
+        <!-- En-tête de la page -->
         <header>
             <h1>Entraînement à la course</h1>
             <p>Réaliser un tour de parcours et noter son temps</p>
         </header>
 
+        <!-- Affichage du badge de parcours et du chrono -->
         <div id="vma-result-display" class="vma-card-display">
             <p class="vma-display-label">Mon Parcours</p>
             <div id="badge-parcours" class="parcours-badge">
@@ -20,21 +23,26 @@
             </div>
         </div>
 
+        <!-- Chronomètre pour le temps de parcours -->
         <div id="chrono">00:00:00</div>
 
+        <!-- Boutons de contrôle du chronomètre -->
         <div id="buttonTraining">
             <button id="reset" class="button">Reset</button>
             <button id="stop" class="button">Arrêter</button>
             <button id="start" class="button">Démarrer</button>
         </div>
 
+        <!-- Liste des tours réalisés -->
         <div id="listeTours"></div>
 
+        <!-- Modal pour saisir le temps du tour et les résultats du tir -->
         <div class="action-bar">
             <button id="enregistrer" class="button">Enregistrer (+1 tour)</button>
             <button id="supprimer" class="button">Supprimer (-1 tour)</button>
         </div>
 
+        <!-- Modal de confirmation pour les actions importantes -->
         <div id="custom-confirm" class="modal">
             <div class="modal-content">
                 <h3>Confirmation</h3>
@@ -46,14 +54,16 @@
             </div>
         </div>
 
+        <!-- Boutons pour enregistrer la session et revenir à la page de séance -->
         <button id="btn-envoyer" class="button" style="margin-top: 20px; background-color: #27ae60;">Enregistrer la session</button>
         <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
 
+        <!-- Pied de page avec information de connexion -->
         <footer>
             <p class="info">Connecté au serveur local</p>
         </footer>
     </div>
 
-    <script src="../js/course.js"></script>
+<script src="../js/course.js" defer></script>
 </body>
 </html>

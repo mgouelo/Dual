@@ -120,6 +120,66 @@ footer .info {
     width: 100%;
 }
 
+/* Conteneur pour les tirs d'efficience */
+#tirs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* Carte de saisie pour les séries de tirs */
+.serie-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 18px;
+    gap: 12px;
+}
+
+/* Label de la série (ex: "Série 1") */
+.serie-label {
+    font-weight: 600;
+    font-size: 1rem;
+    white-space: nowrap;
+    color: #333;
+    min-width: 72px;
+}
+
+/* Champ de saisie pour les tirs (ex: "Tir 1", "Tir 2", etc.) */
+.serie-card input[type="number"] {
+    flex: 1;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 0;
+    width: 100%;
+    max-width: 120px;
+    -moz-appearance: textfield;
+}
+
+/* Supprimer les flèches de contrôle sur les champs de type "number" pour une meilleure expérience utilisateur */
+.serie-card input[type="number"]::-webkit-outer-spin-button,
+.serie-card input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+/* Barre d'action pour les boutons de tir */
+.action-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+/* Chaque bouton de tir prend une part égale de l'espace disponible */
+.action-bar .button { flex: 1; }
+
 /* On crée une barre d'action qui utilise le même Grid que les boutons de tir */
 .action-bar {
     display: grid;
@@ -936,4 +996,143 @@ footer .info {
     font-size: 1.2rem;
     border: 1px dashed var(--black); /* Bordure en pointillés pour l'aspect "zone vide" */
     border-radius: 10px;
+}
+
+/* =========================================
+   STYLES SPÉCIFIQUES - PAGE HISTORIQUE
+   ========================================= */
+
+/* Espacement sous la carte de l'élève */
+.mb-3vh {
+    margin-bottom: 3vh;
+}
+
+/* Texte en blanc (utilisé pour le badge de nom) */
+.text-white {
+    color: white;
+}
+
+/* Message de chargement */
+.text-center-italic {
+    text-align: center;
+    font-style: italic;
+}
+
+/* Carte individuelle d'historique */
+.carte-historique {
+    margin-bottom: 20px;
+    display: none; /* Cacher le template par défaut */
+}
+
+/* Titre de la carte d'historique (Date et Type) */
+.titre-historique {
+    font-size: 1.2rem;
+}
+
+/* Espacement au-dessus de la grille de résultats */
+.grid-historique {
+    margin-top: 15px;
+}
+
+/* Bouton de retour en bas de page */
+.btn-historique-retour {
+    margin-top: 30px;
+}
+
+/* Conteneur principal de la carte */
+.carte-archive {
+    margin-bottom: 20px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+}
+
+/* En-tête cliquable (Date, Titre, Note globale) */
+.archive-header {
+    background: #f4f4f4;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.archive-header:hover {
+    background: #e9e9e9;
+}
+
+.archive-titre {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.archive-date {
+    margin: 5px 0 0 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.archive-header-right {
+    text-align: right;
+}
+
+.archive-note {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #1456DB;
+}
+
+.archive-toggle {
+    font-size: 1.5rem;
+    margin-left: 10px;
+    color: #666;
+}
+
+/* Contenu dépliant (Audit + Bilan détaillé) */
+.archive-content {
+    padding: 15px;
+    background: white;
+}
+
+.archive-section-title {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.archive-section-title.mt-20 {
+    margin-top: 20px;
+}
+
+/* Zone Audit en mode "Lecture seule" */
+.archive-audit {
+    pointer-events: none; /* Empêche de cliquer sur les boutons */
+    opacity: 0.9;
+}
+
+.archive-audit .audit-section {
+    margin-bottom: 10px;
+}
+
+.archive-audit .audit-section p {
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Redimensionnement des boutons d'audit pour qu'ils rentrent bien dans la carte */
+.archive-audit .btn-group-audit {
+    display: flex;
+    gap: 5px;
+}
+
+.archive-audit .btn-audit {
+    flex: 1;
+    padding: 8px 5px;
+    font-size: 0.8rem;
+    border-radius: 8px;
 }
