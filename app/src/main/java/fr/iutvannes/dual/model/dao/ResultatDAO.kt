@@ -91,4 +91,12 @@ interface ResultatDAO {
 
     @Query("DELETE FROM Resultat WHERE id_seance = :idSeance")
     suspend fun deleteBySeance(idSeance: Int): Int
+
+    /**
+     * Retrieves the results of a specific eleve.
+     * @param eleveId The ID of the eleve to retrieve results for
+     * @return A list of results corresponding to the eleve
+     */
+    @Query("SELECT * FROM Resultat WHERE id_eleve = :eleveId ORDER BY id_resultat DESC")
+    fun getByEleve(eleveId: Int): List<Resultat>
 }

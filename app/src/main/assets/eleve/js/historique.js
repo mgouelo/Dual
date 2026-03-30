@@ -79,67 +79,25 @@ const initialiserProfil = () => {
  */
 const chargerHistorique = async (idEleve) => {
     try {
-        // Appel à l'API pour récupérer l'historique de l'élève
-        // const response = await fetch(`/api/eleves/historique/${idEleve}`);
-        throw new Error("Données non disponible - mode démo activé");
+        // ON APPELLE ENFIN LE SERVEUR !
+        const response = await fetch(`/api/eleves/historique/${idEleve}`);
+
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const historiqueReel = await response.json();
+
+        // On trie de la plus récente à la plus ancienne (dateObj est envoyé par Kotlin)
+        historiqueReel.sort((a, b) => b.dateObj - a.dateObj);
+
+        // On envoie à la fonction d'affichage
+        afficherCartesHistorique(historiqueReel);
+
     } catch (error) {
-        // --- MODE DÉMO AVEC DONNÉES COMPLEXES ---
-        const faussesDonnees = [
-            {
-                // ==== TEST 4ÈME ====
-                dateObj: new Date("2026-03-12T10:00:00"),
-                dateStr: "12/03/2026",
-                type: "Épreuve Finale 4ème",
-                noteFinale: 10.5,
-                bilan: {
-                    vitesseVal: 102,
-                    vitesseRealiseeKmh: "12.2",
-                    noteVitesse: 3,
-                    medailleVitesse: "OR",
-
-                    tirVal: 8,
-                    tirTemps: "1'35",
-                    noteTir: 5,
-
-                    vmaVal: 12,
-                    noteVma: 1.5,
-                    medailleVma: "ARGENT"
-                },
-                // Utilisation du vocabulaire d'audit 4ème
-                audit: { intensite: 'Intense', durer: 'Régulier', lucidite: 'Équilibré' }
-            },
-            {
-                // ==== TEST 6ÈME ====
-                dateObj: new Date("2026-03-15T14:30:00"), // Date plus récente, apparaîtra en premier !
-                dateStr: "15/03/2026",
-                type: "Épreuve Finale 6ème",
-                noteFinale: 13.5, // Note sur 15 pour les 6èmes
-                bilan: {
-                    // Performance
-                    nbTours: 8,
-                    notePerf: 4.5,
-                    medaillePerf: "OR",
-
-                    // Régularité
-                    ecartMax: 4,
-                    noteRegul: 5,
-                    medailleRegul: "DIAMANT",
-
-                    // Tir
-                    totalTir: 32, // ex: 32 réussites sur 40 tirs (8 tours * 5)
-                    noteTir: 4,
-                    medailleTir: "ARGENT"
-                },
-                // Utilisation du vocabulaire d'audit 6ème
-                audit: { intensite: 'Chaud', durer: 'Bien', lucidite: 'Zen' }
-            }
-        ];
-
-        // Trier les activités de la plus récente à la plus ancienne
-        faussesDonnees.sort((a, b) => b.dateObj - a.dateObj);
-
-        // Affichage des cartes d'historique avec les données de démonstration
-        afficherCartesHistorique(faussesDonnees);
+        console.error("Impossible de charger l'historique :", error);
+        msgChargement.textContent = "Erreur lors de la récupération des données.";
+        msgChargement.style.color = "red";
     }
 };
 

@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // On récupère le niveau depuis le localStorage
     const niveau = localStorage.getItem("niveau") || "6eme";
 
-    // On demande TOUJOURS au serveur le type de séance en cours.
-    // Le paramètre ?t= force le navigateur Android à ne pas utiliser le cache.
+// On demande TOUJOURS au serveur le type de séance en cours.
+// Le paramètre ?t= force le navigateur Android à ne pas utiliser le cache.
     let typeSeance = "Entraînement";
     try {
         const rep = await fetch('/api/seance/active?t=' + Date.now(), {
@@ -21,19 +21,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         typeSeance = localStorage.getItem("seance_type") || "Entraînement";
     }
 
-    // --- 1. NETTOYAGE ABSOLU DE L'INTERFACE ---
-    // On détruit tous les cadres gris inutiles
+// --- 1. NETTOYAGE ABSOLU DE L'INTERFACE ---
+// On détruit tous les cadres gris inutiles
     document.querySelectorAll(".mode-group, .separator").forEach(el => el.remove());
 
-    // --- 2. TRANSFORMATION DU BOUTON ROUGE ---
-    // On cible l'ancien bouton rouge "Changer de niveau"
+// --- 2. TRANSFORMATION DU BOUTON ROUGE ---
+// On cible l'ancien bouton rouge "Changer de niveau"
     const boutonRougeRetour = document.querySelector(".btn-back, a[href*='choix_niveau']");
 
     if (boutonRougeRetour) {
         // On change son texte
         boutonRougeRetour.textContent = "Changer de binôme";
 
-        // On désactive le lien HTML par défaut s'il y en a un
+        // On désactive le lien HTML par défaut s'il y en a un<
         if (boutonRougeRetour.tagName.toLowerCase() === 'a') {
             boutonRougeRetour.href = "#";
         }
@@ -48,10 +48,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
     }
 
-    // On cherche l'endroit où injecter notre nouveau cadre propre
+// On cherche l'endroit où injecter notre nouveau cadre propre
     const conteneurPrincipal = boutonRougeRetour ? boutonRougeRetour.parentElement : document.body;
 
-    // --- 3. RECONSTRUCTION DYNAMIQUE ---
+// --- 3. RECONSTRUCTION DYNAMIQUE ---
+    /**
+     * Crée un bloc de mode (Test VMA, Épreuve Finale ou Entraînement) avec les boutons correspondants
+     * @param titre Le titre du bloc (ex: "TEST VMA")
+     * @param boutons Un tableau d'objets représentant les boutons à créer, avec les propriétés :
+     */
     const creerBloc = (titre, boutons) => {
         const group = document.createElement("div");
         group.className = "mode-group";
@@ -82,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // --- 4. AFFICHAGE DU BON CADRE SELON LE PROFESSEUR ---
+// --- 4. AFFICHAGE DU BON CADRE SELON LE PROFESSEUR ---
     if (typeSeance === "Test VMA") {
         creerBloc("TEST VMA", [
             { texte: "Démarrer le Test VMA", url: "vma.html", classSupplementaire: "btn-eval" }
@@ -90,7 +95,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     else if (typeSeance === "Épreuve Finale") {
         creerBloc("ÉVALUATION FINALE", [
-            { texte: "Lancer l'Épreuve Finale", url: (niveau === "6eme") ? "epreuve6eme.html" : "epreuve4eme.html", classSupplementaire: "btn-eval" }
+            // Le bouton de l'épreuve (Vert)
+            { texte: "Lancer l'Épreuve Finale", url: (niveau === "6eme") ? "epreuve6eme.html" : "epreuve4eme.html", classSupplementaire: "btn-eval" },
+            // LE NOUVEAU BOUTON HISTORIQUE
+            { texte: "Visualiser mon Historique", url: "historique.html", classSupplementaire: "btn-historique" }
         ]);
     }
     else {
@@ -101,11 +109,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         ]);
     }
 
-    // --- 5. GESTION DU BINÔME ---
+// --- 5. GESTION DU BINÔME ---
     let e1 = JSON.parse(localStorage.getItem("eleve1"));
     let e2 = JSON.parse(localStorage.getItem("eleve2"));
     let indexActif = parseInt(localStorage.getItem("active_index") || "0");
 
+    /**
+     * Met à jour l'interface pour afficher le nom et le genre du coureur actif, et stocke son identité dans le localStorage pour que les autres pages puissent y accéder
+     */
     function actualiserInterface() {
         let nomAffiche = document.getElementById("current-name");
         let genreAffiche = document.getElementById("current-gender");
@@ -129,4 +140,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     actualiserInterface();
+
 });

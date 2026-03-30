@@ -6,6 +6,10 @@ const btnRetourBinomes = document.getElementById("btnRetourBinomes");
 let eleve1 = null;
 
 //ÉTAPE 1 : Connexion avec le professeur
+/**
+ * Fonction principale qui initialise la tablette en se connectant au serveur pour connaître la séance en cours, mémorise les choix du professeur et affiche les élèves de la classe correspondante
+ * @returns {Promise<void>} Une promesse qui se résout lorsque l'initialisation est terminée, avec gestion des erreurs et mise à jour de l'interface en conséquence
+ */
 async function initialiserTablette() {
     try {
         //On demande au serveur quelle est la séance en cours
@@ -40,6 +44,11 @@ async function initialiserTablette() {
 }
 
 //ÉTAPE 2 : Choix du binôme
+/**
+ * Affiche la liste des élèves de la classe donnée, permet de sélectionner le 1er élève puis le 2ème élève pour former un binôme, et gère l'affichage en fonction du choix effectué
+ * @param nomClasse Le nom de la classe dont on veut afficher les élèves (ex: "6A", "4B", etc.)
+ * @returns {Promise<void>} Une promesse qui se résout lorsque le chargement des élèves est terminé, avec gestion des erreurs et mise à jour de l'interface en conséquence
+ */
 async function chargerElevesDeLaClasse(nomClasse) {
     try {
         const response = await fetch(`/api/eleves/par-classe/${nomClasse}`);

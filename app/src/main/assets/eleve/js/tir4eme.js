@@ -1,3 +1,10 @@
+// Force le rechargement si la page vient du cache (navigation arrière/avant)
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 // ─── SÉANCE DE TIR 4ÈME ──────────────────────────────────────────────────
 let chronoDisplay = document.getElementById("chrono");
 let startBtn      = document.getElementById("start");
@@ -7,6 +14,13 @@ let sectionSaisie = document.getElementById("section-saisie");
 let validerBtn    = document.getElementById("valider-tir");
 let resultatBox   = document.getElementById("resultat-4eme");
 let btnSession    = document.getElementById("btn-envoyer");
+
+// Reset du bouton Envoyer au cas où la page viendrait du cache
+if (btnSession) {
+    btnSession.disabled = false;
+    btnSession.textContent = "Enregistrer la session";
+    btnSession.style.backgroundColor = "#27ae60";
+}
 
 // Variables pour le chronomètre et les séries de tir
 let timeout;
@@ -47,15 +61,21 @@ function calculerNoteEfficience(temps, reussites) {
  */
 const defilerTemps = () => {
     if (estArrete) return;
-    const totalMs = tempsEcoule + (Date.now() - dateDepart);
-    const totalSec = Math.floor(totalMs / 1000);
-    const m  = Math.floor(totalSec / 60);
-    const s  = totalSec % 60;
-    const ms = Math.floor((totalMs % 1000) / 10);
-    chronoDisplay.textContent =
-        String(m).padStart(2,'0') + ':' +
-        String(s).padStart(2,'0') + ':' +
-        String(ms).padStart(2,'0');
+
+    // Calcul du temps écoulé basé sur l'horloge de la tablette
+    const totalMs = tempsAccumuleMs + (Date.now() - dateDepart);
+
+    let m = Math.floor(totalMs / 60000);
+    let s = Math.floor((totalMs % 60000) / 1000);
+    let ms = Math.floor((totalMs % 1000) / 10);
+
+    if (chronoDisplay) {
+        chronoDisplay.textContent =
+            String(m).padStart(2, '0') + ':' +
+            String(s).padStart(2, '0') + ':' +
+            String(ms).padStart(2, '0');
+    }
+
     timeout = setTimeout(defilerTemps, 10);
 };
 
@@ -77,12 +97,18 @@ const demarrerChrono = () => {
  * Arrête le chronomètre, calcule le temps total écoulé en secondes, et affiche la section de saisie des réussites
  */
 const arreterChrono = () => {
-    estArrete = true;
-    clearTimeout(timeout);
-    tempsEcoule += Date.now() - dateDepart;
-    tempsTotalEnSecondes = Math.floor(tempsEcoule / 1000);
-    sectionSaisie.style.display = "block";
-    setTimeout(() => input.focus(), 100);
+    if (!estArrete) {
+        estArrete = true;
+        clearTimeout(timeout);
+
+        // Sauvegarde de l'instant exact de l'arrêt
+        tempsAccumuleMs += (Date.now() - dateDepart);
+        tempsTotalEnSecondes = Math.floor(tempsAccumuleMs / 1000);
+
+        // Affiche la zone de saisie du score
+        if (sectionSaisie) sectionSaisie.style.display = "block";
+        setTimeout(() => { if (input) input.focus(); }, 100);
+    }
 };
 
 /**
@@ -90,6 +116,9 @@ const arreterChrono = () => {
  * Enregistre la série dans le tableau des séries, puis affiche la liste des séries enregistrées
  */
 function calculerEtAfficher() {
+    // Valide que l'input existe avant de continuer
+    if (!input) return;
+
     // Valide le nombre de réussites entré par l'utilisateur
     let reussites = parseInt(input.value);
     if (isNaN(reussites)) {
@@ -106,12 +135,13 @@ function calculerEtAfficher() {
     afficherSeries();
 
     // Reset chrono pour le prochain tir
+    // Réinitialise l'interface pour le prochain tir
     input.value = "";
     input.classList.remove("input-error");
-    sectionSaisie.style.display = "none";
-    tempsEcoule = 0;
+    if (sectionSaisie) sectionSaisie.style.display = "none";
+    tempsAccumuleMs = 0;
     dateDepart = null;
-    chronoDisplay.textContent = "00:00:00";
+    if (chronoDisplay) chronoDisplay.textContent = "00:00:00";
     tempsTotalEnSecondes = 0;
 }
 
@@ -120,13 +150,13 @@ function calculerEtAfficher() {
  * Affiche également le total des réussites sur le nombre maximum possible
  */
 function afficherSeries() {
-    resultatBox.style.display = "block";
+    if (resultatBox) resultatBox.style.display = "block";
 
     // Affiche le nombre de séries enregistrées
     const penaliteMsg = document.getElementById("penalite-msg");
     const detailsTir  = document.getElementById("details-tir");
 
-    penaliteMsg.textContent = `${series.length} tir(s) enregistré(s)`;
+    if (penaliteMsg) penaliteMsg.textContent = `${series.length} tir(s) enregistré(s)`;
 
     // Construit le HTML pour afficher les détails de chaque série
     let html = "";
@@ -139,7 +169,7 @@ function afficherSeries() {
     const max   = series.length * 5;
     html += `<br><strong>Total : ${total} / ${max}</strong>`;
 
-    detailsTir.innerHTML = html;
+    if (detailsTir) detailsTir.innerHTML = html;
 }
 
 /**
@@ -171,8 +201,10 @@ async function envoyerSession() {
     };
 
     // Désactive le bouton d'envoi et change son texte pour indiquer que l'envoi est en cours
-    btnSession.disabled = true;
-    btnSession.textContent = "Envoi en cours...";
+    if (btnSession) {
+        btnSession.disabled = true;
+        btnSession.textContent = "Envoi en cours...";
+    }
 
     // Envoie la requête POST au serveur et gère la réponse
     try {
@@ -182,26 +214,33 @@ async function envoyerSession() {
             body: JSON.stringify(request)
         });
         if (response.ok) {
-            btnSession.textContent = "Session envoyée !";
-            btnSession.style.backgroundColor = "#7f8c8d";
+            if (btnSession) {
+                btnSession.textContent = "Session envoyée !";
+                btnSession.style.backgroundColor = "#7f8c8d";
+            }
+            // Retour au Hub
             setTimeout(() => { window.location.href = "seance.html"; }, 1500);
         } else {
             const err = await response.text();
             alert("Erreur serveur : " + err);
-            btnSession.disabled = false;
-            btnSession.textContent = "Enregistrer la session";
+            if (btnSession) {
+                btnSession.disabled = false;
+                btnSession.textContent = "Enregistrer la session";
+            }
         }
     } catch (e) {
         console.error("Erreur réseau :", e);
         alert("Erreur réseau.");
-        btnSession.disabled = false;
-        btnSession.textContent = "Enregistrer la session";
+        if (btnSession) {
+            btnSession.disabled = false;
+            btnSession.textContent = "Enregistrer la session";
+        }
     }
 }
 
-// Ajout des écouteurs d'événements pour les boutons et le champ de saisie
-startBtn.addEventListener("click", demarrerChrono);
-stopBtn.addEventListener("click", arreterChrono);
+// Attachement des écouteurs d'événements0
+if (startBtn) startBtn.addEventListener("click", demarrerChrono);
+if (stopBtn) stopBtn.addEventListener("click", arreterChrono);
 if (validerBtn) validerBtn.addEventListener("click", calculerEtAfficher);
-input.addEventListener("keypress", (e) => { if (e.key === "Enter") calculerEtAfficher(); });
-btnSession.addEventListener("click", envoyerSession);
+if (input) input.addEventListener("keypress", (e) => { if (e.key === "Enter") calculerEtAfficher(); });
+if (btnSession) btnSession.addEventListener("click", envoyerSession);
