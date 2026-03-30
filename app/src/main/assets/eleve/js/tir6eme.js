@@ -3,6 +3,8 @@ const conteneurTirs = document.getElementById("tirs");
 const btnAjouter   = document.getElementById("ajouter-tir");
 const btnSupprimer = document.getElementById("supprimer-tir");
 const btnEnvoyer   = document.getElementById("btn-envoyer");
+const btnRetourSeance = document.getElementById("retourSeance");
+
 
 // Variable pour suivre le nombre de séries ajoutées
 let nombreDeSeries = 0;
@@ -181,6 +183,17 @@ async function envoyerResultatAuServeur(total, medaille, nbSeries) {
 // Initialisation de l'interface avec une série de tir par défaut
 ajouterSerie();
 
+/**
+ * Affiche une boîte de confirmation avant de retourner à la page de session, pour éviter les pertes de données accidentelles
+ * @returns {Promise<void>} Une promesse qui se résout lorsque l'utilisateur a pris une décision, avec redirection vers la page de session si il confirme, ou maintien sur la page actuelle s'il annule
+ */
+const retourSeance = async() =>{
+    if (await demanderConfirmation("Abandonner la session en cours et retourner sur Session Biathlon ?")) {
+        window.location.href = "../pages/seance.html";
+    }
+}
+
 // Écouteurs d'événements pour les boutons d'ajout et de suppression de séries
 btnAjouter.addEventListener("click", ajouterSerie);
 btnSupprimer.addEventListener("click", supprimerSerie);
+if(btnRetourSeance) btnRetourSeance.addEventListener("click", retourSeance);

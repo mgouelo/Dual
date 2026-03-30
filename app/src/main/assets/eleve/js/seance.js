@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // C'est un Entraînement
         creerBloc("ENTRAÎNEMENT", [
             { texte: "Course d'Entraînement", url: "course.html" },
-            { texte: "Entraînement au Tir", url: (niveau === "6eme") ? "tir.html" : "tir_4eme.html" }
+            { texte: "Entraînement au Tir", url: (niveau === "6eme") ? "tir.html" : "tir4eme.html" }
         ]);
     }
 

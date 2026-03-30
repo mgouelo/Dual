@@ -111,6 +111,9 @@ function normaliserTexte(texte) {
 
 /**
  * Configure la logique d'une barre de recherche
+ * @param inputId L'id de l'input de recherche
+ * @param suggestionsId L'id de la boîte où afficher les suggestions
+ * @param numEleve Le numéro de l'élève (1 ou 2) pour gérer la logique d'exclusion du même élève dans les deux champs
  */
 function setupAutocomplete(inputId, suggestionsId, numEleve) {
     const input = document.getElementById(inputId);

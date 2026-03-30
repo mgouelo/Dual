@@ -7,36 +7,63 @@
     <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
+<!-- Page d'entraînement pour le tir, spécifique au cycle compétition (4ème) du biathlon -->
 <div id="container">
 
+    <!-- En-tête de la page avec le titre et la description de l'activité -->
     <header>
         <h1>Tir - Efficience</h1>
         <p>Objectif : Réussir vite et bien</p>
     </header>
 
+    <!-- Section d'affichage des séries de tir réalisées et des résultats obtenus -->
     <div id="chrono">00:00:00</div>
 
+    <!-- Barre d'action pour démarrer ou arrêter le chronomètre et enregistrer les résultats de tir -->
     <div id="buttons">
         <button id="start" class="button">Démarrer</button>
-        <button id="stop" class="button">Arrêter & Valider</button>
+        <button id="stop" class="button" style="display: none">Arrêter & Valider</button>
     </div>
 
-    <div id="section-saisie" style="display: none; margin-top: 25px;">
-        <div id="tirs">
-            <p>Nombre de réussites :
-                <input type="number" id="reussites" min="0" max="5" placeholder="0-5" autocomplete="off"/>
-            </p>
+    <!-- Section de saisie pour enregistrer les résultats de chaque série de tir, avec un modal pour saisir le nombre de cibles touchées et calculer les pénalités -->
+    <div id="modal-tir" class="modal" style="display:none">
+        <div class="modal-content tir-popup">
+            <h2 id="titre-tir">Tir Série n°X</h2>
+            <p>Combien de cibles touchées ? (0 à 5)</p>
+            <div class="tir-inputs-row">
+                <button class="btn-score" onclick="setScoreTir(0)">0</button>
+                <button class="btn-score" onclick="setScoreTir(1)">1</button>
+                <button class="btn-score" onclick="setScoreTir(2)">2</button>
+                <button class="btn-score" onclick="setScoreTir(3)">3</button>
+                <button class="btn-score" onclick="setScoreTir(4)">4</button>
+                <button class="btn-score" onclick="setScoreTir(5)">5</button>
+            </div>
+            <input type="hidden" id="score-temporaire" value="0">
+            <button id="valider-tir" class="button btn-start">VALIDER LE TIR</button>
         </div>
-        <button id="valider-tir" class="button btn-eval" style="margin-top: 15px;">Enregistrer le tir</button>
     </div>
 
+    <!-- Section pour afficher les résultats du tir et les pénalités associées, cachée au départ et affichée après la validation du tir -->
     <div id="resultat-4eme" class="result-box" style="display:none;">
         <h2 id="penalite-msg"></h2>
         <p id="details-tir"></p>
     </div>
 
+    <!-- Boutons pour enregistrer les résultats et revenir à la page de séance -->
     <button id="btn-envoyer" class="button" style="margin-top: 20px; background-color: #27ae60;">Enregistrer la session</button>
-    <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+    <button id="retourSeance" class="button btn-back">Retour séance</button>
+
+    <!-- Modal de confirmation pour les actions importantes, avec un message dynamique et des boutons de validation et d'annulation -->
+    <div id="custom-confirm" class="modal">
+        <div class="modal-content">
+            <h3>Confirmation</h3>
+            <p id="confirm-message">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok" class="btn-confirm">OK</button>
+                <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p class="info">Connecté au serveur local</p>

@@ -807,5 +807,30 @@ fun Application.module(appContext: Context) {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Erreur Serveur"))
             }
         }
+
+        // Route pour récupérer la VMA fraîche d'un seul élève
+        get("/api/eleves/{id}") {
+            val idEleve = call.parameters["id"]?.toIntOrNull()
+            if (idEleve == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "ID invalide"))
+                return@get
+            }
+
+            try {
+                // On va chercher l'élève dans la base
+                val eleve = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.EleveDao().getEleveById(idEleve)
+                }
+
+                if (eleve != null) {
+                    // On renvoie sa VMA
+                    call.respond(HttpStatusCode.OK, mapOf("vma" to eleve.vma))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Élève introuvable"))
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Erreur Serveur"))
+            }
+        }
     }
 }

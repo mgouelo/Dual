@@ -19,10 +19,30 @@
     <div id="chrono">00:00:00</div>
 
     <!-- Section d'affichage des informations sur la vitesse, la distance parcourue et la VMA actuelle pendant le test -->
-    <div id="infos">
-        <p>Vitesse : <span id="vitesse">8.0</span> km/h</p>
-        <p>Distance parcourue : <span id="distance">0</span> m</p>
-        <p>VMA actuelle : <span id="vma-actuelle">--</span> km/h</p>
+    <div id="infos" class="stats-dashboard">
+        <div class="stat-card">
+            <span class="stat-label">Vitesse</span>
+            <div class="stat-data">
+                <span id="vitesse" class="stat-value">8.0</span>
+                <span class="stat-unit">km/h</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-label">Distance</span>
+            <div class="stat-data">
+                <span id="distance" class="stat-value">0</span>
+                <span class="stat-unit">m</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-highlight">
+            <span class="stat-label">VMA actuelle</span>
+            <div class="stat-data">
+                <span id="vma-actuelle" class="stat-value">--</span>
+                <span class="stat-unit">km/h</span>
+            </div>
+        </div>
     </div>
 
     <!-- Boutons de contrôle pour le chronomètre du test de VMA -->
@@ -45,7 +65,7 @@
     </div>
 
     <!-- Boutons pour enregistrer les résultats du test de VMA et revenir à la page de séance -->
-    <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+    <button id="retourSeance" class="button btn-back">Retour séance</button>
 
     <!-- Modal de confirmation pour les actions importantes, comme l'enregistrement de la VMA obtenue après le test -->
     <div id="custom-confirm" class="modal">
@@ -65,5 +85,6 @@
 </div>
 
 <script src="../js/vma.js" defer></script>
+<script src="../js/syncVma.js" defer></script>
 </body>
 </html>
