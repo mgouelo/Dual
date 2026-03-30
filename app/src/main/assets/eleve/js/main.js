@@ -47,7 +47,7 @@ async function initialiserTablette() {
 
 //ÉTAPE 2 : Choix du binôme
 /**
- * Affiche la liste des élèves de la classe donnée, permet de sélectionner le 1er élève puis le 2ème élève pour former un binôme, et gère l'affichage en fonction du choix effectué
+ * Affiche 2 barres de recherches afin de renseinger les 2 élèves qui composeront les binomes. Gère l'affichage de suggestion de recherche, sécurité sur un binome avec 2 fois le même élèves, gestions des accent / trait d'union etc...
  * @param nomClasse Le nom de la classe dont on veut afficher les élèves (ex: "6A", "4B", etc.)
  * @returns {Promise<void>} Une promesse qui se résout lorsque le chargement des élèves est terminé, avec gestion des erreurs et mise à jour de l'interface en conséquence
  */
