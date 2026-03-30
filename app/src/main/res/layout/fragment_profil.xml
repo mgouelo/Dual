@@ -345,7 +345,7 @@
             <!-- Bouton déconnexion -->
             <Button
                 android:id="@+id/btnDisconnect"
-                android:layout_width="200dp"
+                android:layout_width="220dp"
                 android:layout_height="55dp"
                 android:text="@string/deconnexion"
                 android:textSize="20sp"

@@ -1,3 +1,4 @@
+// Récupération des éléments du DOM
 let chrono = document.getElementById("chrono");
 let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
@@ -6,10 +7,12 @@ let vitesseAff = document.getElementById("vitesse");
 let distanceAff = document.getElementById("distance");
 let resultat = document.getElementById("resultat");
 let parcours = document.getElementById("parcours");
+let resumeBtn = document.getElementById("resume");
 const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
 
+// Variables pour le chronomètre et les paliers de VMA
 let minutes = 0;
 let secondes = 0;
 let millisecondes = 0;
@@ -18,8 +21,7 @@ let estArrete = true;
 let tempsEcoule = 0; // en secondes
 let currentIndex = 0;
 
-/// Données extraites de VMA.pdf
-// tempsCumule est converti en secondes (ex: 1.30 = 90 secondes)
+// Table de correspondance des paliers de VMA (vitesse en km/h, VMA en km/h, distance du tour en mètres, temps cumulé en secondes)
 let tableVma = [
     // Palier 8 km/h
     { vitesse: 8, vma: 7.00, distance: 50, tempsCumule: 23 },
@@ -107,6 +109,27 @@ let tableVma = [
     { vitesse: 16, vma: 16.00, distance: 3750, tempsCumule: 1129 }
 ];
 
+// Récupération de l'élève qui court
+const coureurActif = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+const niveau = localStorage.getItem("niveau") || "6eme";
+const nomCoureurActif = document.getElementById("nom-eleve-vma");
+const vmaActuelleAff = document.getElementById("vma-actuelle");
+
+// Afficher le nom du coureur sur la page de test
+if (coureurActif && nomCoureurActif) {
+    nomCoureurActif.textContent = coureurActif.nomComplet;
+
+    // Affichage de la VMA actuelle
+    if (coureurActif.vma && coureurActif.vma > 0) {
+        vmaActuelleAff.textContent = coureurActif.vma.toFixed(1);
+    } else {
+        vmaActuelleAff.textContent = "N/A";
+    }
+}
+
+/**
+ * Fonction principale qui fait défiler le temps et met à jour l'affichage de la VMA et de la distance en fonction des paliers définis dans tableVma
+ */
 const defilerTemps = () => {
     if (estArrete) return;
 
@@ -154,61 +177,127 @@ const defilerTemps = () => {
     timeout = setTimeout(defilerTemps, 10);
 };
 
-const setColorTrack4eme = () => {
-    const niveau = localStorage.getItem("niveau") || "6eme";
+// Variables pour stocker les résultats temporaires avant validation
+const btnSaveVma = document.getElementById("btn-save-vma");
+let vmaTemporaire = 0; // Pour stocker la valeur avant validation
+let parcoursTexteTemporaire = "";
+let badgeTemporaire = "";
+let vmaDistanceTemporaire = 0; // Pour stocker la distance du tour associée au parcours
 
-    const coupellesJaunes = `Parcours : <span class="rond rond-jaune"></span> (coupelles jaunes – 250m)`
-    const coupellesBleues = `Parcours : <span class="rond rond-bleu"></span> (coupelles bleues – 300m)`
-    const coupellesRouges = `Parcours : <span class="rond rond-rouge"></span> (coupelles rouges – 350m)`
-    const plotsVerts = `Parcours : <span class="rond rond-vert"></span> (plots verts – 275m)`
-    const plotsBleus = `Parcours : <span class="rond rond-bleu"></span> (plots bleus – 325m)`
-    const plotsRouges = `Parcours : <span class="rond rond-rouge"></span> (plots rouges – 375m)`
-    const grandTour = `Parcours : <span class="rond rond-noir"></span> (grand tour – 400m)`
+/**
+ * Affiche le résultat de la VMA atteinte par le coureur après l'arrêt du chronomètre, en déterminant le parcours et le badge associés à la VMA réelle calculée
+ */
+const afficherResultatVMA = () => {
+    // Définitions des parcours pour chaque niveau
+    const coupellesJaunes = "Parcours : (coupelles jaunes – 250m)"
+    const coupellesBleues = "Parcours : (coupelles bleues – 300m)"
+    const coupellesRouges = "Parcours : (coupelles rouges – 350m)"
+    const plotsVerts = "Parcours : (plots verts – 275m)"
+    const plotsBleus = "Parcours : (plots bleus – 325m)"
+    const plotsRouges = "Parcours : (plots rouges – 375m)"
+    const grandTour = "Parcours : (grand tour – 400m)"
 
-    const vma = tableVma[Math.max(0, currentIndex - 1)].vma;
-    const vmaArrondie = Math.ceil(vma * 2) / 2;
-
-    let color = "";
-
-    if (niveau === "6eme") {
-
-    } else {
-
-    }
+    // On prend la VMA du palier précédent (car le coureur n'a pas réussi à tenir le palier actuel)
+    const vmaReelle = tableVma[Math.max(0, currentIndex - 1)].vma;
+    vmaTemporaire = Math.ceil(vmaReelle * 2) / 2; // On stocke la vma temporaire arrondie au 0.5 supérieur pour validation
 
     // Coupelles jaunes : 9.5 ou 10
-    if (vmaArrondie <= 9.5 || vmaArrondie === 10) {
-        color = coupellesJaunes;
+    if (vmaTemporaire <= 9.5 || vmaTemporaire === 10) {
+        badgeTemporaire = "bg-jaune";
+        parcoursTexteTemporaire = coupellesJaunes;
+        vmaDistanceTemporaire = 250;
 
         // Plots verts : 10.5 ou 11
-    } else if (vmaArrondie === 10.5 || vmaArrondie === 11) {
-        color = plotsVerts;
+    } else if (vmaTemporaire === 10.5 || vmaTemporaire === 11) {
+        badgeTemporaire = "bg-vert";
+        parcoursTexteTemporaire = plotsVerts;
+        vmaDistanceTemporaire = 275;
 
         // Coupelles bleues : 11.5 ou 12
-    } else if (vmaArrondie === 11.5 || vmaArrondie === 12) {
-        color = coupellesBleues;
+    } else if (vmaTemporaire === 11.5 || vmaTemporaire === 12) {
+        badgeTemporaire = "bg-bleu";
+        parcoursTexteTemporaire = coupellesBleues;
+        vmaDistanceTemporaire = 300;
 
         // Plots bleus : 12.5 ou 13
-    } else if (vmaArrondie === 12.5 || vmaArrondie === 13) {
-        color = plotsBleus;
+    } else if (vmaTemporaire === 12.5 || vmaTemporaire === 13) {
+        badgeTemporaire = "bg-bleu";
+        parcoursTexteTemporaire = plotsBleus;
+        vmaDistanceTemporaire = 325;
 
         // Coupelles rouges : 13.5 ou 14
-    } else if (vmaArrondie === 13.5 || vmaArrondie === 14) {
-        color = coupellesRouges;
+    } else if (vmaTemporaire === 13.5 || vmaTemporaire === 14) {
+        badgeTemporaire = "bg-rouge";
+        parcoursTexteTemporaire = coupellesRouges;
+        vmaDistanceTemporaire = 350;
 
         // Plots rouges : 14.5 ou 15
-    } else if (vmaArrondie === 14.5 || vmaArrondie === 15) {
-        color = plotsRouges;
+    } else if (vmaTemporaire === 14.5 || vmaTemporaire === 15) {
+        badgeTemporaire = "bg-rouge";
+        parcoursTexteTemporaire = plotsRouges;
+        vmaDistanceTemporaire = 375;
 
         // Grand tour : > 15
-    } else if (vmaArrondie > 15) {
-        color = grandTour;
+    } else {
+        badgeTemporaire = "bg-noir";
+        parcoursTexteTemporaire = grandTour;
+        vmaDistanceTemporaire = 400;
     }
 
-    return color;
+    // Génération du HTML de la carte de résultat
+    resultat.innerHTML = `
+        <div class="vma-card">
+            <p class="vma-label">VMA réelle : ${vmaReelle.toFixed(2)} km/h</p>
+            <span class="vma-main-val">${vmaTemporaire.toFixed(1)} km/h</span>
+            <div class="parcours-badge ${badgeTemporaire}">${parcoursTexteTemporaire}</div>
+        </div>
+    `;
+
+    btnSaveVma.style.display = "inline-block";
 }
 
+/**
+ * Enregistre la nouvelle VMA du coureur après confirmation de l'utilisateur, en mettant à jour l'objet local, le localStorage pour le Hub, et en envoyant la VMA au serveur pour la sauvegarde permanente
+ * @returns {Promise<void>} Une promesse qui se résout lorsque l'enregistrement est terminé, avec gestion de la confirmation utilisateur et mise à jour de l'interface en conséquence
+ */
+const enregistrerNouvelleVMA = async () => {
+    if (vmaTemporaire === 0 || !coureurActif) return;
 
+    const message = `Confirmer l'enregistrement de ${vmaTemporaire.toFixed(1)} km/h pour ${coureurActif.nomComplet} ?`;
+    const confirmation = await demanderConfirmation(message);
+
+    if (confirmation) {
+        // Mise à jour de l'objet local
+        coureurActif.vma = vmaTemporaire;
+        coureurActif.vma_badge = badgeTemporaire; // Stocke "bg-bleu", "bg-jaune", etc.
+        coureurActif.vma_parcours = parcoursTexteTemporaire; // Stocke le nom du parcours (ex : Parcours : (coupelles jaunes – 250m)
+
+        // On stocke la distance du tour associée au parcours (ex : 250)
+        coureurActif.vma_distance = vmaDistanceTemporaire;
+
+        // Sauvegarde pour le Hub (séance actuelle)
+        localStorage.setItem("coureur_actif_objet", JSON.stringify(coureurActif));
+
+        // Mise à jour du binôme (eleve1 ou eleve2)
+        const activeIndex = localStorage.getItem("active_index");
+        const key = (activeIndex === "0") ? "eleve1" : "eleve2";
+        localStorage.setItem(key, JSON.stringify(coureurActif));
+
+        // Sauvegarde permanente en BDD
+        await sauvegarderVmaServeur(coureurActif.id_eleve || coureurActif.id, vmaTemporaire, coureurActif.classe);
+
+        // Feedback visuel et nettoyage
+        btnSaveVma.style.display = "none";
+        resultat.innerHTML += `<p style="color: #27ae60; font-weight: bold; margin-top: 10px;">VMA enregistrée avec succès !</p>`;
+    }
+};
+
+// Ajouter l'écouteur d'événement pour le bouton
+btnSaveVma.addEventListener("click", enregistrerNouvelleVMA);
+
+/**
+ * Démarre le chronomètre et le défilement des paliers de VMA, en réinitialisant les affichages de résultat et de parcours, et en mettant à jour l'état d'arrêt
+ */
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
@@ -218,21 +307,33 @@ const demarrer = () => {
     }
 };
 
+/**
+ * Arrête le chronomètre et le défilement, calcule la VMA réelle atteinte, affiche le résultat avec le parcours associé, et met à jour l'interface pour permettre la validation ou la reprise du test
+ */
 const arreter = () => {
     if (!estArrete) {
         estArrete = true;
         clearTimeout(timeout);
 
-        const index = Math.max(0, currentIndex - 1);
-        const vma = tableVma[index].vma;
-        const vmaArrondie = Math.ceil(vma * 2) / 2;
+        // Calcul de la VMA réelle atteinte (en km/h) si le coureur n'atteint même pas le premier palier
+        if (currentIndex === 0) {
+            currentIndex = 1;
+        }
 
-        resultat.innerHTML = `VMA réelle : ${vma.toFixed(2)} km/h <br><br>`;
-        resultat.innerHTML += `VMA arrondie : ${vmaArrondie.toFixed(1)} km/h `;
-        parcours.innerHTML = setColorTrack4eme();
+        // On appelle la fonction qui centralise calcul et affichage
+        afficherResultatVMA();
+
+        // On fige l'interface
+        startBtn.style.display = "none";
+        stopBtn.style.display = "none";
+        resumeBtn.style.display = "inline-block";
     }
 };
 
+/**
+ * Réinitialise le chronomètre et les variables associées, avec une confirmation de l'utilisateur, et remet l'interface dans l'état initial pour permettre un nouveau test
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la réinitialisation est terminée, avec gestion de la confirmation utilisateur et mise à jour de l'interface en conséquence
+ */
 const reset = async() => {
     const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
 
@@ -246,9 +347,43 @@ const reset = async() => {
         distanceAff.textContent = "0";
         resultat.textContent = "";
         parcours.textContent = "";
+        resumeBtn.style.display = "none";
+        btnSaveVma.style.display = "none";
+        // Réaffichage des boutons
+        startBtn.style.display = "inline-block";
+        stopBtn.style.display = "inline-block";
     }
 };
 
+/**
+ * Permet de reprendre le test après un arrêt, en demandant une confirmation à l'utilisateur, et en remettant l'interface dans l'état de test en cours avec le défilement des paliers
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la reprise est terminée, avec gestion de la confirmation utilisateur et mise à jour de l'interface en conséquence
+ */
+const reprendre = async () => {
+    const confirmation = await demanderConfirmation("Voulez-vous vraiment reprendre le test ?");
+
+    if (confirmation) {
+        estArrete = false;
+
+        // On cache le résultat temporaire et le bouton enregistrer
+        resultat.textContent = "";
+        btnSaveVma.style.display = "none";
+
+        // On réaffiche les boutons normaux
+        resumeBtn.style.display = "none";
+        startBtn.style.display = "none"; // Optionnel : on garde le Stop uniquement
+        stopBtn.style.display = "inline-block";
+
+        // On relance le défilement
+        defilerTemps();
+    }
+};
+
+/**
+ * Affiche une boîte de confirmation personnalisée avec le message donné, et retourne une promesse qui se résout en true si l'utilisateur confirme, ou false s'il annule
+ * @param message Le message à afficher dans la boîte de confirmation
+ * @returns {Promise<unknown>} Une promesse qui se résout en true si l'utilisateur confirme, ou false s'il annule
+ */
 const demanderConfirmation = (message) => {
     document.getElementById("confirm-message").textContent = message;
 
@@ -273,6 +408,56 @@ const demanderConfirmation = (message) => {
     });
 };
 
+/**
+ * Envoie la VMA calculée au serveur via le système d'événement (Event Bus).
+ * Cela permet de mettre à jour la fiche élève ET d'enregistrer la performance dans la séance active.
+ */
+async function sauvegarderVmaServeur(eleveId, vmaValeur, nomClasse) {
+    // 1. On récupère le nom de l'élève actif pour correspondre aux attentes de Ktor
+    const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+    if (!coureur) return;
+
+    const parts = (coureur.nomComplet || "").split(" ");
+    const prenom = parts[0] || "Inconnu";
+    const nom = parts.slice(1).join(" ") || "Anonyme";
+
+    // 2. On prépare l'événement avec le type "VMA_RESULTAT" (comme dans KtorServer.kt)
+    const event = {
+        type: "VMA_RESULTAT",
+        studentId: `${prenom} ${nom}`,
+        payload: {
+            vma: vmaValeur
+        }
+    };
+
+    try {
+        // 3. On envoie tout à la route /event (et plus à /api/eleves/update-vma)
+        const response = await fetch('/event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(event)
+        });
+
+        if (response.ok) {
+            console.log("VMA synchronisée avec le profil élève ET ajoutée à la séance.");
+
+            // Actualiser l'affichage de la VMA sur la page après sauvegarde
+            const vmaActuelleAff = document.getElementById("vma-actuelle");
+            if (vmaActuelleAff) {
+                vmaActuelleAff.textContent = vmaValeur.toFixed(1);
+                vmaActuelleAff.style.color = "#27ae60";
+            }
+        } else {
+            console.error("Échec de la sauvegarde serveur.");
+        }
+    } catch (error) {
+        console.error("Erreur réseau :", error);
+    }
+}
+
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
 resetBtn.addEventListener("click", reset);
+resumeBtn.addEventListener("click", reprendre);

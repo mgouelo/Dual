@@ -2,46 +2,80 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>Séance Biathlon</title>
     <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+<!-- Page principale de la séance de biathlon, avec accès aux différentes sections d'entraînement et d'évaluation -->
 <div id="container">
 
+    <!-- En-tête de la page avec le titre et les informations sur la séance -->
     <header>
         <h1 id="titre-session">Session Biathlon</h1>
         <p id="info-classe">Préparation de l'épreuve</p>
     </header>
 
+    <!-- Carte de profil affichant le coureur actif et permettant d'inverser les rôles entre les binômes -->
+    <div id="active-profile-card" class="profile-card">
+        <div class="profile-content">
+            <div class="profile-text">
+                <p class="role-label">Coureur Actif</p>
+                <div class="name-info">
+                    <strong id="current-name">Chargement...</strong>
+                    <span id="current-gender">(-)</span>
+                </div>
+            </div>
+            <button class="button btn-switch" onclick="inverserRoles()">
+                <i class="fa-solid fa-arrows-rotate"></i> Inverser
+            </button>
+        </div>
+    </div>
+
+    <!-- Sections principales de la séance, regroupant les différentes activités d'entraînement et d'évaluation -->
     <div class="hub-sections">
 
+        <!-- Section d'initialisation avec le test VMA pour évaluer la condition physique de l'élève -->
         <div class="mode-group">
             <p class="mode-title">Initialisation</p>
             <button class="button" onclick="location.href='vma.html'">Faire le Test VMA</button>
         </div>
 
+        <hr class="separator">
+
+        <!-- Section d'entraînement regroupant les activités de tir et de course pour préparer l'élève à l'épreuve finale -->
         <div class="mode-group">
             <p class="mode-title">Entraînement</p>
-            <button id="btn-tir" class="button" onclick="location.href='tir.html'">Tir</button>
-            <button class="button" onclick="location.href='course.html'">Course</button>
+            <div class="btn-group">
+                <button id="btn-tir" class="button" onclick="location.href='tir6eme.html'">Tir</button>
+                <button class="button" onclick="location.href='course.html'">Course</button>
+            </div>
         </div>
 
         <hr class="separator">
 
+        <!-- Section d'évaluation avec le lancement de l'épreuve finale pour tester les compétences de l'élève dans des conditions réelles -->
         <div class="mode-group">
             <p class="mode-title">Évaluation</p>
             <button id="btn-eval" class="button btn-eval">Lancer l'Épreuve Finale</button>
-        </div>
 
+            <hr class="separator">
+
+            <!-- Section de suivi permettant à l'élève de visualiser son historique de séances et d'évaluer ses progrès au fil du temps -->
+            <p class="mode-title">Suivi</p>
+            <button class="button" onclick="location.href='historique.html'">Visualiser mon Historique</button>
+        </div>
     </div>
 
+    <!-- Pied de page avec un bouton pour changer de niveau et revenir à la page de sélection du niveau -->
     <footer>
-        <button class="button btn-back" onclick="location.href='../pages/choix_niveau.html'">Retour choix niveau</button>
+        <button class="button btn-back" onclick="location.href='../pages/choix_niveau.html'">Changer de niveau</button>
     </footer>
-
 </div>
 
-<script src="../js/seance.js"></script>
+<script src="../js/seance.js" defer></script>
 </body>
 </html>

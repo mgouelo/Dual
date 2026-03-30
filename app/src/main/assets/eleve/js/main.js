@@ -1,165 +1,109 @@
 const container = document.getElementById("buttons");
 const typeClasse = document.getElementById("typeClasse");
+const retourClasseBtn = document.getElementById("retourClasseBtn");
+const btnRetourBinomes = document.getElementById("btnRetourBinomes");
 
+let eleve1 = null;
+
+//ÉTAPE 1 : Connexion avec le professeur
 /**
- * Transforme "6A" en "6e A" ou "3Lisbonne" en "3e Lisbonne" pour l'affichage web
+ * Fonction principale qui initialise la tablette en se connectant au serveur pour connaître la séance en cours, mémorise les choix du professeur et affiche les élèves de la classe correspondante
+ * @returns {Promise<void>} Une promesse qui se résout lorsque l'initialisation est terminée, avec gestion des erreurs et mise à jour de l'interface en conséquence
  */
-function formaterNomClasse(nomBrut) {
-    if (!nomBrut || nomBrut.length < 2) return nomBrut;
-
-    const premierCaractere = nomBrut.charAt(0);
-
-    // Vérifie si le premier caractère est un chiffre (0-9)
-    if (!/^\d$/.test(premierCaractere)) {
-        return nomBrut;
-    }
-
-    const reste = nomBrut.substring(1).trim();
-    return `${premierCaractere}e ${reste}`;
-}
-
-/**
- * Supprime les accents d'une chaîne de caractères ("Adèle" -> "Adele")
- */
-function enleverAccents(str) {
-    if (!str) return "";
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-// Lancement au chargement de la page
-window.onload = () => {
-    // On lit l'URL (ex: http://serveur/?classe=3A)
-    const urlParams = new URLSearchParams(window.location.search);
-    const classePredefinie = urlParams.get('classe');
-
-    if (classePredefinie) {
-        chargerElevesDeLaClasse(classePredefinie);
-    } else {
-        container.innerHTML = "<p>Erreur : Aucune classe détectée. Veuillez scanner le QR Code du professeur.</p>";
-    }
-};
-
-/**
- * Charge les élèves de la classe et affiche les champs de recherche
- */
-async function chargerElevesDeLaClasse(nomClasse) {
+async function initialiserTablette() {
     try {
-        const response = await fetch(`/api/eleves/par-classe/${encodeURIComponent(nomClasse)}`);
-        const eleves = await response.json();
+        //On demande au serveur quelle est la séance en cours
+        const response = await fetch('/api/seance/active');
 
-        // On vide l'écran de chargement
-        container.innerHTML = "";
-
-        typeClasse.style.display = "block";
-
-        // formatage pour le titre
-        typeClasse.innerHTML = `<h2>Classe ${formaterNomClasse(nomClasse)}</h2><p>Constituez votre binôme (Recherche par prénom) :</p>`;
-
-        // Variables pour stocker les vrais objets élève sélectionnés
-        let eleve1Selectionne = null;
-        let eleve2Selectionne = null;
-
-        // génère une barre de recherche
-        function creerChampRecherche(id, placeholder, onSelectCallback) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'search-container';
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = id;
-            input.placeholder = placeholder;
-            input.className = 'input-search';
-            input.autocomplete = "off"; // empêche l'historique des entrées navigateur (Sinon la tablette pourrait proposer le nom de l'élève qui avait la tablette au cours d'avant)
-
-            const suggestionsDiv = document.createElement('div');
-            suggestionsDiv.className = 'suggestions-list';
-
-            // Quand l'élève tape au clavier
-            input.addEventListener('input', function() {
-                // récupère la saisie, on met en minuscule, on enlève les espaces et les accents
-                const valeurSaisie = enleverAccents(this.value.toLowerCase().trim());
-                suggestionsDiv.innerHTML = ''; // On vide
-
-                if (!valeurSaisie) return;
-
-                // filtre en enlevant aussi les accents des prénoms de la liste
-                const resultats = eleves.filter(el => {
-                    const prenomFiltre = enleverAccents(el.prenom.toLowerCase());
-                    return prenomFiltre.startsWith(valeurSaisie);
-                });
-
-                resultats.forEach(eleve => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-
-                    // affiche le vrai prénom (avec accents) à l'écran
-                    item.textContent = `${eleve.prenom} ${eleve.nom}`;
-
-                    // Clic sur une suggestion
-                    item.addEventListener('click', function() {
-                        input.value = item.textContent; // Affiche dans le champ
-                        suggestionsDiv.innerHTML = '';  // Ferme la liste
-                        onSelectCallback(eleve);        // Sauvegarde l'élève en mémoire
-                    });
-
-                    suggestionsDiv.appendChild(item);
-                });
-            });
-
-            // Fermer les suggestions si on clique dans le vide
-            document.addEventListener('click', function(e) {
-                if (e.target !== input) suggestionsDiv.innerHTML = '';
-            });
-
-            wrapper.appendChild(input);
-            wrapper.appendChild(suggestionsDiv);
-            return wrapper;
+        if (!response.ok) {
+            container.classList.add("flex-column");
+            container.innerHTML = "<h2>En attente du professeur...</h2><p style='text-align:center;'>Aucune séance n'est actuellement lancée sur l'appareil du professeur.</p>";
+            return;
         }
-        // ---------------------------------------------------
 
-        // création et ajout des deux champs
-        const champEleve1 = creerChampRecherche('eleve1', 'Prénom Élève 1...', (eleve) => { eleve1Selectionne = eleve; });
-        const champEleve2 = creerChampRecherche('eleve2', 'Prénom Élève 2...', (eleve) => { eleve2Selectionne = eleve; });
+        const seance = await response.json();
 
-        container.appendChild(champEleve1);
-        container.appendChild(document.createElement('br'));
-        container.appendChild(champEleve2);
+        //On mémorise les choix du professeur en local
+        localStorage.setItem("seance_type", seance.type);
+        localStorage.setItem("seance_classe", seance.classe);
 
-        // création du bouton de validation (il réutilise ta classe "button")
-        const btnValider = document.createElement('button');
-        btnValider.textContent = "Valider le binôme";
-        btnValider.className = "button";
-        btnValider.style.marginTop = "25px";
+        //Déduction automatique du niveau (Si le nom de la classe contient 4 ou 3 -> mode 4ème, sinon 6ème)
+        if (seance.classe.includes("4") || seance.classe.includes("3")) {
+            localStorage.setItem("niveau", "4eme");
+        } else {
+            localStorage.setItem("niveau", "6eme");
+        }
 
-        // logique de validation
-        btnValider.onclick = () => {
-            if (!eleve1Selectionne || !eleve2Selectionne) {
-                alert("Veuillez rechercher et sélectionner les deux élèves dans la liste.");
-                return;
-            }
-            if (eleve1Selectionne.prenom === eleve2Selectionne.prenom && eleve1Selectionne.nom === eleve2Selectionne.nom) {
-                alert("Un élève ne peut pas faire équipe avec lui-même !");
-                return;
-            }
-
-            // stocke dans le cache du navigateur
-            localStorage.setItem("eleve1_prenom", eleve1Selectionne.prenom);
-            localStorage.setItem("eleve1_nom", eleve1Selectionne.nom);
-            localStorage.setItem("eleve2_prenom", eleve2Selectionne.prenom);
-            localStorage.setItem("eleve2_nom", eleve2Selectionne.nom);
-
-            // stocke le nom de classe brut (ex: "6A") pour pouvoir requêter la BDD plus tard
-            localStorage.setItem("eleve_classe", nomClasse);
-
-            //  page suivante a modifier après
-            window.location.href = "pages/choix_niveau.html";
-        };
-
-        container.appendChild(document.createElement('br'));
-        container.appendChild(btnValider);
+        //On saute l'écran de sélection de classe et on affiche directement les élèves
+        chargerElevesDeLaClasse(seance.classe);
 
     } catch (error) {
         console.error("Erreur:", error);
-        container.innerHTML = "<p>Erreur lors de la récupération des élèves.</p>";
+        container.innerHTML = "<p>Erreur de connexion au serveur. Vérifiez le réseau.</p>";
     }
 }
+
+//ÉTAPE 2 : Choix du binôme
+/**
+ * Affiche la liste des élèves de la classe donnée, permet de sélectionner le 1er élève puis le 2ème élève pour former un binôme, et gère l'affichage en fonction du choix effectué
+ * @param nomClasse Le nom de la classe dont on veut afficher les élèves (ex: "6A", "4B", etc.)
+ * @returns {Promise<void>} Une promesse qui se résout lorsque le chargement des élèves est terminé, avec gestion des erreurs et mise à jour de l'interface en conséquence
+ */
+async function chargerElevesDeLaClasse(nomClasse) {
+    try {
+        const response = await fetch(`/api/eleves/par-classe/${nomClasse}`);
+        const eleves = await response.json();
+
+        if(btnRetourBinomes) btnRetourBinomes.style.display = "block";
+
+        container.innerHTML = "";
+        container.classList.remove("flex-column");
+        typeClasse.style.display = "block";
+
+        let texteTitre = (eleve1 === null) ? "Qui utilise la tablette ?" : "Binôme avec " + eleve1.nomComplet + " : Sélectionnez le partenaire";
+        typeClasse.innerHTML = "<h2>" + texteTitre + "</h2>";
+
+        // Filtrage pour ne pas afficher le 1er élève s'il est déjà choisi
+        let listeAffichee = (eleve1 !== null) ? eleves.filter(e => e.nomComplet !== eleve1.nomComplet) : eleves;
+
+        listeAffichee.forEach(eleve => {
+            const btn = document.createElement("button");
+            btn.className = "button";
+            btn.textContent = eleve.nomComplet;
+
+            btn.onclick = function() {
+                if (eleve1 === null) {
+                    eleve1 = eleve;
+                    localStorage.setItem("eleve1", JSON.stringify(eleve));
+                    chargerElevesDeLaClasse(nomClasse);
+                } else {
+                    localStorage.setItem("eleve2", JSON.stringify(eleve));
+                    localStorage.setItem("active_index", "0");
+
+                    //On saute le choix du niveau
+                    window.location.href = "pages/seance.html";
+                }
+            };
+            container.appendChild(btn);
+        });
+
+        //Gestion du bouton de retour "Changer le 1er élève"
+        retourClasseBtn.innerHTML = "";
+        if (eleve1 !== null) {
+            const btnRetour = document.createElement("button");
+            btnRetour.className = "button btn-back";
+            btnRetour.textContent = "⬅ Changer le 1er élève";
+            btnRetour.onclick = function() {
+                eleve1 = null;
+                chargerElevesDeLaClasse(nomClasse);
+            };
+            retourClasseBtn.appendChild(btnRetour);
+        }
+
+    } catch (error) {
+        container.innerHTML = "<p>Erreur lors du chargement des élèves.</p>";
+    }
+}
+
+//On lance la fonction principale au chargement de la page index
+window.onload = initialiserTablette;

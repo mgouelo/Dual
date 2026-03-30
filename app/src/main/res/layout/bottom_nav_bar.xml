@@ -79,4 +79,40 @@
             android:textSize="18sp"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/nav_resultats_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        android:padding="8dp"
+        app:layout_constraintStart_toEndOf="@id/nav_classes_button"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="48dp">
+
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_stat_name"
+            android:background="@android:color/transparent"
+            android:clickable="false"
+            android:focusable="false"
+            android:duplicateParentState="true"
+            android:scaleType="fitCenter"
+            android:padding="4dp"
+            app:tint="@color/bottom_nav_color"
+            android:contentDescription="Résultats"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Résultats"
+            android:textColor="@color/bottom_nav_color"
+            android:duplicateParentState="true"
+            android:textSize="18sp"/>
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

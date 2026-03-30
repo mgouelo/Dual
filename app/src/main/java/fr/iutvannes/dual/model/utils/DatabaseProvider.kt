@@ -3,19 +3,26 @@ import androidx.room.Room
 import fr.iutvannes.dual.model.database.AppDatabase
 
 /**
- * Singleton permettant d'initialiser la base de données.
- * Cela permet d'éviter d'avoir à le faire dans chaque activité.
+ * A singleton is used to initialize the database.
+ * This avoids having to do it in each activity.
  */
 object DatabaseProvider {
     lateinit var db: AppDatabase
 
+    /**
+     * Initializes the database.
+     *
+     * @param context Application context.
+     */
     fun init(context: Context) {
         if (!::db.isInitialized) {
             db = Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "dual.db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
         }
     }
 }

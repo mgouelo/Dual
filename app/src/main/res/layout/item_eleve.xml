@@ -2,13 +2,15 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
     app:cardCornerRadius="14dp"
     app:strokeWidth="2dp"
     app:strokeColor="@color/bleu"
-    app:cardUseCompatPadding="true">
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -25,11 +27,11 @@
             android:textSize="16sp"
             android:maxLines="1"
             android:ellipsize="end"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tvGenre"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_chainStyle="packed" />
+            app:layout_constraintEnd_toStartOf="@id/tvGenre"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Genre -->
         <TextView
@@ -42,22 +44,47 @@
             android:paddingStart="8dp"
             android:paddingEnd="12dp"
             app:layout_constraintStart_toEndOf="@id/tvNomPrenom"
-            app:layout_constraintEnd_toStartOf="@id/btnEdit"
+            app:layout_constraintEnd_toStartOf="@id/btnResult"
             app:layout_constraintTop_toTopOf="@id/tvNomPrenom"
             app:layout_constraintBottom_toBottomOf="@id/tvNomPrenom" />
+
+        <!-- Bouton résultat -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnResult"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            app:cardBackgroundColor="@color/vert"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toStartOf="@id/btnEdit"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/resultat"
+                android:contentDescription="afficher résultat élève"
+                app:tint="@color/blanc" />
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Bouton modifier -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/btnEdit"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginEnd="10dp"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
+            android:layout_marginEnd="8dp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless"
             app:cardBackgroundColor="@color/bleu"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
             app:layout_constraintEnd_toStartOf="@id/btnDelete"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
@@ -67,8 +94,8 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/edit"
-                app:tint="@color/blanc"
-                android:contentDescription="modifier élève" />
+                android:contentDescription="modifier élève"
+                app:tint="@color/blanc" />
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Bouton supprimer -->
@@ -76,12 +103,12 @@
             android:id="@+id/btnDelete"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless"
             app:cardBackgroundColor="@color/rouge"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
@@ -91,9 +118,10 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/delete"
-                app:tint="@color/blanc"
-                android:contentDescription="supprimer élève" />
+                android:contentDescription="supprimer élève"
+                app:tint="@color/blanc" />
         </com.google.android.material.card.MaterialCardView>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
