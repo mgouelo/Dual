@@ -28,7 +28,7 @@
 
         <!-- Boutons de contrôle du chronomètre -->
         <div id="buttonTraining">
-            <button id="reset" class="button">Reset</button>
+            <button id="reset" class="button">Effacer</button>
             <button id="stop" class="button">Arrêter</button>
             <button id="start" class="button">Démarrer</button>
         </div>
@@ -56,14 +56,15 @@
 
         <!-- Boutons pour enregistrer la session et revenir à la page de séance -->
         <button id="btn-envoyer" class="button" style="margin-top: 20px; background-color: #27ae60;">Enregistrer la session</button>
-        <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+        <button id="retourSeance" class="button btn-back">Retour séance</button>
 
         <!-- Pied de page avec information de connexion -->
         <footer>
-            <p class="info">Connecté au serveur local</p>
+            <p class="info">Connecté au en tant que élève</p>
         </footer>
     </div>
 
 <script src="../js/course.js" defer></script>
+<script src="../js/syncVma.js" defer></script>
 </body>
 </html>

@@ -411,17 +411,32 @@ async function envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinal
     const prenom = parts[0] || "";
     const nom = parts.slice(1).join(" ");
 
+    // On prépare le tableau des tours de course pour l'envoyer au serveur
+    // Le serveur Ktor attend un tableau de JSON contenant 'numero' et 'temps_ms'
+    const toursPourServeur = historiqueEpreuve.map(t => {
+        return {
+            numero: t.tour,
+            temps_ms: t.course * 1000 // Convertir les secondes en ms pour le serveur
+        };
+    });
+
     const event = {
         type: "RESULTAT_EPREUVE_FINALE",
         studentId: `${prenom} ${nom}`,
         payload: {
             note_finale:   parseFloat(noteFinale),
             nb_tours:      nbTours,
-            note_perf:     notePerf,
-            note_regul:    noteRegul,
-            note_tir:      noteTir,
+            note_perf:     parseFloat(notePerf),
+            note_regul:    parseFloat(noteRegul),
+            note_tir:      parseFloat(noteTir),
             cibles_touchees: totalTir,
             ecart_max_course: ecartMax,
+            // Ajout des ressentis récupérés de la modale
+            ressenti_intensite: autoEval.intensite || "",
+            ressenti_durer: autoEval.durer || "",
+            ressenti_lucidite: autoEval.lucidite || "",
+            // Envoi des tours pour l'historique détaillé
+            tours: toursPourServeur,
             timestamp:     Date.now()
         }
     };
@@ -457,6 +472,8 @@ async function envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinal
 const afficherResultatsFinaux = (nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir) => {
     // Calcul de la note totale sur 15
     const noteFinale = (parseFloat(notePerf) + parseFloat(noteRegul) + parseFloat(noteTir)).toFixed(1);
+
+    // Appel à l'envoi APRÈS le calcul final et avec toutes les données
     envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinale, totalTir, ecartMax);
 
     // fonction utilitaire pour mettre à jour le texte d'un élément par son ID

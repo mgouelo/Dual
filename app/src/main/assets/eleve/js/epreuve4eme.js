@@ -382,7 +382,7 @@ const gestionnaireEtape = () => {
         case 2: // POINT B : Sortie Pas de Tir 1
             if (pointsPassage.B === 0) {
                 pointsPassage.B = secondesTotales;
-                ajouterAlaListe("B - Sortie Tir 1", tempsActuel);
+                ajouterAlaListe(`B - Sortie Tir 1 (🎯${tirsData.serie1}/5)`, tempsActuel);
                 consigne.textContent = "Course : 2 tours";
                 btnPrincipal.textContent = "ARRIVÉE TIR 2 (C)";
                 etapeActuelle = 3;
@@ -403,7 +403,7 @@ const gestionnaireEtape = () => {
         case 4: // POINT D : Sortie Pas de Tir 2
             if (pointsPassage.D === 0) {
                 pointsPassage.D = secondesTotales;
-                ajouterAlaListe("D - Sortie Tir 2", tempsActuel);
+                ajouterAlaListe(`D - Sortie Tir 2 (🎯${tirsData.serie2}/5)`, tempsActuel);
                 consigne.textContent = "Sprint Final : 2 tours !";
                 btnPrincipal.textContent = "LIGNE D'ARRIVÉE (E)";
                 etapeActuelle = 5;

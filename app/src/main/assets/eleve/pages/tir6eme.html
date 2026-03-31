@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Entraînement Tir</title>
+    <title>Entraînement Tir 6ème</title>
     <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
@@ -16,29 +16,61 @@
         <p>Réalise tes séries et enregistre ton score</p>
     </header>
 
-    <!-- Section d'affichage des séries de tir réalisées et des résultats obtenus -->
-    <div id="tirs"></div>
-
     <!-- Barre d'action pour ajouter ou supprimer des séries de tir -->
-    <div class="action-bar">
-        <button id="ajouter-tir" class="button">Ajouter série</button>
-        <button id="supprimer-tir" class="button">Supprimer série</button>
+    <div class="tir-action-container">
+        <button id="btn-nouveau-tir" class="button btn-nouveau">🎯 Saisir un tir</button>
+        <button id="btn-annuler-tir" class="button btn-annuler" style="display: none;">Annuler le dernier tir</button>
     </div>
 
-    <!-- Section de saisie pour enregistrer les résultats de chaque série de tir -->
-    <div id="resultats" style="display: none; margin-top: 20px;">
-        <p style="font-size: 1.6rem;">
-            Total réussites : <span id="total" style="font-weight: bold;">-</span>
-        </p>
-        <div id="medaille-display" style="margin-top: 15px; font-weight: bold;"></div>
+    <!-- Modal pour saisir le nombre de cibles touchées après chaque série de tir, avec un titre dynamique et des boutons de score -->
+    <div id="modal-tir" class="modal" style="display: none;">
+        <div class="modal-content tir-popup">
+            <h2 id="titre-tir">Tir Série n°X</h2>
+            <p>Combien de cibles touchées ? (0 à 5)</p>
+            <div class="tir-inputs-row">
+                <button class="btn-score" onclick="setScoreTir(0)">0</button>
+                <button class="btn-score" onclick="setScoreTir(1)">1</button>
+                <button class="btn-score" onclick="setScoreTir(2)">2</button>
+                <button class="btn-score" onclick="setScoreTir(3)">3</button>
+                <button class="btn-score" onclick="setScoreTir(4)">4</button>
+                <button class="btn-score" onclick="setScoreTir(5)">5</button>
+            </div>
+            <input type="hidden" id="score-temporaire" value="-1">
+            <button id="valider-tir" class="button btn-start">VALIDER LE TIR</button>
+        </div>
+    </div>
+
+    <!-- Section pour afficher les résultats du tir et les pénalités associées, cachée au départ et affichée après la validation du tir -->
+    <div id="resultats-6eme" class="resultats-container" style="display: none;">
+        <div id="liste-tirs"></div>
+
+        <div class="bilan-global-box">
+            <p class="bilan-total-text">
+                Total réussites : <span id="total" class="total-bold">-</span>
+            </p>
+            <div id="medaille-display" class="medaille-display-box"></div>
+        </div>
     </div>
 
     <!-- Boutons pour enregistrer les résultats et revenir à la page de séance -->
-    <button id="btn-envoyer" class="button" style="background-color: #27ae60;">Envoyer les résultats</button>
-    <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+    <button id="btn-envoyer" class="button" style="margin-top: 20px; background-color: #27ae60; display: none; margin: 20px auto 0 auto;">Enregistrer les résultats</button>
+    <button id="retourSeance" class="button btn-back btn-retour-seance">Retour séance</button>
 
+    <!-- Modal de confirmation pour les actions importantes, avec un message dynamique et des boutons pour confirmer ou annuler l'action -->
+    <div id="custom-confirm" class="modal">
+        <div class="modal-content">
+            <h3>Confirmation</h3>
+            <p id="confirm-message">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok" class="btn-confirm">OK</button>
+                <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pied de page avec information de connexion -->
     <footer>
-        <p class="info">Connecté au serveur local</p>
+        <p class="info">Connecté au en tant que élève</p>
     </footer>
 </div>
 

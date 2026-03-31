@@ -10,6 +10,7 @@ let resumeBtn = document.getElementById("resume");
 const modal = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
+const btnRetourSeance = document.getElementById("retourSeance");
 
 let minutes = 0;
 let secondes = 0;
@@ -426,7 +427,18 @@ async function sauvegarderVmaServeur(eleveId, vmaValeur, nomClasse) {
     }
 }
 
+/**
+ * Affiche une boîte de confirmation avant de retourner à la page de session, pour éviter les pertes de données accidentelles
+ * @returns {Promise<void>} Une promesse qui se résout lorsque l'utilisateur a pris une décision, avec redirection vers la page de session si il confirme, ou maintien sur la page actuelle s'il annule
+ */
+const retourSeance = async() =>{
+    if (await demanderConfirmation("Abandonner la session en cours et retourner sur Session Biathlon ?")) {
+        window.location.href = "../pages/seance.html";
+    }
+}
+
 startBtn.addEventListener("click", demarrer);
 stopBtn.addEventListener("click", arreter);
 resetBtn.addEventListener("click", reset);
 resumeBtn.addEventListener("click", reprendre);
+if(btnRetourSeance) btnRetourSeance.addEventListener("click", retourSeance);

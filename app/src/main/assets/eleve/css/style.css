@@ -9,6 +9,11 @@
     --blanc: #ffffff;
 }
 
+/* Empêche le rechargement de la page sur mobile lors du scroll */
+html, body {
+    overscroll-behavior-y: none;
+}
+
 /* Style global */
 body {
     font-family: "Poppins", Arial, sans-serif;
@@ -1219,4 +1224,128 @@ footer .info {
     padding: 8px 5px;
     font-size: 0.8rem;
     border-radius: 8px;
+}
+
+/* --- TABLEAU DE BORD DES STATISTIQUES (Test VMA) --- */
+.stats-dashboard {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px; /* Espace entre les cartes */
+    margin: 20px 0;
+}
+
+/* Style de base pour chaque petite carte */
+.stat-card {
+    flex: 1; /* Les 3 cartes prennent la même largeur */
+    background-color: #f8f9fa; /* Gris très clair */
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Petite ombre douce */
+    border: 1px solid #e9ecef;
+}
+
+/* Le petit titre au-dessus (ex: "Vitesse") */
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+/* Le conteneur du chiffre et de l'unité */
+.stat-data {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+}
+
+/* Le gros chiffre dynamique */
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #333;
+}
+
+/* L'unité (km/h, m) */
+.stat-unit {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* --- CARTE MISE EN AVANT (VMA Actuelle) --- */
+.stat-highlight {
+    background-color: #e8f4fd; /* Fond légèrement bleuté */
+    border: 2px solid #1456DB; /* Bordure bleue */
+}
+
+.stat-highlight .stat-label {
+    color: #1456DB;
+}
+
+.stat-highlight .stat-value {
+    color: #1456DB;
+}
+
+.stat-highlight .stat-unit {
+    color: #1456DB;
+}
+
+/* =========================================================
+   STYLES SPÉCIFIQUES - TIR 6ÈME
+   ========================================================= */
+
+/* Conteneur des boutons d'action en haut */
+.tir-action-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Boutons d'actions Tir */
+.btn-nouveau {
+    background-color: var(--blue);
+}
+
+.btn-annuler {
+    background-color: #e74c3c;
+    margin-top: 10px;
+}
+
+.btn-retour-seance {
+    margin-top: 15px;
+}
+
+/* Conteneur global des résultats */
+.resultats-container {
+    margin-top: 20px;
+}
+
+/* Encadré du bilan global (Total + Médaille) */
+.bilan-global-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #303586;
+    text-align: center;
+}
+
+/* Texte du total */
+.bilan-total-text {
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.total-bold {
+    font-weight: bold;
+}
+
+/* Encadré de la médaille généré en JS */
+.medaille-display-box {
+    margin-top: 15px;
+    font-weight: bold;
+    color: white;
 }

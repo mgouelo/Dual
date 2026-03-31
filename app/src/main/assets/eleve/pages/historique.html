@@ -24,53 +24,46 @@
         </div>
     </header>
 
-    <!-- section principale de la page affichant l'historique des séances -->
+    <!-- section principale de la page affichant la liste des séances passées, avec un message de chargement initial et des templates pour les différentes cartes d'archive, cachés par défaut -->
     <div id="liste-historique">
-        <!-- message de chargement affiché pendant la récupération des données -->
         <p id="msg-chargement" class="text-center-italic">
             Récupération de tes anciennes séances...
         </p>
 
-        <!-- modèle de carte d'archive pour une séance, caché par défaut et cloné pour chaque séance récupérée -->
-        <div class="carte-archive" id="template-carte-historique" style="display: none;">
-            <!-- en-tête de la carte d'archive affichant le titre de la séance, la date, la note globale et un bouton pour afficher/masquer les détails -->
+        <div class="carte-archive" id="template-epreuve-4eme" style="display: none;">
             <div class="archive-header">
                 <div>
-                    <h3 class="archive-titre">Épreuve Finale</h3>
-                    <p class="archive-date">12/03/2026</p>
+                    <h3 class="archive-titre">Épreuve Finale 4ème</h3>
+                    <p class="archive-date">Date</p>
                 </div>
                 <div class="archive-header-right">
-                    <span class="archive-note">10.5 / 12</span>
+                    <span class="archive-note">/ 12</span>
                     <span class="archive-toggle">▼</span>
                 </div>
             </div>
 
-            <!-- contenu détaillé de la carte d'archive affichant l'analyse de la séance et les résultats, caché par défaut et affiché lorsque l'utilisateur clique sur le bouton de bascule -->
             <div class="archive-content" style="display: none;">
-                <!-- section d'analyse de la séance, affichant les observations et les conseils pour l'élève -->
                 <h4 class="archive-section-title">Tes Ressentis</h4>
-                <div class="audit-eleve archive-audit archive-audit-4eme" style="display: none; pointer-events: none; opacity: 0.9;"></div>
-                <div class="audit-eleve archive-audit archive-audit-6eme" style="display: none; pointer-events: none; opacity: 0.9;"></div>
+                <div class="audit-eleve archive-audit archive-audit-4eme" style="pointer-events: none; opacity: 0.9;"></div>
 
-                <!-- section de résultats de la séance, affichant les performances de l'élève dans différentes catégories (intensité, tir, VMA) avec des valeurs, des notes et des médailles -->
                 <h4 class="archive-section-title mt-20">Mon Bilan</h4>
                 <div class="resultats-grid">
                     <div class="resultat-card">
-                        <h3 class="archive-col1-titre">Titre 1</h3>
+                        <h3 class="archive-col1-titre">Vitesse (Intensité)</h3>
                         <p class="valeur archive-col1-val">-</p>
                         <p class="detail archive-col1-detail" style="display: none;"></p>
                         <p class="note archive-col1-note">-</p>
                         <div class="medaille archive-col1-medaille" style="display:none;">Médaille</div>
                     </div>
                     <div class="resultat-card">
-                        <h3 class="archive-col2-titre">Titre 2</h3>
+                        <h3 class="archive-col2-titre">Efficience Tir</h3>
                         <p class="valeur archive-col2-val">-</p>
                         <p class="detail archive-col2-detail" style="display: none;"></p>
                         <p class="note archive-col2-note">-</p>
                         <div class="medaille archive-col2-medaille" style="display:none;">Médaille</div>
                     </div>
                     <div class="resultat-card">
-                        <h3 class="archive-col3-titre">Titre 3</h3>
+                        <h3 class="archive-col3-titre">VMA</h3>
                         <p class="valeur archive-col3-val">-</p>
                         <p class="detail archive-col3-detail" style="display: none;"></p>
                         <p class="note archive-col3-note">-</p>
@@ -79,6 +72,81 @@
                 </div>
             </div>
         </div>
+
+        <div class="carte-archive" id="template-epreuve-6eme" style="display: none;">
+            <div class="archive-header">
+                <div>
+                    <h3 class="archive-titre">Épreuve Finale 6ème</h3>
+                    <p class="archive-date">Date</p>
+                </div>
+                <div class="archive-header-right">
+                    <span class="archive-note">/ 15</span>
+                    <span class="archive-toggle">▼</span>
+                </div>
+            </div>
+
+            <div class="archive-content" style="display: none;">
+                <h4 class="archive-section-title">Tes Ressentis</h4>
+                <div class="audit-eleve archive-audit archive-audit-6eme" style="pointer-events: none; opacity: 0.9;"></div>
+
+                <h4 class="archive-section-title mt-20">Mon Bilan</h4>
+                <div class="resultats-grid">
+                    <div class="resultat-card">
+                        <h3 class="archive-col1-titre">Performance</h3>
+                        <p class="valeur archive-col1-val">-</p>
+                        <p class="note archive-col1-note">-</p>
+                        <div class="medaille archive-col1-medaille" style="display:none;">Médaille</div>
+                    </div>
+                    <div class="resultat-card">
+                        <h3 class="archive-col2-titre">Régularité</h3>
+                        <p class="valeur archive-col2-val">-</p>
+                        <p class="note archive-col2-note">-</p>
+                        <div class="medaille archive-col2-medaille" style="display:none;">Médaille</div>
+                    </div>
+                    <div class="resultat-card">
+                        <h3 class="archive-col3-titre">Efficacité Tir</h3>
+                        <p class="valeur archive-col3-val">-</p>
+                        <p class="note archive-col3-note">-</p>
+                        <div class="medaille archive-col3-medaille" style="display:none;">Médaille</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="carte-archive" id="template-entrainement-4eme" style="display: none;">
+            <div class="archive-header">
+                <div>
+                    <h3 class="archive-titre">Entraînement 4ème</h3>
+                    <p class="archive-date">Date</p>
+                </div>
+                <div class="archive-header-right">
+                    <span class="archive-toggle">▼</span>
+                </div>
+            </div>
+
+            <div class="archive-content" style="display: none;">
+                <h4 class="archive-section-title">Détail de la session</h4>
+                <div class="archive-details-entrainement"></div>
+            </div>
+        </div>
+
+        <div class="carte-archive" id="template-entrainement-6eme" style="display: none;">
+            <div class="archive-header">
+                <div>
+                    <h3 class="archive-titre">Entraînement 6ème</h3>
+                    <p class="archive-date">Date</p>
+                </div>
+                <div class="archive-header-right">
+                    <span class="archive-toggle">▼</span>
+                </div>
+            </div>
+
+            <div class="archive-content" style="display: none;">
+                <h4 class="archive-section-title">Détail de la session</h4>
+                <div class="archive-details-entrainement"></div>
+            </div>
+        </div>
+
     </div>
 
     <!-- modal d'information affiché lorsqu'aucune séance n'est trouvée ou en cas d'erreur, caché par défaut -->
@@ -95,11 +163,10 @@
     <!-- bouton de retour à la page de séance -->
     <button class="button btn-back btn-historique-retour" onclick="location.href='seance.html'">Retour séance</button>
 
-    <!-- pied de page avec une information sur la connexion au serveur -->
+    <!-- Pied de page avec information de connexion -->
     <footer>
-        <p class="info">Connecté au serveur local</p>
+        <p class="info">Connecté au en tant que élève</p>
     </footer>
-
 </div>
 
 <script src="../js/historique.js" defer></script>
