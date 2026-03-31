@@ -19,7 +19,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.model.persistence.Eleve
-import fr.iutvannes.dual.ui.fragments.EleveProfilFragment
 
 /**
  * Fragment to display the list of students in a class.
