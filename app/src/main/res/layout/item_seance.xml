@@ -2,44 +2,34 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
-    app:cardCornerRadius="14dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
     app:strokeWidth="2dp"
     app:strokeColor="@color/bleu"
-    app:cardUseCompatPadding="true"
     app:cardBackgroundColor="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
-
-        <TextView
-            android:id="@+id/tv_seance_rang"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:gravity="center"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@android:color/white"
-            android:background="@drawable/rounded_button_background"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/tv_seance_titre"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textStyle="bold"
-            android:textSize="15sp"
-            android:textColor="#2C3E50"
+            android:textSize="16sp"
+            android:textColor="@color/noir"
             android:maxLines="2"
             android:ellipsize="end"
-            android:layout_marginStart="12dp"
-            app:layout_constraintStart_toEndOf="@id/tv_seance_rang"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btn_seance_excel"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/tv_seance_detail"
@@ -49,20 +39,20 @@
             android:id="@+id/tv_seance_detail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="#7F8C8D"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="2dp"
-            app:layout_constraintStart_toEndOf="@id/tv_seance_rang"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btn_seance_excel"
             app:layout_constraintTop_toBottomOf="@id/tv_seance_titre"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <!-- Bouton télécharger Excel -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/btn_seance_excel"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="10dp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless"
@@ -82,6 +72,7 @@
                 app:tint="@color/blanc"/>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Bouton supprimer -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/btn_seance_delete"
             android:layout_width="40dp"

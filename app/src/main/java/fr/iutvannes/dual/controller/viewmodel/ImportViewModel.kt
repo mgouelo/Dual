@@ -1,7 +1,7 @@
 package fr.iutvannes.dual.controller.viewmodel
 
-import androidx.lifecycle.AndroidViewModel
 import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.room.Room
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.importation.ImportReport
@@ -11,40 +11,36 @@ import fr.iutvannes.dual.model.importation.readers.XlsStudentReader
 import java.io.InputStream
 
 /**
- * Class allowing the import of data from a file.
- *
- * @see ImportService
- * @see ImportReport
- * @see CsvStudentReader
- * @see XlsStudentReader
- * @see AppDatabase
+ * ViewModel pour l'import de fichiers élèves.
+ * Passe désormais le [ClasseDAO] à [ImportService] afin que les classes
+ * présentes dans le fichier soient créées automatiquement si elles n'existent pas.
  */
 class ImportViewModel(application: Application) : AndroidViewModel(application) {
 
-    /* Variable used to create or open the database */
     private val db = Room.databaseBuilder(
         application,
         AppDatabase::class.java,
         "dual.db"
     ).build()
 
-    /* Variable used to import data */
-    private val importService = ImportService( // The importService object is provided with all the readers and the database so that the import can take place.
+    private val importService = ImportService(
         readers = listOf(
             CsvStudentReader(),
             XlsStudentReader(),
         ),
-        eleveDao = db.EleveDao()
+        eleveDao  = db.EleveDao(),
+        classeDao = db.classeDao()
     )
 
     /**
-     * Method for importing data from a file.
+     * Importe un fichier d'élèves.
+     * Crée automatiquement les classes manquantes en base.
      *
-     * @param input [InputStream] containing the data to import
-     * @param fileName [String] containing the file name
-     * @param mime [String] containing the file type
-     * @param classeNom [String] containing the class name
-     * @return [ImportReport] containing the import report
+     * @param input      flux du fichier (CSV / XLS)
+     * @param fileName   nom du fichier (pour détecter l'extension)
+     * @param mime       type MIME du fichier
+     * @param classeNom  classe de repli si absente du fichier
+     * @return rapport d'import
      */
     suspend fun importer(
         input: InputStream,

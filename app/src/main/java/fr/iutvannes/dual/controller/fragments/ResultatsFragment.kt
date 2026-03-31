@@ -159,8 +159,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                     val seance = seances[position]
                     val v = holder.itemView
-                    v.findViewById<TextView>(R.id.tv_seance_rang).text   = "${position + 1}"
-                    v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${seance.date.substringBefore(" ")}"
+                    v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${formaterDate(seance.date)}"
                     v.findViewById<TextView>(R.id.tv_seance_detail).text = "${seance.type} — ${seance.classe}"
                     v.setOnClickListener {
                         val typeSeance = seance.type  // type de la séance pour l'affichage
@@ -174,7 +173,8 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     v.findViewById<MaterialCardView>(R.id.btn_seance_delete).setOnClickListener {
                         android.app.AlertDialog.Builder(requireContext())
                             .setTitle("Supprimer la séance ?")
-                            .setMessage("Tous les résultats liés seront perdus.")
+                            .setMessage("Attention, vous êtes sur le point de supprimer cette séance ainsi que tous les résultats qui y sont associés.\n\nCette action est irréversible.")
+                            .setNegativeButton("Annuler") { dialog, _ -> dialog.dismiss() }
                             .setPositiveButton("Supprimer") { _, _ ->
                                 viewLifecycleOwner.lifecycleScope.launch {
                                     withContext(Dispatchers.IO) {
@@ -184,7 +184,6 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                                     chargerSeances()
                                 }
                             }
-                            .setNegativeButton("Annuler", null)
                             .show()
                     }
                 }
@@ -196,8 +195,9 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
         when {
             seanceAffichee != null -> {
                 seanceAffichee = null
-                typeSelectionne = null // reset pour ne pas garder le type de la séance
+                typeSelectionne = null
                 chargerSeances()
+                btnBack.visibility = View.GONE
             }
             else -> {
                 backPressedCallback.isEnabled = false
@@ -217,9 +217,8 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     private fun afficherResultatsSeance(seance: Seance) {
         val type = typeSelectionne ?: return
         seanceAffichee = seance
-        tvTitre.text = "Séance du ${seance.date.substringBefore(" ")} — ${seance.classe}"
+        tvTitre.text = "Séance du ${formaterDate(seance.date)} — ${seance.classe}"
         btnBack.visibility = View.VISIBLE
-
         viewLifecycleOwner.lifecycleScope.launch {
 
             /**
@@ -293,6 +292,20 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 tvVide.text = "Aucun résultat pour cette séance"
                 tvVide.visibility   = View.VISIBLE
                 recycler.visibility = View.GONE
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Aucun résultat")
+                    .setMessage("Aucun résultat pour cette séance. Voulez-vous la supprimer ?")
+                    .setNegativeButton("Non") { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton("Supprimer") { _, _ ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            withContext(Dispatchers.IO) {
+                                DatabaseProvider.db.seanceDao().delete(seance.id_seance)
+                                DatabaseProvider.db.resultatDao().deleteBySeance(seance.id_seance)
+                            }
+                            chargerSeances()
+                        }
+                    }
+                    .show()
                 return@launch
             }
 
@@ -1112,6 +1125,21 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
             }
 
             dialog.show()
+        }
+    }
+
+    private fun formaterDate(date: String): String {
+        return try {
+            val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.FRANCE)
+            val d = sdf.parse(date) ?: return date
+            val jours = arrayOf("Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi")
+            val cal = java.util.Calendar.getInstance()
+            cal.time = d
+            val jour = jours[cal.get(java.util.Calendar.DAY_OF_WEEK) - 1]
+            val dateFormatee = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(d)
+            "$jour $dateFormatee"
+        } catch (e: Exception) {
+            date.substringBefore(" ")
         }
     }
 }

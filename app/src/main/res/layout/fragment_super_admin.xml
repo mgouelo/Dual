@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
+
+    <!-- Bande bleue en-tête -->
+    <View
+        android:id="@+id/fondBleuAdmin"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@color/bleu"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Bouton retour -->
+    <ImageButton
+        android:id="@+id/btn_back_superadmin"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_menu_revert"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:tint="@color/blanc"
+        android:contentDescription="Retour"
+        app:layout_constraintTop_toTopOf="@id/fondBleuAdmin"
+        app:layout_constraintBottom_toBottomOf="@id/fondBleuAdmin"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="12dp"/>
+
+    <!-- Titre -->
+    <TextView
+        android:id="@+id/tvAdminTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Superadmin"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/blanc"
+        app:layout_constraintTop_toTopOf="@id/fondBleuAdmin"
+        app:layout_constraintBottom_toBottomOf="@id/fondBleuAdmin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ScrollView principal -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/fondBleuAdmin"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- ══════════════════════════════════════════ -->
+            <!-- ── Section Professeurs ── -->
+            <!-- ══════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Professeurs"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/bleu"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Card ajout prof -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/bleu"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ajouter un professeur"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/noir"
+                        android:layout_marginBottom="12dp"/>
+
+                    <EditText
+                        android:id="@+id/et_prof_prenom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Prénom"
+                        android:inputType="textPersonName"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/et_prof_nom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Nom"
+                        android:inputType="textPersonName"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/et_prof_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Email"
+                        android:inputType="textEmailAddress"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Mot de passe + œil -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <EditText
+                            android:id="@+id/et_prof_password"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Mot de passe"
+                            android:inputType="textPassword"
+                            android:textSize="15sp"/>
+
+                        <ImageButton
+                            android:id="@+id/btn_toggle_password"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_secure"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Afficher le mot de passe"
+                            android:layout_marginStart="4dp"/>
+                    </LinearLayout>
+
+                    <!-- Confirmer mot de passe + œil -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <EditText
+                            android:id="@+id/et_prof_password_confirm"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Confirmer le mot de passe"
+                            android:inputType="textPassword"
+                            android:textSize="15sp"/>
+
+                        <ImageButton
+                            android:id="@+id/btn_toggle_password_confirm"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_secure"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Afficher la confirmation"
+                            android:layout_marginStart="4dp"/>
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btn_ajout_prof"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Ajouter le professeur"
+                        android:textColor="@color/blanc"
+                        android:background="@drawable/rounded_button_background"
+                        android:stateListAnimator="@null"/>
+
+                    <TextView
+                        android:id="@+id/tv_msg_prof"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card import CSV profs -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/bleu"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Importer des professeurs via CSV"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/noir"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Colonnes attendues : prenom ; nom ; email ; password"
+                        android:textSize="12sp"
+                        android:textColor="@color/gris"
+                        android:layout_marginBottom="12dp"/>
+
+                    <Button
+                        android:id="@+id/btn_import_profs"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Choisir un fichier CSV"
+                        android:textColor="@color/blanc"
+                        android:background="@drawable/rounded_button_background"
+                        android:stateListAnimator="@null"/>
+
+                    <TextView
+                        android:id="@+id/tv_msg_csv_profs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ══════════════════════════════════════════ -->
+            <!-- ── Section Classes ── -->
+            <!-- ══════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Classes"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/bleu"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/bleu"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ajouter une classe"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/noir"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Type de nommage"
+                        android:textSize="13sp"
+                        android:textColor="@color/gris"
+                        android:layout_marginBottom="6dp"/>
+
+                    <RadioGroup
+                        android:id="@+id/radio_mode_nommage_admin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+
+                        <RadioButton
+                            android:id="@+id/radio_nommage_lettre_admin"
+                            android:text="Par lettre (ex : 6e A)"
+                            android:checked="true"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="16dp"/>
+
+                        <RadioButton
+                            android:id="@+id/radio_nommage_libre_admin"
+                            android:text="Nom libre"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </RadioGroup>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Niveau"
+                        android:textSize="13sp"
+                        android:textColor="@color/gris"
+                        android:layout_marginBottom="6dp"/>
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggle_groupe_niveau_admin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_admin_6e"
+                            android:text="6e"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_admin_5e"
+                            android:text="5e"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_admin_4e"
+                            android:text="4e"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_admin_3e"
+                            android:text="3e"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    <LinearLayout
+                        android:id="@+id/container_lettre_admin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lettre"
+                            android:textSize="13sp"
+                            android:textColor="@color/gris"
+                            android:layout_marginBottom="6dp"/>
+
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:scrollbars="none"
+                            android:layout_marginBottom="16dp">
+
+                            <com.google.android.material.button.MaterialButtonToggleGroup
+                                android:id="@+id/toggle_groupe_lettre_admin"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:singleSelection="true"
+                                app:selectionRequired="true">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_admin_lettre_a" android:text="A"
+                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_admin_lettre_b" android:text="B"
+                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_admin_lettre_c" android:text="C"
+                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_admin_lettre_d" android:text="D"
+                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_admin_lettre_e" android:text="E"
+                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_admin_lettre_f" android:text="F"
+                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            </com.google.android.material.button.MaterialButtonToggleGroup>
+                        </HorizontalScrollView>
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/container_nom_libre_admin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Nom de la classe"
+                        android:visibility="gone"
+                        android:layout_marginBottom="16dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_nom_libre_admin"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapSentences"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/btn_ajout_classe"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Ajouter la classe"
+                        android:textColor="@color/blanc"
+                        android:background="@drawable/rounded_button_background"
+                        android:stateListAnimator="@null"/>
+
+                    <TextView
+                        android:id="@+id/tv_msg_classe"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ══════════════════════════════════════════ -->
+            <!-- ── Section Élèves ── -->
+            <!-- ══════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Élèves"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/bleu"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Card ajout élève -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/bleu"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ajouter un élève"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/noir"
+                        android:layout_marginBottom="12dp"/>
+
+                    <EditText
+                        android:id="@+id/et_eleve_prenom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Prénom"
+                        android:inputType="textPersonName"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/et_eleve_nom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Nom"
+                        android:inputType="textPersonName"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Genre"
+                        android:textSize="13sp"
+                        android:textColor="@color/gris"
+                        android:layout_marginBottom="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinner_genre"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Classe"
+                        android:textSize="13sp"
+                        android:textColor="@color/gris"
+                        android:layout_marginBottom="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinner_classe_eleve"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/et_eleve_vma"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="VMA (ex : 12.5)"
+                        android:inputType="numberDecimal"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="12dp"/>
+
+                    <Button
+                        android:id="@+id/btn_ajout_eleve"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Ajouter l'élève"
+                        android:textColor="@color/blanc"
+                        android:background="@drawable/rounded_button_background"
+                        android:stateListAnimator="@null"/>
+
+                    <TextView
+                        android:id="@+id/tv_msg_eleve"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card import CSV élèves -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/bleu"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Importer tous les élèves via CSV"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/noir"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Colonnes attendues : prenom ; nom ; genre ; classe (optionnel)"
+                        android:textSize="12sp"
+                        android:textColor="@color/gris"
+                        android:layout_marginBottom="10dp"/>
+
+                    <EditText
+                        android:id="@+id/et_eleve_classe_import"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Classe par défaut (si absente du CSV)"
+                        android:inputType="text"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="12dp"/>
+
+                    <Button
+                        android:id="@+id/btn_import_eleves"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Choisir un fichier CSV"
+                        android:textColor="@color/blanc"
+                        android:background="@drawable/rounded_button_background"
+                        android:stateListAnimator="@null"/>
+
+                    <TextView
+                        android:id="@+id/tv_msg_csv_eleves"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

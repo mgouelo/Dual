@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -150,6 +151,22 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             if (isRemembered) {
                 showFragment(TableauDeBordFragment(), true, true)
+                // Toast de reconnexion automatique avec le nom du prof
+                val email = sharedPref.getString("email", null)
+                if (email != null) {
+                    lifecycleScope.launch {
+                        val prof = withContext(Dispatchers.IO) {
+                            db.profDAO().getProfByEmail(email)
+                        }
+                        if (prof != null) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Connecté en tant que professeur",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
             } else {
                 showFragment(ConnexionFragment(), false, false)
             }

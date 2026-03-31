@@ -411,7 +411,7 @@ async function envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinal
             body: JSON.stringify(event)
         });
         if (response.ok) {
-            console.log("Bilan 6ème transmis au serveur prof.");
+            afficherToast("Résultat envoyé au professeur");
         } else {
             console.error("Erreur serveur lors de l'envoi bilan 6ème :", response.status);
         }
@@ -556,3 +556,27 @@ supprimerBtn.addEventListener("click", supprimer);
 btnValiderTir.addEventListener("click", validerTourEtTir);
 terminerBtn.addEventListener("click", declencherFinEpreuve);
 btnVoirBilan.addEventListener("click", validerRessentis);
+
+function afficherToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.82);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 24px;
+        font-size: 15px;
+        font-weight: 500;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+    setTimeout(() => { toast.remove(); }, 2600);
+}

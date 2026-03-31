@@ -1,12 +1,15 @@
 package fr.iutvannes.dual.controller.fragments
 
 // Necessary imports
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +19,7 @@ import fr.iutvannes.dual.model.persistence.Classe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import fr.iutvannes.dual.controller.viewmodel.ImportViewModel
 
 /**
  * Fragment to display the list of classes.
@@ -34,6 +38,12 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
     /* Variable for the database */
     private val db get() = DatabaseProvider.db
 
+    private val openDocumentGlobal = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) importerDepuisUriGlobal(uri) }
+
+    private val importViewModel: ImportViewModel by viewModels()
+
     /**
      * This method is called when the fragment is created.
      * This fragment is used to display the list of classes.
@@ -48,6 +58,14 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
         // View retrieval
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewClasses)
         val btnAjout = view.findViewById<Button>(R.id.ajout_classe)
+
+        val btnImportGlobal = view.findViewById<Button>(R.id.btn_import_csv_global)
+        btnImportGlobal.setOnClickListener {
+            openDocumentGlobal.launch(
+                arrayOf("text/csv", "text/comma-separated-values", "text/plain", "application/csv")
+            )
+        }
+
         val tvEmpty = view.findViewById<TextView>(R.id.tvEmpty)
 
         // Adapter configuration
@@ -152,5 +170,37 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
                 supprimerClasse(classe)
             }
             .show()
+    }
+
+    private fun importerDepuisUriGlobal(uri: Uri) {
+        val context = requireContext()
+        val resolver = context.contentResolver
+        val mime = resolver.getType(uri)
+        val fileName = getFileName(uri) ?: "import"
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val report = withContext(Dispatchers.IO) {
+                resolver.openInputStream(uri)?.use { input ->
+                    importViewModel.importer(input, fileName, mime, classeNom = null)
+                }
+            }
+            if (report != null) {
+                Toast.makeText(
+                    context,
+                    "${report.created} élève(s) importé(s), ${report.classesCreated} classe(s) créée(s)",
+                    Toast.LENGTH_LONG
+                ).show()
+                chargerClasses() // rafraîchit la liste des classes
+            }
+        }
+    }
+
+    private fun getFileName(uri: Uri): String? {
+        val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (it.moveToFirst() && index != -1) return it.getString(index)
+        }
+        return null
     }
 }

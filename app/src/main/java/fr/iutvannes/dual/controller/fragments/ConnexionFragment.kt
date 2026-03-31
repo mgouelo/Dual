@@ -57,6 +57,21 @@ class ConnexionFragment : Fragment() {
         val inscriptionLien = view.findViewById<TextView>(R.id.inscriptionLien)
         val rememberMe = view.findViewById<CheckBox>(R.id.rememberMeCheckBox)
         val forgottenPassword = view.findViewById<TextView>(R.id.forgottenPassword)
+        val titleText = view.findViewById<TextView>(R.id.titleText)
+
+        // Appui long sur le titre -> accès superadmin
+        var pressCount = 0
+        titleText.setOnLongClickListener {
+            pressCount++
+            if (pressCount >= 3) {
+                pressCount = 0
+                (activity as? MainActivity)?.showFragment(SuperAdminFragment(), false, false)
+            } else {
+                Toast.makeText(requireContext(), "Encore ${3 - pressCount}x", Toast.LENGTH_SHORT).show()
+            }
+            true
+        }
+
 
 
         // Creating a secret key for secure storage of preferences
@@ -137,7 +152,7 @@ class ConnexionFragment : Fragment() {
                         Toast.makeText(requireContext(), "Mot de passe incorrect", Toast.LENGTH_SHORT).show()
                         passwordInput.setText("")
                     } else {
-                        Toast.makeText(requireContext(), "Connexion réussie !", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Connecté en tant que professeur", Toast.LENGTH_SHORT).show()
                         if (rememberMe.isChecked) {
                             editor.putString("email", emailInput.text.toString())
                             editor.putString("password", passwordInput.text.toString())

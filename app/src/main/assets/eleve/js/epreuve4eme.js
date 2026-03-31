@@ -568,7 +568,7 @@ const terminerEpreuve4eme = () => {
     })
     .then(response => {
         if (response.ok) {
-            console.log("Données transmises avec succès pour : " + prenom);
+            afficherToast("Résultat envoyé au professeur");
         }
     })
     .catch(error => console.error("Erreur transmission export:", error));
@@ -873,3 +873,27 @@ resetBtn.addEventListener("click", reset);
 btnVoirBilan.addEventListener("click", validerRessentis);
 btnValiderTir.addEventListener("click", validerTir4eme);
 btnAnnuler.addEventListener("click", annulerEtape);
+
+function afficherToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.82);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 24px;
+        font-size: 15px;
+        font-weight: 500;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+    setTimeout(() => { toast.remove(); }, 2600);
+}

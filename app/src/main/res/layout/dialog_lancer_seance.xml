@@ -39,13 +39,20 @@
         android:background="#2ECC71"
         android:layout_marginBottom="24dp" />
 
-    <!-- Conteneur des choix -->
-    <LinearLayout
-        android:id="@+id/dialog_choices_container"
+    <!-- Conteneur des choix avec scroll -->
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="20dp" />
+        android:maxHeight="400dp"
+        android:layout_marginBottom="20dp">
+
+        <LinearLayout
+            android:id="@+id/dialog_choices_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+
+    </ScrollView>
 
     <!-- Bouton Annuler -->
     <TextView

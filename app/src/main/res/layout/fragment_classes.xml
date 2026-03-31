@@ -13,7 +13,7 @@
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ajout_classe"
+        app:layout_constraintBottom_toTopOf="@+id/footer_classes"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp"/>
@@ -29,13 +29,52 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/ajout_classe"
+    <LinearLayout
+        android:id="@+id/footer_classes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ajouter une classe"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/ajout_classe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter une classe" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter une seule classe"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/gris"
+            android:layout_marginBottom="8dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/noir"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"/>
+
+        <Button
+            android:id="@+id/btn_import_csv_global"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Importer tous les élèves (CSV)" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Importer un CSV multi-classes et créer les classes automatiquement"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/gris"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

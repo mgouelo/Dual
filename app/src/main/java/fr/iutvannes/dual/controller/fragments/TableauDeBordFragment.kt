@@ -121,6 +121,11 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val qrCode = view.findViewById<ImageView>(R.id.qrCodeView)
         qrCode.setBackgroundColor(Color.DKGRAY) // DEBUG
         val sessionUrl = view.findViewById<TextView>(R.id.textUrl)
+
+        val cardInfoSeance = view.findViewById<View>(R.id.cardInfoSeance)
+        val tvSeanceType = view.findViewById<TextView>(R.id.tv_seance_type)
+        val tvSeanceClasse = view.findViewById<TextView>(R.id.tv_seance_classe)
+
         // Opening a coroutine in the IO thread to generate the QR code
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             sessionViewModel.url.collect { url ->
@@ -153,6 +158,9 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     val type = sessionViewModel.typeSeance.value
                     val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(Date())
 
+                    tvSeanceType.text = type.uppercase()
+                    tvSeanceClasse.text = classe
+                    cardInfoSeance.visibility = View.VISIBLE
 
                 } else {
                     sessionBtn.text = "Lancer une séance"
@@ -161,6 +169,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     qrCode.visibility = View.GONE
                     layoutUrl.visibility = View.GONE
                     cardResultats.visibility = View.GONE
+                    cardInfoSeance.visibility = View.GONE
                 }
             }
         }
@@ -233,11 +242,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val subtitle = view.findViewById<TextView>(R.id.dialog_subtitle)
         subtitle.text = "Sélectionnez la classe"
 
-        val icons = listOf("🏫", "📚", "🎯", "⭐", "🏆", "📋")
+        val icons = listOf("🏫", "📚", "🎯", "⭐", "🏆", "📋", "🎨", "🔬", "🌍", "🎵",
+            "🏅", "💡", "🔭", "📐", "🖊️", "🧪", "🗺️", "🎭", "📖", "🏛️")
 
         classes.forEachIndexed { index, nomClasse ->
             val item = layoutInflater.inflate(R.layout.item_dialog_choix, container, false)
-            item.findViewById<TextView>(R.id.item_icon).text = icons.getOrElse(index) { "📋" }
+            item.findViewById<TextView>(R.id.item_icon).text = icons[index % icons.size]
             item.findViewById<TextView>(R.id.item_label).text = nomClasse
             item.setOnClickListener { afficherDialogType(dialog, nomClasse) }
             container.addView(item)
