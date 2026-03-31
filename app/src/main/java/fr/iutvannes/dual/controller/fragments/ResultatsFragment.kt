@@ -160,7 +160,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     val seance = seances[position]
                     val v = holder.itemView
                     v.findViewById<TextView>(R.id.tv_seance_rang).text   = "${position + 1}"
-                    v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${seance.date.substringBefore(" ")}"
+                    v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${seance.date.replace(" ", " à ")}"
                     v.findViewById<TextView>(R.id.tv_seance_detail).text = "${seance.type} — ${seance.classe}"
                     v.setOnClickListener {
                         val typeSeance = seance.type  // type de la séance pour l'affichage
@@ -217,7 +217,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     private fun afficherResultatsSeance(seance: Seance) {
         val type = typeSelectionne ?: return
         seanceAffichee = seance
-        tvTitre.text = "Séance du ${seance.date.substringBefore(" ")} — ${seance.classe}"
+        tvTitre.text = "Séance du ${seance.date.replace(" ", " à ")} — ${seance.classe}"
         btnBack.visibility = View.VISIBLE
 
         viewLifecycleOwner.lifecycleScope.launch {

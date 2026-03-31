@@ -66,11 +66,6 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
         val btnExamen = view.findViewById<Button>(R.id.btnExamen)
         val btnBack = view.findViewById<ImageButton>(R.id.arrow_back_button)
 
-        Toast(requireContext()).apply {
-            setText("Identifiant de l'élève : $eleveId")
-            show()
-        }
-
         if (eleveId != -1) {
 
             // Ouverture d'une coroutine dans le thread IO pour effectuer les tâches de base de données
@@ -125,10 +120,6 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                         val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
 
                         Pair(dateFormatee, pourcentageVMA)
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "dataCourse size=${dataCourse.size} val=${dataCourse.firstOrNull()?.second}", Toast.LENGTH_LONG).show()
                     }
 
                     withContext(Dispatchers.Main) {

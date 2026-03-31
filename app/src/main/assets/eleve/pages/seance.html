@@ -52,6 +52,12 @@
             <div class="btn-group">
                 <button id="btn-tir" class="button" onclick="location.href='tir6eme.html'">Tir</button>
                 <button class="button" onclick="location.href='course.html'">Course</button>
+
+                <hr class="separator">
+
+                <!-- Section de suivi permettant à l'élève de visualiser son historique de séances et d'évaluer ses progrès au fil du temps -->
+                <p class="mode-title">Suivi</p>
+                <button class="button" onclick="location.href='historique.html'">Visualiser mon Historique</button>
             </div>
         </div>
 
@@ -70,9 +76,24 @@
         </div>
     </div>
 
-    <!-- Pied de page avec un bouton pour changer de niveau et revenir à la page de sélection du niveau -->
+    <!-- Un bouton pour changer de niveau et revenir à la page de sélection du niveau -->
+    <button class="button btn-back">Changer de niveau</button>
+
+    <!-- Modal de confirmation pour les actions importantes, avec un message dynamique et des boutons de validation et d'annulation -->
+    <div id="custom-confirm" class="modal">
+        <div class="modal-content">
+            <h3>Confirmation</h3>
+            <p id="confirm-message">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok" class="btn-confirm">OK</button>
+                <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pied de page avec information de connexion -->
     <footer>
-        <button class="button btn-back" onclick="location.href='../pages/choix_niveau.html'">Changer de niveau</button>
+        <p class="info">Connecté au en tant que élève</p>
     </footer>
 </div>
 

@@ -110,7 +110,7 @@ const enregistrer = () => {
     if(chrono.textContent != "00:00:00"){
         const listeTours = document.getElementById("listeTours"); // conteneur de tous les tours
         const nouveauTour = document.createElement("span");
-        nouveauTour.innerHTML = `Tour ${tourActuel}: ${chrono.textContent}<br><br> `;
+        nouveauTour.innerHTML = `<strong>Tour ${tourActuel}:</strong> ${chrono.textContent}<br><br> `;
         listeTours.appendChild(nouveauTour);
 
         tourActuel++;
@@ -184,40 +184,30 @@ const afficherParcoursVMA = () => {
 document.addEventListener("DOMContentLoaded", afficherParcoursVMA);
 
 /**
- * Récupère les données du coureur actif et les temps au tour, puis envoie le tout au serveur via une requête POST.
- * @returns {Promise<void>} une promesse qui se résout lorsque l'envoi est terminé, avec gestion des erreurs et des réponses du serveur.
+ * Récupère les données du coureur actif et les temps au tour, puis envoie le tout au serveur Ktor via une requête POST.
  */
 async function envoyerCourseAuServeur() {
     const confirmationAction = await demanderConfirmation("Mettre fin à la session et envoyer les données ?");
 
     if (confirmationAction) {
-        // Récupération des données du coureur actif
         const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
 
-        // Vérification de la présence des données nécessaires
         if (!coureur?.nomComplet) {
             alert("Identité élève introuvable.");
             return;
         }
 
-        // Extraction du prénom et du nom à partir du nom complet
         const parts = coureur.nomComplet.trim().split(" ");
         const prenom = parts[0] || "";
         const nom = parts.slice(1).join(" ") || "";
 
-        // Validation de base pour s'assurer que le prénom et le nom sont présents
         if (!prenom || !nom) {
             alert("Identité invalide.");
             return;
         }
 
-        // Récupération de la date de la séance (au format ISO pour une meilleure compatibilité)
-        const dateSeance = new Date().toISOString();
-
-        // Récupération des temps au tour depuis la liste affichée
         const listeTours = document.querySelectorAll("#listeTours span");
 
-        // Validation pour s'assurer qu'il y a au moins un tour enregistré avant d'envoyer les données
         if (listeTours.length === 0) {
             alert("Aucun tour enregistré.");
             return;
@@ -225,19 +215,13 @@ async function envoyerCourseAuServeur() {
 
         // Transformation des temps au format "mm:ss:ms" en millisecondes pour l'envoi au serveur
         const tempsAuTour = Array.from(listeTours).map(span => {
-
             const texte = span.textContent.split(": ")[1]; //"mm:ss:ms"
-
             if (!texte) return 0;
-
             const [m, s, cs] = texte.split(":").map(Number);
-
-            // votre affichage est en centièmes (00-99)
-            // conversion correcte vers millisecondes
             return (m * 60000) + (s * 1000) + (cs * 10);
         });
 
-        // Construction de l'objet de requête à envoyer au serveur
+        // Construction de l'objet de requête à envoyer au serveur Ktor
         const request = {
             prenom,
             nom,
@@ -248,16 +232,14 @@ async function envoyerCourseAuServeur() {
             tempsAuTour
         };
 
-        // Envoi de la requête au serveur avec gestion des erreurs et des réponses
+        // Envoi de la requête au serveur
         try {
-            // Envoi de la requête POST à l'endpoint "/api/biathlon"
             const response = await fetch("/api/biathlon", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(request)
             });
 
-            // Vérification de la réponse du serveur
             if (!response.ok) {
                 const err = await response.text();
                 console.error("Erreur serveur :", err);
@@ -265,6 +247,7 @@ async function envoyerCourseAuServeur() {
                 return;
             }
 
+            // Redirection vers le hub de la séance
             window.location.href = "seance.html";
 
         } catch (e) {
@@ -272,7 +255,6 @@ async function envoyerCourseAuServeur() {
             alert("Erreur réseau.");
         }
     }
-    window.location.href = "seance.html";
 }
 
 /**
@@ -306,4 +288,3 @@ enregistrerSessionBtn.addEventListener("click", async () => {
     enregistrerSessionBtn.disabled = false;
     enregistrerSessionBtn.innerText = "Envoyer la session";
 });
-

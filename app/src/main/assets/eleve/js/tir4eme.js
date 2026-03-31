@@ -273,7 +273,7 @@ async function envoyerSession() {
             distance:        coureur.vma_distance ? parseFloat(coureur.vma_distance) : 0,
             nbTours:         0,
             nbTirsReussi:    series.map(s => s.reussites),
-            tempsAuPasDeTir: series.map(s => s.temps),
+            tempsAuPasDeTir: series.map(s => s.temps * 1000),
             tempsAuTour:     []
         };
 
@@ -295,7 +295,7 @@ async function envoyerSession() {
                     btnSession.textContent = "Session envoyée !";
                     btnSession.style.backgroundColor = "#7f8c8d";
                 }
-                // Retour au Hub
+                // Retour au Hub proprement après 1.5s
                 setTimeout(() => { window.location.href = "seance.html"; }, 1500);
             } else {
                 const err = await response.text();
@@ -313,7 +313,6 @@ async function envoyerSession() {
                 btnSession.textContent = "Enregistrer la session";
             }
         }
-        window.location.href = "../pages/seance.html";
     }
 }
 

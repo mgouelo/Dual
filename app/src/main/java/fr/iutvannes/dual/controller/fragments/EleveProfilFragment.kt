@@ -95,10 +95,13 @@ class EleveProfilFragment : Fragment() {
                     tvNomPrenom.text = "${eleve.nom} ${eleve.prenom}"
                     tvClasse.text = "Classe : ${eleve.classe}"
 
-                    // Si l'élève a une VMA on l'affiche, sinon champ vide
-                    if (eleve.vma != null) {
+                    // Si l'élève a une VMA, on l'affiche et on RECALCULE le parcours
+                    if (eleve.vma != null && eleve.vma!! > 0f) {
                         etVma.setText(eleve.vma.toString())
-                        tvParcours.text = eleve.couleur_parcours ?: "À déterminer"
+
+                        // on force le calcul avec la VMA fraîchement téléchargée
+                        val parcoursCalcule = determinerParcours(eleve.vma!!)
+                        tvParcours.text = parcoursCalcule
                     } else {
                         etVma.setText("")
                         tvParcours.text = "À déterminer"

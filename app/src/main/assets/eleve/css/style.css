@@ -1294,3 +1294,58 @@ footer .info {
 .stat-highlight .stat-unit {
     color: #1456DB;
 }
+
+/* =========================================================
+   STYLES SPÉCIFIQUES - TIR 6ÈME
+   ========================================================= */
+
+/* Conteneur des boutons d'action en haut */
+.tir-action-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Boutons d'actions Tir */
+.btn-nouveau {
+    background-color: var(--blue);
+}
+
+.btn-annuler {
+    background-color: #e74c3c;
+    margin-top: 10px;
+}
+
+.btn-retour-seance {
+    margin-top: 15px;
+}
+
+/* Conteneur global des résultats */
+.resultats-container {
+    margin-top: 20px;
+}
+
+/* Encadré du bilan global (Total + Médaille) */
+.bilan-global-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #303586;
+    text-align: center;
+}
+
+/* Texte du total */
+.bilan-total-text {
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.total-bold {
+    font-weight: bold;
+}
+
+/* Encadré de la médaille généré en JS */
+.medaille-display-box {
+    margin-top: 15px;
+    font-weight: bold;
+    color: white;
+}

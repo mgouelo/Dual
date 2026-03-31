@@ -680,7 +680,7 @@ fun Application.module(appContext: Context) {
             }
         }
 
-        // Route pour récupérer l'historique complet d'un élève
+        // Route pour récupérer l'historique complet d'un élève (Épreuves + Entraînements)
         get("/api/eleves/historique/{id}") {
             val idEleveStr = call.parameters["id"]
             val idEleve = idEleveStr?.toIntOrNull()
@@ -691,117 +691,223 @@ fun Application.module(appContext: Context) {
             }
 
             try {
-                // 1. Récupération de l'élève
-                val eleve = withContext(Dispatchers.IO) {
-                    DatabaseProvider.db.EleveDao().getEleveById(idEleve)
-                }
-                val vmaRef = eleve?.vma ?: 10f
+                val historiqueAEnvoyer = mutableListOf<JsonObject>()
 
-                // 2. Récupération des résultats
-                val resultatsDB = withContext(Dispatchers.IO) {
-                    DatabaseProvider.db.resultatDao().getByEleve(idEleve)
-                }
+                withContext(Dispatchers.IO) {
+                    val db = DatabaseProvider.db
+                    val eleve = db.EleveDao().getEleveById(idEleve)
+                    val vmaRef = eleve?.vma ?: 10f
 
-                fun getCouleurMedaille(medaille: String): String = when (medaille.uppercase()) {
-                    "DIAMANT" -> "#1456DB"
-                    "PLATINE" -> "#b9f2ff"
-                    "OR" -> "#ffd700"
-                    "ARGENT" -> "#c0c0c0"
-                    "BRONZE" -> "#cd7f32"
-                    else -> "#cccccc"
-                }
+                    // On récupère TOUTES les séances pour pouvoir faire le tri (Épreuve vs Entraînement)
+                    val toutesLesSeances = db.seanceDao().getAllSeances()
 
-                // 3. Transformation des données avec l'outil JSON officiel
-                val historiqueAEnvoyer = resultatsDB.map { res ->
+                    // ---------------------------------------------------------
+                    // PARTIE 1 : RÉCUPÉRATION DES ÉPREUVES (Table Resultat)
+                    // ---------------------------------------------------------
+                    val resultatsDB = db.resultatDao().getByEleve(idEleve)
 
-                    val isVma = res.vma > 0f && res.cibles_touchees == 0
-                    val is4eme = res.note_intensite > 0f || res.temps_E > 0
+                    resultatsDB.forEach { res ->
+                        val seanceAssociee = toutesLesSeances.find { it.id_seance == res.id_seance }
+                        val typeSeanceOriginal = seanceAssociee?.type ?: "Inconnu"
 
-                    val typeEpreuve = when {
-                        isVma -> "Test VMA"
-                        is4eme -> "Épreuve Finale 4ème"
-                        else -> "Épreuve Finale 6ème"
-                    }
+                        // On ignore les entraînements qui auraient "accidentellement" laissé une trace dans Resultat
+                        if (typeSeanceOriginal == "Entraînement") return@forEach
 
-                    val dateStrFormatee = withContext(Dispatchers.IO) {
-                        val seance = DatabaseProvider.db.seanceDao().getSeanceById(res.id_seance)
-                        seance?.date ?: java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date())
-                    }
+                        val isVma = typeSeanceOriginal == "Test VMA" || (res.vma > 0f && res.cibles_touchees == 0)
+                        val is4eme = seanceAssociee?.classe?.contains("4") == true
 
-                    // Création de l'objet JSON robuste
-                    buildJsonObject {
-                        put("dateStr", dateStrFormatee)
-                        put("dateObj", res.id_resultat) // JS s'en servira pour trier
-                        put("type", typeEpreuve)
-                        put("noteFinale", res.note_finale)
+                        val typeEpreuve = when {
+                            isVma -> "Test VMA"
+                            is4eme -> "Épreuve Finale 4ème"
+                            else -> "Épreuve Finale 6ème"
+                        }
 
-                        // Sous-dossier "bilan"
-                        put("bilan", buildJsonObject {
-                            if (is4eme) {
-                                // --- CALCULS 4ÈME ---
-                                val pourcentageVma = if (vmaRef > 0) (res.temp_course / vmaRef) * 100 else 0f
-                                val tempsTirSec = (res.temps_B - res.temps_A) + (res.temps_D - res.temps_C)
-                                val minTir = tempsTirSec / 60
-                                val secTir = tempsTirSec % 60
+                        val dateStrFormatee = seanceAssociee?.date ?: "Inconnue"
 
-                                val medailleIntensite = when {
-                                    pourcentageVma > 110 -> "DIAMANT"
-                                    pourcentageVma >= 101 -> "OR"
-                                    pourcentageVma >= 91 -> "ARGENT"
-                                    else -> "BRONZE"
-                                }
+                        val jsonRes = buildJsonObject {
+                            put("type", typeEpreuve)
+                            put("dateStr", dateStrFormatee)
+                            put("dateObj", res.id_resultat.toLong()) // Tri JS
+                            put("noteFinale", res.note_finale)
 
-                                val medailleVma = when {
-                                    res.note_vma == 2f -> "OR"
-                                    res.note_vma >= 1.5f -> "ARGENT"
-                                    else -> "BRONZE"
-                                }
+                            if (!isVma) {
+                                put("bilan", buildJsonObject {
+                                    if (is4eme) {
+                                        val pourcentageVma = if (vmaRef > 0) (res.temp_course / vmaRef) * 100 else 0f
+                                        val tempsTirSec = (res.temps_B - res.temps_A) + (res.temps_D - res.temps_C)
 
-                                put("vitesseVal", kotlin.math.round(pourcentageVma).toInt())
-                                put("vitesseRealiseeKmh", String.format(java.util.Locale.US, "%.1f", res.temp_course))
-                                put("noteVitesse", res.note_intensite)
-                                put("medailleVitesse", medailleIntensite)
-                                put("colorVitesse", getCouleurMedaille(medailleIntensite))
+                                        put("vitesseVal", kotlin.math.round(pourcentageVma).toInt())
+                                        put("vitesseRealiseeKmh", String.format(java.util.Locale.US, "%.1f", res.temp_course))
+                                        put("noteVitesse", res.note_intensite)
+                                        put("medailleVitesse", if(pourcentageVma > 100) "OR" else "BRONZE") // À adapter avec tes règles
 
-                                put("tirVal", res.cibles_touchees)
-                                put("tirTemps", "${minTir}'${secTir.toString().padStart(2, '0')}")
-                                put("noteTir", res.note_efficience)
+                                        put("tirVal", res.cibles_touchees)
+                                        put("tirTempsMs", tempsTirSec * 1000L) // Envoi en millisecondes pour formatTemps JS
+                                        put("noteTir", res.note_efficience)
 
-                                put("vmaVal", vmaRef)
-                                put("noteVma", res.note_vma)
-                                put("medailleVma", medailleVma)
-                                put("colorVma", getCouleurMedaille(medailleVma))
+                                        put("vmaVal", vmaRef)
+                                        put("noteVma", res.note_vma)
+                                        put("medailleVma", "DIAMANT") // À adapter
+                                    } else {
+                                        // --- CALCULS ÉPREUVE 6ÈME ---
+                                        val nbTours = res.nbTours
+                                        val ecartMax = res.ecart_max_course
+                                        val totalTir = res.cibles_touchees
 
-                            } else if (!isVma) {
-                                // --- CALCULS 6ÈME ---
-                                put("nbTours", res.nbTours)
-                                put("notePerf", 0) // Ajuste selon tes règles
-                                put("medaillePerf", "ARGENT")
+                                        // 1. Barème Performance
+                                        val notePerf = when {
+                                            nbTours >= 7 -> 5f
+                                            nbTours == 6 -> 4f
+                                            nbTours == 5 -> 3f
+                                            nbTours == 4 -> 2f
+                                            nbTours == 3 -> 1f
+                                            else -> 0.5f
+                                        }
+                                        val medaillePerf = when {
+                                            nbTours >= 8 -> "DIAMANT"
+                                            nbTours >= 7 -> "PLATINE"
+                                            nbTours >= 6 -> "OR"
+                                            nbTours >= 5 -> "ARGENT"
+                                            else -> "BRONZE"
+                                        }
 
-                                put("ecartMax", res.ecart_max_course)
-                                put("noteRegul", 0)
-                                put("medailleRegul", "OR")
+                                        // 2. Barème Régularité
+                                        val noteRegul = when {
+                                            ecartMax < 10 -> 5f
+                                            ecartMax <= 15 -> 4f
+                                            ecartMax <= 20 -> 3f
+                                            ecartMax <= 25 -> 2f
+                                            else -> 1f
+                                        }
+                                        val medailleRegul = when {
+                                            ecartMax < 10 -> "DIAMANT"
+                                            ecartMax <= 15 -> "PLATINE"
+                                            ecartMax <= 20 -> "OR"
+                                            ecartMax <= 25 -> "ARGENT"
+                                            else -> "BRONZE"
+                                        }
 
-                                put("totalTir", res.cibles_touchees)
-                                put("noteTir", 0)
-                                put("medailleTir", "BRONZE")
-                            } else {
-                                // --- TEST VMA ---
-                                put("vmaVal", res.vma)
+                                        // 3. Barème Tir
+                                        val noteTir = when {
+                                            totalTir >= 21 -> 5f
+                                            totalTir == 20 -> 4.5f
+                                            totalTir == 19 -> 4f
+                                            totalTir == 18 -> 3.5f
+                                            totalTir == 17 -> 3f
+                                            totalTir == 16 -> 2.5f
+                                            totalTir == 15 -> 2f
+                                            totalTir == 14 -> 1.5f
+                                            totalTir == 13 -> 1f
+                                            else -> 0.5f
+                                        }
+
+                                        val maxTirPossible = if (nbTours > 0) nbTours * 5 else 1
+                                        val pourcentageTir = (totalTir.toFloat() / maxTirPossible) * 100
+                                        val medailleTir = when {
+                                            pourcentageTir >= 85 -> "DIAMANT"
+                                            pourcentageTir >= 75 -> "PLATINE"
+                                            pourcentageTir >= 65 -> "OR"
+                                            pourcentageTir >= 55 -> "ARGENT"
+                                            else -> "BRONZE"
+                                        }
+
+                                        // Injection dans le JSON
+                                        put("nbTours", nbTours)
+                                        put("notePerf", notePerf)
+                                        put("medaillePerf", medaillePerf)
+
+                                        put("ecartMax", ecartMax)
+                                        put("noteRegul", noteRegul)
+                                        put("medailleRegul", medailleRegul)
+
+                                        put("totalTir", totalTir)
+                                        put("noteTir", noteTir)
+                                        put("medailleTir", medailleTir)
+                                    }
+                                })
+
+                                put("audit", buildJsonObject {
+                                    put("intensite", res.ressenti_intensite)
+                                    put("durer", res.ressenti_durer)
+                                    put("lucidite", res.ressenti_lucidite)
+                                })
                             }
-                        })
-
-                        // Sous-dossier "audit"
-                        put("audit", buildJsonObject {
-                            put("intensite", res.ressenti_intensite)
-                            put("durer", res.ressenti_durer)
-                            put("lucidite", res.ressenti_lucidite)
-                        })
+                        }
+                        historiqueAEnvoyer.add(jsonRes)
                     }
-                }
 
-                // On renvoie la liste d'objets JSON parfaits
+                    // ---------------------------------------------------------
+                    // PARTIE 2 : RÉCUPÉRATION DES ENTRAÎNEMENTS (Tables Course et Tir)
+                    // ---------------------------------------------------------
+                    // On cherche toutes les séances de type "Entraînement"
+                    val seancesEntrainement = toutesLesSeances.filter { it.type == "Entraînement" }
+
+                    seancesEntrainement.forEach { seance ->
+                        val courses = db.courseDao().getCoursesBySeanceEtEleve(seance.id_seance, idEleve)
+                        val tirs = db.tirDao().getTirsBySeanceEtEleve(seance.id_seance, idEleve)
+
+                        val is6eme = seance.classe.contains("6")
+                        val baseType = if (is6eme) "Entraînement 6ème" else "Entraînement 4ème"
+
+                        // 1. On crée une carte UNIQUE pour CHAQUE bloc de Course enregistré
+                        courses.forEach { courseAvecTours ->
+                            if (courseAvecTours.liste_tours.isNotEmpty()) {
+                                val jsonCourse = buildJsonObject {
+                                    put("type", "$baseType (Course)")
+                                    put("dateStr", seance.date)
+                                    // Tri temporel basé sur l'ID unique de la course
+                                    put("dateObj", (seance.id_seance * 10000L) + courseAvecTours.course.id_course)
+
+                                    put("bilan", buildJsonObject {
+                                        val toursTries = courseAvecTours.liste_tours.sortedBy { it.numero_tour }
+                                        val arrayTours = kotlinx.serialization.json.buildJsonArray {
+                                            toursTries.forEach { tour ->
+                                                add(kotlinx.serialization.json.JsonPrimitive(tour.temps_ms))
+                                            }
+                                        }
+                                        put("tours", arrayTours)
+                                    })
+                                }
+                                historiqueAEnvoyer.add(jsonCourse)
+                            }
+                        }
+
+                        // 2. On crée une carte UNIQUE pour CHAQUE bloc de Tir enregistré
+                        tirs.forEach { tirAvecPassages ->
+                            if (tirAvecPassages.liste_passages.isNotEmpty()) {
+                                val jsonTir = buildJsonObject {
+                                    put("type", "$baseType (Tir)")
+                                    put("dateStr", seance.date)
+                                    // Tri temporel basé sur l'ID unique du tir
+                                    put("dateObj", (seance.id_seance * 10000L) + tirAvecPassages.tir.id_tir)
+
+                                    put("bilan", buildJsonObject {
+                                        val passagesTries = tirAvecPassages.liste_passages.sortedBy { it.numero_passage }
+                                        val arrayTirs = kotlinx.serialization.json.buildJsonArray {
+                                            passagesTries.forEach { passage ->
+                                                if (is6eme) {
+                                                    // 6ème : juste le score
+                                                    add(kotlinx.serialization.json.JsonPrimitive(passage.nb_tir_reussi))
+                                                } else {
+                                                    // 4ème : score + temps
+                                                    add(buildJsonObject {
+                                                        put("reussites", passage.nb_tir_reussi)
+                                                        put("tempsMs", passage.temps_au_pas_de_tir_ms)
+                                                    })
+                                                }
+                                            }
+                                        }
+                                        put("tirs", arrayTirs)
+                                    })
+                                }
+                                historiqueAEnvoyer.add(jsonTir)
+                            }
+                        }
+                    }
+                } // Fin du withContext(Dispatchers.IO)
+
                 call.respond(HttpStatusCode.OK, historiqueAEnvoyer)
+
             } catch (e: Exception) {
                 Log.e("KtorServer", "Erreur Historique: ${e.message}", e)
                 call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Erreur Serveur"))
