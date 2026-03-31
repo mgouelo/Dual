@@ -159,7 +159,6 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                     val seance = seances[position]
                     val v = holder.itemView
-                    v.findViewById<TextView>(R.id.tv_seance_rang).text   = "${position + 1}"
                     v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${seance.date.replace(" ", " à ")}"
                     v.findViewById<TextView>(R.id.tv_seance_detail).text = "${seance.type} — ${seance.classe}"
                     v.setOnClickListener {
