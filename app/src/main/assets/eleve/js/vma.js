@@ -1,27 +1,3 @@
-function afficherToast(message) {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.82);
-        color: #fff;
-        padding: 12px 24px;
-        border-radius: 24px;
-        font-size: 15px;
-        font-weight: 500;
-        z-index: 9999;
-        pointer-events: none;
-        opacity: 1;
-        transition: opacity 0.5s ease;
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = "0"; }, 2000);
-    setTimeout(() => { toast.remove(); }, 2600);
-}
-
 let chrono = document.getElementById("chrono");
 let resetBtn = document.getElementById("reset");
 let stopBtn = document.getElementById("stop");
@@ -434,12 +410,16 @@ async function sauvegarderVmaServeur(eleveId, vmaValeur, nomClasse) {
         });
 
         if (response.ok) {
-            afficherToast("Résultat envoyé au professeur");
+            console.log("VMA synchronisée avec le profil élève ET ajoutée à la séance.");
+
+            // Actualiser l'affichage de la VMA sur la page après sauvegarde
             const vmaActuelleAff = document.getElementById("vma-actuelle");
             if (vmaActuelleAff) {
                 vmaActuelleAff.textContent = vmaValeur.toFixed(1);
                 vmaActuelleAff.style.color = "#27ae60";
             }
+        } else {
+            console.error("Échec de la sauvegarde serveur.");
         }
     } catch (error) {
         console.error("Erreur réseau :", error);

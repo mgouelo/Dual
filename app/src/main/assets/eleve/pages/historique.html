@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../css/style.css">
+    <title>Mon Historique</title>
+</head>
+<body>
+
+<!-- container principal de la page -->
+<div id="container">
+
+    <!-- en-tête de la page avec le titre et les informations sur l'élève -->
+    <header>
+        <h1>Mes Résultats</h1>
+        <div id="info-coureur" class="vma-card-display mb-3vh">
+            <p class="vma-display-label">Élève Actif</p>
+            <div id="nom-eleve" class="parcours-badge bg-bleu text-white">
+                Chargement...
+            </div>
+        </div>
+    </header>
+
+    <!-- section principale de la page affichant l'historique des séances -->
+    <div id="liste-historique">
+        <!-- message de chargement affiché pendant la récupération des données -->
+        <p id="msg-chargement" class="text-center-italic">
+            Récupération de tes anciennes séances...
+        </p>
+
+        <!-- modèle de carte d'archive pour une séance, caché par défaut et cloné pour chaque séance récupérée -->
+        <div class="carte-archive" id="template-carte-historique" style="display: none;">
+            <!-- en-tête de la carte d'archive affichant le titre de la séance, la date, la note globale et un bouton pour afficher/masquer les détails -->
+            <div class="archive-header">
+                <div>
+                    <h3 class="archive-titre">Épreuve Finale</h3>
+                    <p class="archive-date">12/03/2026</p>
+                </div>
+                <div class="archive-header-right">
+                    <span class="archive-note">10.5 / 12</span>
+                    <span class="archive-toggle">▼</span>
+                </div>
+            </div>
+
+            <!-- contenu détaillé de la carte d'archive affichant l'analyse de la séance et les résultats, caché par défaut et affiché lorsque l'utilisateur clique sur le bouton de bascule -->
+            <div class="archive-content" style="display: none;">
+                <!-- section d'analyse de la séance, affichant les observations et les conseils pour l'élève -->
+                <h4 class="archive-section-title">Tes Ressentis</h4>
+                <div class="audit-eleve archive-audit archive-audit-4eme" style="display: none; pointer-events: none; opacity: 0.9;"></div>
+                <div class="audit-eleve archive-audit archive-audit-6eme" style="display: none; pointer-events: none; opacity: 0.9;"></div>
+
+                <!-- section de résultats de la séance, affichant les performances de l'élève dans différentes catégories (intensité, tir, VMA) avec des valeurs, des notes et des médailles -->
+                <h4 class="archive-section-title mt-20">Mon Bilan</h4>
+                <div class="resultats-grid">
+                    <div class="resultat-card">
+                        <h3 class="archive-col1-titre">Titre 1</h3>
+                        <p class="valeur archive-col1-val">-</p>
+                        <p class="detail archive-col1-detail" style="display: none;"></p>
+                        <p class="note archive-col1-note">-</p>
+                        <div class="medaille archive-col1-medaille" style="display:none;">Médaille</div>
+                    </div>
+                    <div class="resultat-card">
+                        <h3 class="archive-col2-titre">Titre 2</h3>
+                        <p class="valeur archive-col2-val">-</p>
+                        <p class="detail archive-col2-detail" style="display: none;"></p>
+                        <p class="note archive-col2-note">-</p>
+                        <div class="medaille archive-col2-medaille" style="display:none;">Médaille</div>
+                    </div>
+                    <div class="resultat-card">
+                        <h3 class="archive-col3-titre">Titre 3</h3>
+                        <p class="valeur archive-col3-val">-</p>
+                        <p class="detail archive-col3-detail" style="display: none;"></p>
+                        <p class="note archive-col3-note">-</p>
+                        <div class="medaille archive-col3-medaille" style="display:none;">Médaille</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal d'information affiché lorsqu'aucune séance n'est trouvée ou en cas d'erreur, caché par défaut -->
+    <div id="confirm-normal" class="modal">
+        <div class="modal-content">
+            <h3>Information</h3>
+            <p id="confirm-message-normal">Aucun résultat trouvé.</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok-normal" class="btn-confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- bouton de retour à la page de séance -->
+    <button class="button btn-back btn-historique-retour" onclick="location.href='seance.html'">Retour séance</button>
+
+    <!-- pied de page avec une information sur la connexion au serveur -->
+    <footer>
+        <p class="info">Connecté au serveur local</p>
+    </footer>
+
+</div>
+
+<script src="../js/historique.js" defer></script>
+</body>
+</html>

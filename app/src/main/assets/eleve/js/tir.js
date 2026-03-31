@@ -138,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(request)
             });
             if (response.ok) {
-                afficherToast("Résultat envoyé au professeur");
                 btnEnvoyer.textContent = "Résultats transmis !";
                 btnEnvoyer.style.backgroundColor = "#7f8c8d";
                 setTimeout(() => { window.location.href = "../index.html"; }, 1500);
@@ -161,27 +160,3 @@ document.addEventListener("DOMContentLoaded", () => {
     btnAjouter.addEventListener("click", ajouterSerie);
     btnSupprimer.addEventListener("click", supprimerSerie);
 });
-
-function afficherToast(message) {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.82);
-        color: #fff;
-        padding: 12px 24px;
-        border-radius: 24px;
-        font-size: 15px;
-        font-weight: 500;
-        z-index: 9999;
-        pointer-events: none;
-        opacity: 1;
-        transition: opacity 0.5s ease;
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = "0"; }, 2000);
-    setTimeout(() => { toast.remove(); }, 2600);
-}

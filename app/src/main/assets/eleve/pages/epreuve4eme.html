@@ -10,8 +10,10 @@
 </head>
 <body>
 
+<!-- Page de l'épreuve de 4eme, avec un format de sprint et des tirs chronométrés -->
 <div id="container">
 
+    <!-- En-tête de la page avec les règles et la progression visuelle du parcours -->
     <header>
         <h1>Épreuve de 4eme</h1>
         <div class="regle-simple">
@@ -29,26 +31,31 @@
         </div>
     </header>
 
+    <!-- Chronomètre de l'épreuve -->
     <div id="chrono">00:00:00</div>
 
+    <!-- Boutons de contrôle du chronomètre, cachés au départ et affichés au démarrage de l'épreuve -->
     <div id="buttonTraining" style="display: none">
         <button id="reset" class="button">Reset</button>
         <button id="stop" class="button">Arrêter</button>
         <button id="start" class="button" style="display: none">Démarrer</button>
     </div>
 
+    <!-- Zone d'action pour démarrer l'épreuve et annuler la dernière saisie, avec un message de consigne -->
     <div id="zone-action" class="action-card-simple">
         <div id="consigne-etape" class="etape-titre">Prêt pour le départ ?</div>
         <button id="btn-principal" class="button-green" onclick="gestionnaireEtape()">DÉMARRER</button>
         <button id="btn-annuler" class="button btn-back" style="display: none; margin-top: 5vh;">Annuler la dernière saisie</button>
     </div>
 
+    <!-- Liste des tours réalisés, avec un message d'attente avant le premier tour -->
     <div id="listeTours">
         <p id="msg-attente">
             En attente de l'arrivée au premier pas de tir...
         </p>
     </div>
 
+    <!-- Modal pour saisir le nombre de cibles touchées après chaque tour, avec un titre dynamique et des boutons de score -->
     <div id="modal-tir" class="modal" style="display:none">
         <div class="modal-content tir-popup">
             <h2 id="titre-tir">Tir après le Tour X</h2>
@@ -66,6 +73,7 @@
         </div>
     </div>
 
+    <!-- Bouton pour terminer l'épreuve, caché au départ et affiché à la fin du parcours -->
     <div id="blockTerminerEpreuve" class="terminerEpreuve" style="display: none;">
         <button id="terminer" class="button-green">Terminer l'épreuve</button>
     </div>
@@ -154,6 +162,7 @@
         </div>
     </div>
 
+    <!-- Modal de confirmation pour les actions importantes, avec un message dynamique et des boutons de validation et d'annulation -->
     <div id="custom-confirm" class="modal">
         <div class="modal-content">
             <h3>Confirmation</h3>
@@ -165,6 +174,7 @@
         </div>
     </div>
 
+    <!-- Modal d'information pour les messages généraux, avec un message dynamique et un bouton de validation -->
     <div id="confirm-normal" class="modal">
         <div class="modal-content">
             <h3>Attention !</h3>
@@ -175,15 +185,16 @@
         </div>
     </div>
 
+    <!-- Bouton de retour à la page de séance, caché au départ et affiché à la fin du bilan -->
     <button class="button btn-back" onclick="retourSeance()">Retour séance</button>
 
+    <!-- Pied de page avec information de connexion au serveur local -->
     <footer>
         <p class="info">Connecté au serveur local</p>
     </footer>
 
 </div>
 
-<script src="../js/epreuve4eme.js"></script>
+<script src="../js/epreuve4eme.js" defer></script>
 </body>
-
 </html>

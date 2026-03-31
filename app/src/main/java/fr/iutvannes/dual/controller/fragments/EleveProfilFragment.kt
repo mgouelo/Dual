@@ -1,4 +1,4 @@
-package fr.iutvannes.dual.ui.fragments
+package fr.iutvannes.dual.controller.fragments
 
 import android.os.Bundle
 import android.text.Editable

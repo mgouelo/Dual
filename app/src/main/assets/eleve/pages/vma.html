@@ -6,21 +6,26 @@
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
+<!-- Page de test de VMA, accessible depuis la séance d'endurance -->
 <div id="container">
 
+    <!-- En-tête de la page avec le titre et les instructions pour le test de VMA -->
     <header>
         <h1>Test VMA de <span id="nom-eleve-vma">(Chargement...)</span></h1>
         <p>Lancer le chono au début de l'épreuve et l'arrêter dès que le camarade ne peut plus suivre le rythme imposé</p>
     </header>
 
+    <!-- Affichage du chronomètre pour le test de VMA -->
     <div id="chrono">00:00:00</div>
 
+    <!-- Section d'affichage des informations sur la vitesse, la distance parcourue et la VMA actuelle pendant le test -->
     <div id="infos">
         <p>Vitesse : <span id="vitesse">8.0</span> km/h</p>
         <p>Distance parcourue : <span id="distance">0</span> m</p>
         <p>VMA actuelle : <span id="vma-actuelle">--</span> km/h</p>
     </div>
 
+    <!-- Boutons de contrôle pour le chronomètre du test de VMA -->
     <div id="buttonTraining">
         <button id="reset" class="button">Reset</button>
         <button id="stop" class="button">Arrêter</button>
@@ -28,34 +33,37 @@
         <button id="resume" style="display: none;" class="button">Reprendre le test</button>
     </div>
 
+    <!-- Section d'affichage des résultats du test de VMA et du parcours réalisé, avec des badges pour les parcours et les VMA obtenues -->
     <div id="resultat"></div>
     <div id="parcours"></div>
 
+    <!-- Zone d'action pour enregistrer la VMA obtenue après le test, avec un bouton pour valider l'enregistrement de la VMA -->
     <div id="zone-actions-vma">
         <button id="btn-save-vma" class="button">
             Enregistrer la nouvelle VMA
         </button>
     </div>
 
+    <!-- Boutons pour enregistrer les résultats du test de VMA et revenir à la page de séance -->
     <button class="button btn-back" onclick="location.href='seance.html'">Retour séance</button>
+
+    <!-- Modal de confirmation pour les actions importantes, comme l'enregistrement de la VMA obtenue après le test -->
+    <div id="custom-confirm" class="modal">
+        <div class="modal-content">
+            <h3>Confirmation</h3>
+            <p id="confirm-message">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ok" class="btn-confirm">OK</button>
+                <button id="confirm-cancel" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p class="info">Connecté au serveur local</p>
     </footer>
-
 </div>
 
-<div id="custom-confirm" class="modal">
-    <div class="modal-content">
-        <h3>Confirmation</h3>
-        <p id="confirm-message">Êtes-vous sûr ?</p>
-        <div class="modal-buttons">
-            <button id="confirm-ok" class="btn-confirm">OK</button>
-            <button id="confirm-cancel" class="btn-cancel">Annuler</button>
-        </div>
-    </div>
-</div>
-
-<script src="../js/vma.js"></script>
+<script src="../js/vma.js" defer></script>
 </body>
 </html>

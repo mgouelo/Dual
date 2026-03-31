@@ -10,13 +10,16 @@
 </head>
 <body>
 
+<!-- Page de l'épreuve finale pour les élèves de 6ème, combinant endurance et précision -->
 <div id="container">
 
+    <!-- En-tête de la page avec les règles de l'épreuve -->
     <header>
         <h1>Épreuve de 6eme</h1>
         <p>Réaliser un tour de parcours puis un tir autant de fois que possible en 20 minutes.</p>
     </header>
 
+    <!-- Affichage du badge de parcours et du chronomètre pour suivre la progression de l'épreuve -->
     <div id="vma-result-display" class="vma-card-display">
         <p class="vma-display-label">Mon Parcours</p>
         <div id="badge-parcours" class="parcours-badge">
@@ -24,16 +27,20 @@
         </div>
     </div>
 
+    <!-- Chronomètre affichant le temps écoulé depuis le début de l'épreuve, initialisé à 20 minutes pour indiquer le temps restant -->
     <div id="chrono">20:00:00</div>
 
+    <!-- Boutons de contrôle du chronomètre pour démarrer, arrêter et réinitialiser l'épreuve, avec des styles adaptés pour différencier les actions -->
     <div id="buttonTraining">
         <button id="reset" class="button">Reset</button>
         <button id="stop" class="button">Arrêter</button>
         <button id="start" class="button">Démarrer</button>
     </div>
 
+    <!-- Liste des tours réalisés pendant l'épreuve, avec un message d'attente avant le premier tour et une zone pour afficher les tours au fur et à mesure de leur enregistrement -->
     <div id="listeTours"></div>
 
+    <!-- Modal pour saisir le nombre de cibles touchées après chaque tour, avec un titre dynamique indiquant le tour en cours et des boutons pour sélectionner le score de tir -->
     <div id="modal-tir" class="modal" style="display:none">
         <div class="modal-content tir-popup">
             <h2 id="titre-tir">Tir après le Tour X</h2>
@@ -55,15 +62,18 @@
         </div>
     </div>
 
+    <!-- Barre d'action pour enregistrer un tour et son tir ou supprimer le dernier tour enregistré, avec des boutons clairement identifiés pour chaque action -->
     <div class="action-bar">
         <button id="enregistrer" class="button">Enregistrer (+1 tour)</button>
         <button id="supprimer" class="button">Supprimer (-1 tour)</button>
     </div>
 
+    <!-- Bouton pour terminer l'épreuve et passer à l'analyse des ressentis et au bilan final, avec un style distinctif pour marquer l'importance de l'action -->
     <div class="terminerEpreuve">
         <button id="terminer" class="button-green">Terminer l'épreuve</button>
     </div>
 
+    <!-- Modal de ressenti pour que l'élève puisse donner le son ressenti après l'épreuve -->
     <div id="modal-ressenti" class="modal">
         <div class="modal-content bilan-content">
             <h2>Tes Ressentis</h2>
@@ -103,6 +113,7 @@
         </div>
     </div>
 
+    <!-- Modal de bilan affichant les résultats de l'épreuve dans différentes catégories (performance, régularité, efficacité au tir) -->
     <div id="modal-bilan" class="modal">
         <div class="modal-content bilan-content">
             <h2>Bilan de l'Épreuve - 6ème</h2>
@@ -140,6 +151,7 @@
         </div>
     </div>
 
+    <!-- Modal de confirmation customis é pour les actions importantes comme terminer l'épreuve -->
     <div id="custom-confirm" class="modal">
         <div class="modal-content">
             <h3>Confirmation</h3>
@@ -151,6 +163,7 @@
         </div>
     </div>
 
+    <!-- Modal d'information pour afficher des messages importants ou des erreurs, avec un message dynamique et un bouton de validation -->
     <div id="confirm-normal" class="modal">
         <div class="modal-content">
             <h3>Attention !</h3>
@@ -161,6 +174,7 @@
         </div>
     </div>
 
+    <!-- Bouton de retour à la page de séance, avec un style distinctif pour marquer l'importance de l'action -->
     <button class="button btn-back" onclick="retourSeance()">Retour séance</button>
 
     <footer>
@@ -168,6 +182,6 @@
     </footer>
 </div>
 
-<script src="../js/epreuve6eme.js"></script>
+<script src="../js/epreuve6eme.js" defer></script>
 </body>
 </html>

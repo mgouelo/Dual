@@ -21,14 +21,16 @@ let tempsRestantAuRepos = dureeTotaleEpreuve;
 let dateDepart = null;
 let timeout;
 let estArrete = true;
+let tourActuel = 1; // Compteur de tours
 
 // Stockage des données pour le bilan final
 let historiqueEpreuve = []; // Résultats de chaque tour (temps et score de tir)
 let autoEval = {intensite: "", durer: "", lucidite: ""};
 
-
-/* Cette fonction gère le déroulement du temps.
-Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arrêté. */
+/**
+ * Cette fonction gère le déroulement du temps.
+ * Elle s'appelle elle-même toutes les 10ms tant que le chronomètre n'est pas arrêté.
+ */
 const defilerTemps = () => {
     if (estArrete) return;
 
@@ -59,7 +61,7 @@ const defilerTemps = () => {
     timeout = setTimeout(defilerTemps, 10);
 };
 
-/* Démarre le chronomètre si il est arrêté. */
+/** Démarre le chronomètre si il est arrêté. */
 const demarrer = () => {
     if (estArrete) {
         estArrete = false;
@@ -68,7 +70,7 @@ const demarrer = () => {
     }
 };
 
-/* Arrête le chronomètre si il est en cours. */
+/** Arrête le chronomètre si il est en cours. */
 const arreter = () => {
     if (!estArrete) {
         estArrete = true;
@@ -77,6 +79,7 @@ const arreter = () => {
     }
 };
 
+/** Arrête automatiquement le chronomètre lorsque le temps est écoulé, réinitialise les valeurs et affiche une confirmation. */
 const finAutomatique = () => {
     minutes = 0; secondes = 0; millisecondes = 0;
     estArrete = true;
@@ -85,10 +88,14 @@ const finAutomatique = () => {
     confirmation("Temps écoulé ! Fin de l'épreuve.");
 };
 
-/* Réinitialise le chronomètre et les tours après confirmation de l'utilisateur. */
+/**
+ * Affiche une confirmation avant de réinitialiser le chronomètre, les tours et les données de l'épreuve.
+ * @returns {Promise<void>} une promesse qui se résout lorsque le processus de réinitialisation est terminé
+ */
 const reset = async() => {
     const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
 
+    // Si l'utilisateur confirme, on arrête le chrono et on réinitialise les valeurs
     if (confirmation) {
         estArrete = true;
         clearTimeout(timeout);
@@ -100,6 +107,7 @@ const reset = async() => {
         chrono.textContent = "20:00:00";
     }
 
+    // Réinitialiser les données de l'épreuve
     tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
     historiqueEpreuve = [];
     tourActuel = 1;
@@ -111,7 +119,7 @@ const reset = async() => {
     }
 };
 
-/* Enregistre le temps et ouvre la saisie du tir */
+/** Enregistre le temps et ouvre la saisie du tir */
 const enregistrer = () => {
     // On vérifie que le chrono a tourné et n'est pas à 20:00:00 (compte à rebours)
     if(chrono.textContent !== "20:00:00" && !estArrete) {
@@ -202,7 +210,7 @@ const validerTourEtTir = () => {
     document.querySelectorAll('.btn-score').forEach(b => b.classList.remove('selected'));
 };
 
-/* Supprime le dernier tour enregistré de la liste des tours si le chronomètre n'est pas à zéro. */
+/** Supprime le dernier tour enregistré de la liste des tours si le chronomètre n'est pas à zéro. */
 const supprimer = () => {
     if(chrono.textContent != "00:00:00"){
         const listeTours = document.getElementById("listeTours"); // conteneur de tous les tours
@@ -214,7 +222,11 @@ const supprimer = () => {
     }
 };
 
-/* Affiche une boîte de confirmation personnalisée et retourne une promesse qui se résout en fonction du choix de l'utilisateur. */
+/**
+ * Affiche une boîte de confirmation personnalisée avec le message donné et retourne une promesse qui se résout en fonction du choix de l'utilisateur (true si confirmé, false si annulé).
+ * @param message Le message à afficher dans la boîte de confirmation
+ * @returns {Promise<unknown>} Une promesse qui se résout en true si l'utilisateur confirme, ou false s'il annule
+ */
 const demanderConfirmation = (message) => {
     document.getElementById("confirm-message").textContent = message;
 
@@ -239,7 +251,11 @@ const demanderConfirmation = (message) => {
     });
 };
 
-/* Affiche une boîte de confirmation personnalisée et retourne une promesse qui se résout en fonction du choix de l'utilisateur. */
+/**
+ * Affiche une boîte de confirmation simple (sans option d'annulation) avec le message donné et retourne une promesse qui se résout lorsque l'utilisateur clique sur "OK".
+ * @param message Le message à afficher dans la boîte de confirmation
+ * @returns {Promise<unknown>} Une promesse qui se résout lorsque l'utilisateur clique sur "OK"
+ */
 const confirmation = (message) => {
     document.getElementById("confirm-message-normal").textContent = message;
 
@@ -259,7 +275,7 @@ const confirmation = (message) => {
     });
 };
 
-// Fonction asynchrone pour terminer l'épreuve, calculer les résultats et afficher le bilan final
+/** Fonction asynchrone pour terminer l'épreuve, calculer les résultats et afficher le bilan final */
 const terminerEpreuve = ()=> {
     // Performance : Nombre de tours réalisés
     // Barème : 7 tours = 5pts, 6 tours = 4pts, etc.
@@ -331,7 +347,10 @@ function selectAudit(element, categorie, valeur) {
     autoEval[categorie] = valeur;
 }
 
-// Fonction déclenchée par le bouton "Voir mon Bilan"
+/**
+ * Valide les ressentis de l'auto-évaluation, vérifie que tous les champs sont remplis, puis affiche le bilan final de l'épreuve.
+ * @returns {Promise<void>} une promesse qui se résout lorsque le processus de validation est terminé
+ */
 const validerRessentis = async() => {
     // Vérifier que tous les ressentis ont été sélectionnés
     if (!autoEval.intensite || !autoEval.durer || !autoEval.lucidite) {
@@ -347,7 +366,10 @@ const validerRessentis = async() => {
     terminerEpreuve();
 };
 
-// Fonction déclenchée par le bouton "Terminer l'épreuve"
+/**
+ * Affiche une confirmation avant de déclencher la fin de l'épreuve, puis affiche la modale de ressenti si confirmé.
+ * @returns {Promise<void>} une promesse qui se résout lorsque le processus de fin d'épreuve est terminé
+ */
 const declencherFinEpreuve = async () => {
     // On demande confirmation d'abord
     const confirmationFin = await demanderConfirmation("Voulez-vous vraiment terminer l'épreuve ?");
@@ -420,6 +442,18 @@ async function envoyerBilan6eme(nbTours, notePerf, noteRegul, noteTir, noteFinal
     }
 }
 
+/**
+ * Affiche les résultats finaux de l'épreuve 6ème dans une modale dédiée, avec un design visuel pour les médailles.
+ * @param nbTours le nombre de tours réalisés
+ * @param notePerf la note de performance sur 5
+ * @param medaillePerf la médaille associée à la performance
+ * @param ecartMax l'écart maximal entre les tours (pour la régularité)
+ * @param medailleRegul la médaille associée à la régularité
+ * @param noteRegul la note de régularité sur 5
+ * @param totalTir le total des cibles touchées
+ * @param noteTir la note d'efficacité tir sur 5
+ * @param medailleTir la médaille associée à l'efficacité tir
+ */
 const afficherResultatsFinaux = (nbTours, notePerf, medaillePerf, ecartMax, medailleRegul, noteRegul, totalTir, noteTir, medailleTir) => {
     // Calcul de la note totale sur 15
     const noteFinale = (parseFloat(notePerf) + parseFloat(noteRegul) + parseFloat(noteTir)).toFixed(1);

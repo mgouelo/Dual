@@ -26,11 +26,13 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
 /**
  * Event test student -> server
@@ -675,6 +677,134 @@ fun Application.module(appContext: Context) {
             } catch (e: Exception) {
                 Log.e("KtorServer", "Erreur Export: ${e.message}")
                 call.respond(HttpStatusCode.InternalServerError, "Erreur génération CSV")
+            }
+        }
+
+        // Route pour récupérer l'historique complet d'un élève
+        get("/api/eleves/historique/{id}") {
+            val idEleveStr = call.parameters["id"]
+            val idEleve = idEleveStr?.toIntOrNull()
+
+            if (idEleve == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "ID invalide"))
+                return@get
+            }
+
+            try {
+                // 1. Récupération de l'élève
+                val eleve = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.EleveDao().getEleveById(idEleve)
+                }
+                val vmaRef = eleve?.vma ?: 10f
+
+                // 2. Récupération des résultats
+                val resultatsDB = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.resultatDao().getByEleve(idEleve)
+                }
+
+                fun getCouleurMedaille(medaille: String): String = when (medaille.uppercase()) {
+                    "DIAMANT" -> "#1456DB"
+                    "PLATINE" -> "#b9f2ff"
+                    "OR" -> "#ffd700"
+                    "ARGENT" -> "#c0c0c0"
+                    "BRONZE" -> "#cd7f32"
+                    else -> "#cccccc"
+                }
+
+                // 3. Transformation des données avec l'outil JSON officiel
+                val historiqueAEnvoyer = resultatsDB.map { res ->
+
+                    val isVma = res.vma > 0f && res.cibles_touchees == 0
+                    val is4eme = res.note_intensite > 0f || res.temps_E > 0
+
+                    val typeEpreuve = when {
+                        isVma -> "Test VMA"
+                        is4eme -> "Épreuve Finale 4ème"
+                        else -> "Épreuve Finale 6ème"
+                    }
+
+                    val dateStrFormatee = withContext(Dispatchers.IO) {
+                        val seance = DatabaseProvider.db.seanceDao().getSeanceById(res.id_seance)
+                        seance?.date ?: java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date())
+                    }
+
+                    // Création de l'objet JSON robuste
+                    buildJsonObject {
+                        put("dateStr", dateStrFormatee)
+                        put("dateObj", res.id_resultat) // JS s'en servira pour trier
+                        put("type", typeEpreuve)
+                        put("noteFinale", res.note_finale)
+
+                        // Sous-dossier "bilan"
+                        put("bilan", buildJsonObject {
+                            if (is4eme) {
+                                // --- CALCULS 4ÈME ---
+                                val pourcentageVma = if (vmaRef > 0) (res.temp_course / vmaRef) * 100 else 0f
+                                val tempsTirSec = (res.temps_B - res.temps_A) + (res.temps_D - res.temps_C)
+                                val minTir = tempsTirSec / 60
+                                val secTir = tempsTirSec % 60
+
+                                val medailleIntensite = when {
+                                    pourcentageVma > 110 -> "DIAMANT"
+                                    pourcentageVma >= 101 -> "OR"
+                                    pourcentageVma >= 91 -> "ARGENT"
+                                    else -> "BRONZE"
+                                }
+
+                                val medailleVma = when {
+                                    res.note_vma == 2f -> "OR"
+                                    res.note_vma >= 1.5f -> "ARGENT"
+                                    else -> "BRONZE"
+                                }
+
+                                put("vitesseVal", kotlin.math.round(pourcentageVma).toInt())
+                                put("vitesseRealiseeKmh", String.format(java.util.Locale.US, "%.1f", res.temp_course))
+                                put("noteVitesse", res.note_intensite)
+                                put("medailleVitesse", medailleIntensite)
+                                put("colorVitesse", getCouleurMedaille(medailleIntensite))
+
+                                put("tirVal", res.cibles_touchees)
+                                put("tirTemps", "${minTir}'${secTir.toString().padStart(2, '0')}")
+                                put("noteTir", res.note_efficience)
+
+                                put("vmaVal", vmaRef)
+                                put("noteVma", res.note_vma)
+                                put("medailleVma", medailleVma)
+                                put("colorVma", getCouleurMedaille(medailleVma))
+
+                            } else if (!isVma) {
+                                // --- CALCULS 6ÈME ---
+                                put("nbTours", res.nbTours)
+                                put("notePerf", 0) // Ajuste selon tes règles
+                                put("medaillePerf", "ARGENT")
+
+                                put("ecartMax", res.ecart_max_course)
+                                put("noteRegul", 0)
+                                put("medailleRegul", "OR")
+
+                                put("totalTir", res.cibles_touchees)
+                                put("noteTir", 0)
+                                put("medailleTir", "BRONZE")
+                            } else {
+                                // --- TEST VMA ---
+                                put("vmaVal", res.vma)
+                            }
+                        })
+
+                        // Sous-dossier "audit"
+                        put("audit", buildJsonObject {
+                            put("intensite", res.ressenti_intensite)
+                            put("durer", res.ressenti_durer)
+                            put("lucidite", res.ressenti_lucidite)
+                        })
+                    }
+                }
+
+                // On renvoie la liste d'objets JSON parfaits
+                call.respond(HttpStatusCode.OK, historiqueAEnvoyer)
+            } catch (e: Exception) {
+                Log.e("KtorServer", "Erreur Historique: ${e.message}", e)
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Erreur Serveur"))
             }
         }
     }
