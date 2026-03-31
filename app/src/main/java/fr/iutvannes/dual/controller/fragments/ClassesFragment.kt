@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import fr.iutvannes.dual.controller.viewmodel.ImportViewModel
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 /**
  * Fragment to display the list of classes.
@@ -149,7 +150,7 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
             chargerClasses()
 
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Classe ${classe.nom} supprimée", Toast.LENGTH_SHORT).show() // feedback utilisateur
+                if (isAdded) Toast.makeText(requireContext(), "Classe ${classe.nom} supprimée", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -39,13 +39,13 @@ let tempsTotalEnSecondes = 0;
 let series = []; // [{reussites, temps, note}]
 
 /**
- * Calcule la note d'efficience au tir par croisement (Moyenne Temps/Réussite)
- * @param {number} secondes - Temps total cumulé des tirs
- * @param {number} reussite - Nombre total de cibles touchées
- * @returns {number} Note sur 6
+ * Calcule la note d'efficience en fonction du temps et du nombre de réussites
+ * @param temps Temps en secondes pour réaliser le tir (temps total au pas de tir)
+ * @param reussites Nombre de tirs réussis (0 à 5)
+ * @returns {number} Note d'efficience calculée selon la grille définie, ou 0 si aucune réussite
  */
 function calculerNoteEfficience(secondes, reussite) {
-    if (reussite === 0) return 0; // Sécurité si 0 pointé
+    if (reussite === 0) return 0;
 
     // --- Note selon le Temps de tir ---
     let noteTemps = 0;
@@ -182,7 +182,8 @@ function calculerEtAfficher() {
     modalTir.style.display = "none";
     modalTir.classList.remove("show");
 
-    // Reset pour le prochain tir
+    // Reset chrono pour le prochain tir
+    // Réinitialise l'interface pour le prochain tir
     document.querySelectorAll('.btn-score').forEach(b => b.classList.remove('selected'));
     scoreTemp.value = "0";
     tempsAccumuleMs = 0;
@@ -291,6 +292,7 @@ async function envoyerSession() {
                 body: JSON.stringify(request)
             });
             if (response.ok) {
+                afficherToast("Résultat envoyé au professeur");
                 if (btnSession) {
                     btnSession.textContent = "Session envoyée !";
                     btnSession.style.backgroundColor = "#7f8c8d";
@@ -320,7 +322,7 @@ async function envoyerSession() {
  * Affiche une boîte de confirmation avant de retourner à la page de session, pour éviter les pertes de données accidentelles
  * @returns {Promise<void>} Une promesse qui se résout lorsque l'utilisateur a pris une décision, avec redirection vers la page de session si il confirme, ou maintien sur la page actuelle s'il annule
  */
-const retourSeance = async() =>{
+const retourSeance = async() => {
     if (await demanderConfirmation("Abandonner la session en cours et retourner sur Session Biathlon ?")) {
         window.location.href = "../pages/seance.html";
     }
@@ -350,12 +352,41 @@ const demanderConfirmation = (message) => {
         };
     });
 };
-// (Utilise globalThis.setScoreTir pour la rendre accessible par le onClick HTML)
+
+/**
+ * Affiche un toast de notification en bas de l'écran
+ * @param {string} message - Le message à afficher dans le toast
+ */
+function afficherToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.82);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 24px;
+        font-size: 15px;
+        font-weight: 500;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+    setTimeout(() => { toast.remove(); }, 2600);
+}
+
+// Rend setScoreTir accessible depuis les attributs onClick HTML
 globalThis.setScoreTir = setScoreTir;
 
-// Attachement des écouteurs d'événements0
+// Attachement des écouteurs d'événements
 if (startBtn) startBtn.addEventListener("click", demarrerChrono);
 if (stopBtn) stopBtn.addEventListener("click", arreterChrono);
 if (validerBtn) validerBtn.addEventListener("click", calculerEtAfficher);
 if (btnSession) btnSession.addEventListener("click", envoyerSession);
-if(btnRetourSeance) btnRetourSeance.addEventListener("click", retourSeance);
+if (btnRetourSeance) btnRetourSeance.addEventListener("click", retourSeance);

@@ -12,6 +12,7 @@ import androidx.room.Room
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import fr.iutvannes.dual.model.utils.EmailService
 import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
@@ -46,11 +47,7 @@ class ForgottenPasswordFragment : Fragment(R.layout.fragment_forgotten_password)
         val inscriptionLien = view.findViewById<TextView>(R.id.inscriptionLien)
 
         // Access to the database
-        val db = Room.databaseBuilder(
-            requireContext(),
-            AppDatabase::class.java,
-            "dual.db"
-        ).build()
+        val db = DatabaseProvider.db
 
         // Managing clicks on the reset button
         lienButton.setOnClickListener {

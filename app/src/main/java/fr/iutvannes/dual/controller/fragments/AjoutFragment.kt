@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import fr.iutvannes.dual.R
 import fr.iutvannes.dual.model.persistence.Eleve
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

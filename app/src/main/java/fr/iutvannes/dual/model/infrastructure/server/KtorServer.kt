@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import fr.iutvannes.dual.model.persistence.Resultat
 import fr.iutvannes.dual.model.persistence.Seance
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -186,7 +187,9 @@ fun Application.module(appContext: Context) {
 
         // Route to send all existing classes
         get("/api/classes/all") {
-            val classes = DatabaseProvider.db.classeDao().getAllClasses()
+            val classes = withContext(Dispatchers.IO) {
+                DatabaseProvider.db.classeDao().getAllClasses()
+            }
             val nomsClasses = classes.map { it.nom }
             call.respond(nomsClasses)
         }
@@ -194,17 +197,11 @@ fun Application.module(appContext: Context) {
         // Route to send students from ONE specific class
         get("/api/eleves/par-classe/{nomClasse}") {
             val nom = call.parameters["nomClasse"] ?: ""
-            Log.d("KtorDebug", "Requête reçue pour la classe : $nom") // Log de début
-
             try {
                 val eleves = withContext(Dispatchers.IO) {
                     DatabaseProvider.db.EleveDao().getElevesByClasse(nom)
                 }
-
-                Log.d("KtorDebug", "Nombre d'élèves trouvés en BDD : ${eleves.size}") // Vérifie si la BDD est vide
-
                 val dataEleves = eleves.map {
-                    Log.d("KtorDebug", "Traitement de : ${it.prenom} (VMA: ${it.vma})") // Vérifie les valeurs individuelles
                     EleveDTO(
                         id_eleve = it.id_eleve,
                         nomComplet = "${it.prenom} ${it.nom.uppercase()}",
@@ -255,7 +252,9 @@ fun Application.module(appContext: Context) {
         post("/api/eleves/update-vma") {
             val req = call.receive<VmaUpdate>() // Ktor convertit le JSON direct en objet
 
-            val rows = DatabaseProvider.db.EleveDao().updateVma(req.id, req.vma)
+            val rows = withContext(Dispatchers.IO) {
+                DatabaseProvider.db.EleveDao().updateVma(req.id, req.vma)
+            }
 
             if (rows > 0) {
                 call.respond(HttpStatusCode.OK)
@@ -398,22 +397,24 @@ fun Application.module(appContext: Context) {
                         val payload = jsonElement["payload"]?.jsonObject
                         val vmaValue = payload?.get("vma")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
 
-                        val eleve = DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        val eleve = withContext(Dispatchers.IO) {
+                            DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                        }
                         if (eleve != null) {
-                            //Mise à jour de la VMA sur la fiche de l'élève 
-                            eleve.vma = vmaValue
-                            DatabaseProvider.db.EleveDao().update(eleve)
+                            withContext(Dispatchers.IO) {
+                                eleve.vma = vmaValue
+                                DatabaseProvider.db.EleveDao().update(eleve)
 
-                            //On crée une ligne dans la table Resultat liée à l'idSeanceActuelle
-                            val marquageResultat = fr.iutvannes.dual.model.persistence.Resultat(
-                                id_eleve = eleve.id_eleve,
-                                id_seance = KtorServer.idSeanceActuelle,
-                                vma = vmaValue, //On stocke la VMA ici pour l'historique de la séance
-                                cibles_touchees = 0, //Pas de tir en Test VMA
-                                temp_course = 0F
-                            )
-                            DatabaseProvider.db.resultatDao().insert(marquageResultat)
-
+                                //On crée une ligne dans la table Resultat liée à l'idSeanceActuelle
+                                val marquageResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                                    id_eleve = eleve.id_eleve,
+                                    id_seance = KtorServer.idSeanceActuelle,
+                                    vma = vmaValue, //On stocke la VMA ici pour l'historique de la séance
+                                    cibles_touchees = 0, //Pas de tir en Test VMA
+                                    temp_course = 0F
+                                )
+                                DatabaseProvider.db.resultatDao().insert(marquageResultat)
+                            }
                             Log.i("KtorServer", "Test VMA enregistré : $studentId -> $vmaValue km/h")
                             call.respond(HttpStatusCode.Accepted, mapOf("status" to "VMA_OK"))
                         } else {
@@ -450,9 +451,9 @@ fun Application.module(appContext: Context) {
                 val distance = req.distance
 
 
-                val eleve = DatabaseProvider.db
-                    .EleveDao()
-                    .findByName(prenom, nom.uppercase())
+                val eleve = withContext(Dispatchers.IO) {
+                    DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
+                }
 
                 if (eleve == null) {
                     call.respond(HttpStatusCode.NotFound, "Élève introuvable")

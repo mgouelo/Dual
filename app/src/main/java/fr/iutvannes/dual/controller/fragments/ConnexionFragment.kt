@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.content.edit
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 /**
  * Connection fragment
@@ -92,13 +93,7 @@ class ConnexionFragment : Fragment() {
         val editor = sharedPref.edit()
 
         // Creating or opening the database
-        val db = Room.databaseBuilder(
-            requireContext(),
-            AppDatabase::class.java,
-            "dual.db"
-        )
-            .fallbackToDestructiveMigration() // Deletes and recreates the database if the schema changes
-            .build()
+        val db = DatabaseProvider.db
 
         val dao = db.profDAO()
 

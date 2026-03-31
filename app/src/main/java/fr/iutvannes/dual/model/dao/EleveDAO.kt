@@ -18,7 +18,7 @@ interface EleveDAO {
      * @param eleve The student to be inserted
      * @return The ID of the inserted student
      */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(eleve: Eleve): Long
 
     /**

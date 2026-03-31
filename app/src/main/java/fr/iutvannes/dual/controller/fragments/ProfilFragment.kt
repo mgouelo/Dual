@@ -29,6 +29,7 @@ import kotlinx.coroutines.withContext
 import androidx.core.content.edit
 import com.bumptech.glide.Glide
 import fr.iutvannes.dual.model.persistence.Prof
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 /**
  * Fragment affichant le profil utilisateur

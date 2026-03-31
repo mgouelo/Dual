@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.content.ContextCompat
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 class EleveProfilFragment : Fragment() {
 

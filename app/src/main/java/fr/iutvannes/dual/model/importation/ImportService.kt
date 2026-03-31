@@ -5,6 +5,8 @@ import fr.iutvannes.dual.model.dao.EleveDAO
 import fr.iutvannes.dual.model.importation.readers.StudentReader
 import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.InputStream
 
 /**
@@ -102,11 +104,13 @@ class ImportService(
 
         // ── 2. Créer automatiquement les classes manquantes ───────────────
         val classesInFile = resolved.map { it.classe }.toSet()
-        val classesExistantes = classeDao.getClasses().map { it.nom }.toSet()
+        val classesExistantes = withContext(Dispatchers.IO) {
+            classeDao.getClasses().map { it.nom }.toSet()
+        }
         val classesACreer = classesInFile - classesExistantes
 
         classesACreer.forEach { nomClasse ->
-            classeDao.insert(Classe(nom = nomClasse))
+            withContext(Dispatchers.IO) { classeDao.insert(Classe(nom = nomClasse)) }
         }
 
         // ── 3. Déduplication intra-fichier ────────────────────────────────
@@ -138,7 +142,7 @@ class ImportService(
         var created = 0
         toInsert.forEach { eleve ->
             try {
-                val id = eleveDao.insert(eleve)
+                val id = withContext(Dispatchers.IO) { eleveDao.insert(eleve) }
                 if (id > 0) created++ else skipped++
             } catch (e: Exception) {
                 errors += "Erreur pour ${eleve.prenom} ${eleve.nom} : ${e::class.simpleName}"

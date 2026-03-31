@@ -17,23 +17,11 @@ import androidx.room.*
  */
 @Entity(
     tableName = "Resultat",
-    /** To be done again later when creating the sessions
-    foreignKeys = [
-        ForeignKey(
-            entity = Eleve::class,
-            parentColumns = ["id_eleve"],
-            childColumns = ["id_eleve"],
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Seance::class,
-            parentColumns = ["id_seance"],
-            childColumns = ["id_seance"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index("id_eleve"), Index("id_seance")]
-    */
+    indices = [
+        Index("id_eleve"),
+        Index("id_seance"),
+        Index(value = ["id_eleve", "id_seance"], unique = true)
+    ]
 )
 data class Resultat (
     @PrimaryKey(autoGenerate = true)

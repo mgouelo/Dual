@@ -13,6 +13,7 @@ import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Prof
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,13 +67,8 @@ class InscriptionFragment : Fragment() {
         val connexionLien = view.findViewById<TextView>(R.id.connexionLien)
 
         // --- ROOM DATABASE ---
-        val db = Room.databaseBuilder(
-            requireContext(),
-            AppDatabase::class.java,
-            "dual.db"
-        )
-            .fallbackToDestructiveMigration() // Deletes and recreates the database if the schema changes
-            .build()
+        val db = DatabaseProvider.db
+
         val dao = db.profDAO()
 
         // --- PASSWORD DISPLAY MANAGEMENT ---

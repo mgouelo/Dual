@@ -32,6 +32,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import android.widget.LinearLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 /**
  * Fragment to display the dashboard.
@@ -107,19 +110,21 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
         //Opening a coroutine in the I/O thread to count the results
         viewLifecycleOwner.lifecycleScope.launch {
-            while (true) {
-                if (sessionViewModel.running.value && KtorServer.idSeanceActuelle != 0) {
-                    val nbBilans = withContext(Dispatchers.IO) {
-                        DatabaseProvider.db.resultatDao().countBySeance(KtorServer.idSeanceActuelle)
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    if (sessionViewModel.running.value && KtorServer.idSeanceActuelle != 0) {
+                        val nbBilans = withContext(Dispatchers.IO) {
+                            DatabaseProvider.db.resultatDao().countBySeance(KtorServer.idSeanceActuelle)
+                        }
+                        nbResultat.text = "$nbBilans"
                     }
-                    nbResultat.text = "$nbBilans"
+                    kotlinx.coroutines.delay(2000)
                 }
-                kotlinx.coroutines.delay(2000)
             }
         }
 
         val qrCode = view.findViewById<ImageView>(R.id.qrCodeView)
-        qrCode.setBackgroundColor(Color.DKGRAY) // DEBUG
+        qrCode.setBackgroundColor(Color.WHITE)
         val sessionUrl = view.findViewById<TextView>(R.id.textUrl)
 
         val cardInfoSeance = view.findViewById<View>(R.id.cardInfoSeance)
@@ -127,15 +132,16 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         val tvSeanceClasse = view.findViewById<TextView>(R.id.tv_seance_classe)
 
         // Opening a coroutine in the IO thread to generate the QR code
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            sessionViewModel.url.collect { url ->
-                if (url != null) {
-                    Toast.makeText(requireContext(), "URL: $url", Toast.LENGTH_LONG).show()
-                    qrCode.visibility = View.VISIBLE
-                    sessionUrl.visibility = View.VISIBLE
-                    nbResultat.visibility = View.VISIBLE
-                    sessionUrl.text = url
-                    qrCode.setImageBitmap(genererQRCode(url))
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                sessionViewModel.url.collect { url ->
+                    if (url != null) {
+                        qrCode.visibility = View.VISIBLE
+                        sessionUrl.visibility = View.VISIBLE
+                        nbResultat.visibility = View.VISIBLE
+                        sessionUrl.text = url
+                        qrCode.setImageBitmap(genererQRCode(url))
+                    }
                 }
             }
         }
@@ -143,33 +149,35 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
 
 
         //Opening a coroutine in the I/O thread to handle the session start button
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            sessionViewModel.running.collect { running ->
-                if (running) {
-                    sessionBtn.text = "Arrêter la séance"
-                    val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
-                    sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(couleurBleu)
-                    qrCode.visibility = View.VISIBLE
-                    layoutUrl.visibility = View.VISIBLE
-                    cardResultats.visibility = View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                sessionViewModel.running.collect { running ->
+                    if (running) {
+                        sessionBtn.text = "Arrêter la séance"
+                        val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
+                        sessionBtn.backgroundTintList =
+                            android.content.res.ColorStateList.valueOf(couleurBleu)
+                        qrCode.visibility = View.VISIBLE
+                        layoutUrl.visibility = View.VISIBLE
+                        cardResultats.visibility = View.VISIBLE
 
-                    //Récupếration des infos du ViewModel
-                    val classe = sessionViewModel.nomClasse.value
-                    val type = sessionViewModel.typeSeance.value
-                    val dateAujourdhui = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(Date())
+                        //Récupếration des infos du ViewModel
+                        val classe = sessionViewModel.nomClasse.value
+                        val type = sessionViewModel.typeSeance.value
+                        tvSeanceType.text = type.uppercase()
+                        tvSeanceClasse.text = classe
+                        cardInfoSeance.visibility = View.VISIBLE
 
-                    tvSeanceType.text = type.uppercase()
-                    tvSeanceClasse.text = classe
-                    cardInfoSeance.visibility = View.VISIBLE
-
-                } else {
-                    sessionBtn.text = "Lancer une séance"
-                    val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
-                    sessionBtn.backgroundTintList = android.content.res.ColorStateList.valueOf(couleurBleu)
-                    qrCode.visibility = View.GONE
-                    layoutUrl.visibility = View.GONE
-                    cardResultats.visibility = View.GONE
-                    cardInfoSeance.visibility = View.GONE
+                    } else {
+                        sessionBtn.text = "Lancer une séance"
+                        val couleurBleu = ContextCompat.getColor(requireContext(), R.color.bleu)
+                        sessionBtn.backgroundTintList =
+                            android.content.res.ColorStateList.valueOf(couleurBleu)
+                        qrCode.visibility = View.GONE
+                        layoutUrl.visibility = View.GONE
+                        cardResultats.visibility = View.GONE
+                        cardInfoSeance.visibility = View.GONE
+                    }
                 }
             }
         }
@@ -1034,9 +1042,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         val m = sec / 60; val s = sec % 60
                         return if (m > 0) "%d'%02d\"".format(m, s) else "%d\"".format(s)
                     }
-
-                    Log.d("DEBUG_BILAN", "temps_A=${res.temps_A} temps_B=${res.temps_B} temps_C=${res.temps_C} temps_D=${res.temps_D} temps_E=${res.temps_E}")
-
+                    
                     if (res.temps_A > 0) {
                         val tc1 = res.temps_A
                         val tt1 = res.temps_B - res.temps_A

@@ -16,6 +16,7 @@ import fr.iutvannes.dual.R
 import fr.iutvannes.dual.model.persistence.Eleve
 import fr.iutvannes.dual.model.persistence.Resultat
 import fr.iutvannes.dual.model.persistence.Seance
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -998,8 +999,6 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     val m = sec / 60; val s = sec % 60
                     return if (m > 0) "%d'%02d\"".format(m, s) else "%d\"".format(s)
                 }
-
-                Log.d("DEBUG_BILAN", "temps_A=${res.temps_A} temps_B=${res.temps_B} temps_C=${res.temps_C} temps_D=${res.temps_D} temps_E=${res.temps_E}")
 
                 if (res.temps_A > 0) {
                     val tc1 = res.temps_A

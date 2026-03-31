@@ -14,6 +14,7 @@ import fr.iutvannes.dual.R
 import fr.iutvannes.dual.controller.MainActivity
 import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.persistence.Classe
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -218,7 +219,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
             // Displaying a message if the class already exists via the main thread
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "Classe $nom ajoutée", Toast.LENGTH_SHORT).show() // User feedback toast
-                (activity as MainActivity).onBackPressed() // Return to previous screen
+                requireActivity().onBackPressedDispatcher.onBackPressed() // Return to previous screen
             }
         }
     }
@@ -237,7 +238,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
                 if (oldClasseNom == nouveauNom) {
                     // The user hasn't changed anything.
                     withContext(Dispatchers.Main) {
-                        requireActivity().onBackPressed()
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
                     }
                     return@launch
                 }
@@ -259,7 +260,7 @@ class AjoutClasseFragment: Fragment(R.layout.fragment_ajout_classe) {
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Classe modifiée", Toast.LENGTH_SHORT).show() // User feedback
-                    requireActivity().onBackPressed()
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
 
             } else {

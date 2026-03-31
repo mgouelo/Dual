@@ -2,12 +2,11 @@ package fr.iutvannes.dual.controller.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.room.Room
-import fr.iutvannes.dual.model.database.AppDatabase
 import fr.iutvannes.dual.model.importation.ImportReport
 import fr.iutvannes.dual.model.importation.ImportService
 import fr.iutvannes.dual.model.importation.readers.CsvStudentReader
 import fr.iutvannes.dual.model.importation.readers.XlsStudentReader
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import java.io.InputStream
 
 /**
@@ -17,11 +16,7 @@ import java.io.InputStream
  */
 class ImportViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val db = Room.databaseBuilder(
-        application,
-        AppDatabase::class.java,
-        "dual.db"
-    ).build()
+    private val db = DatabaseProvider.db
 
     private val importService = ImportService(
         readers = listOf(

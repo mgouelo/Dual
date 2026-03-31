@@ -21,6 +21,7 @@ import fr.iutvannes.dual.controller.viewmodel.ImportViewModel
 import fr.iutvannes.dual.model.persistence.Classe
 import fr.iutvannes.dual.model.persistence.Eleve
 import fr.iutvannes.dual.model.persistence.Prof
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import fr.iutvannes.dual.model.utils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -12,7 +12,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -30,6 +29,7 @@ import fr.iutvannes.dual.controller.fragments.ProfilFragment
 import fr.iutvannes.dual.controller.fragments.ResultatsFragment
 import fr.iutvannes.dual.controller.fragments.TableauDeBordFragment
 import fr.iutvannes.dual.model.database.AppDatabase
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

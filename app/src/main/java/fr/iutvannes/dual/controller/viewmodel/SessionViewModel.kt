@@ -56,11 +56,8 @@ class SessionViewModel : ViewModel() {
      */
     fun stopSession() {
         if (!_running.value) return
-        KtorServer.stop()
         _running.value = false
-        _url.value = null
-
-        //On vide les infos reçues
+        KtorServer.idSeanceActuelle = 0
         nomClasse.value = ""
         typeSeance.value = ""
     }

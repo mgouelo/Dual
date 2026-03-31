@@ -1,3 +1,5 @@
+package fr.iutvannes.dual.model.utils
+
 import android.content.Context
 import androidx.room.Room
 import fr.iutvannes.dual.model.database.AppDatabase

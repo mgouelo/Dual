@@ -18,7 +18,6 @@ const modalConfirm = document.getElementById("custom-confirm");
 const confirmOk = document.getElementById("confirm-ok");
 const confirmCancel = document.getElementById("confirm-cancel");
 
-
 // Variable pour suivre le nombre de séries ajoutées
 let series = [];
 const MAX_SERIES = 20;
@@ -55,7 +54,7 @@ function setScoreTir(valeur) {
         }
     });
 }
-window.setScoreTir = setScoreTir
+window.setScoreTir = setScoreTir;
 
 /**
  * Valide le tir depuis la modale et l'ajoute à la liste
@@ -93,7 +92,7 @@ const annulerDernierTir = async() => {
 };
 
 /**
- * Recalcule le total, la médaille, et affiche la liste des tirs empilés
+ * Calcule le total des tirs réussis et affiche les résultats, y compris la médaille obtenue
  */
 const actualiserAffichage = () => {
     if (series.length === 0) {
@@ -142,6 +141,10 @@ const actualiserAffichage = () => {
 
 /**
  * Envoie les résultats du tir au serveur via une requête POST
+ * @param total Le total des tirs réussis calculé à partir des champs de saisie
+ * @param medaille La médaille obtenue en fonction du pourcentage de réussite (BRONZE, ARGENT, OR, PLATINE, DIAMANT)
+ * @param nbSeries Le nombre de séries de tir saisies, utilisé pour construire le tableau des tirs réussis
+ * @returns {Promise<void>} Une promesse qui se résout lorsque la requête est terminée, avec gestion des erreurs et mise à jour de l'interface en conséquence
  */
 async function envoyerResultatAuServeur() {
     // 1. Demande de confirmation
@@ -155,18 +158,22 @@ async function envoyerResultatAuServeur() {
             return;
         }
 
-        // Récupération de l'élève
+        // Récupération de l'identité du coureur actif depuis le localStorage
         const coureur = JSON.parse(localStorage.getItem("coureur_actif_objet"));
+
+        // Vérification de la présence de l'identité du coureur avant de continuer
         if (!coureur?.nomComplet) {
             alert("Identité élève introuvable.");
             return;
         }
 
+        // Extraction du prénom et du nom à partir du nom complet du coureur
         const parts = coureur.nomComplet.trim().split(" ");
         const prenom = parts[0] || "";
         const nom    = parts.slice(1).join(" ") || "";
 
-        // 2. L'OBJET REQUEST (Super simplifié grâce au tableau `series`)
+        // Construction du tableau des tirs réussis à partir des champs de saisie
+        // L'OBJET REQUEST (Super simplifié grâce au tableau `series`)
         const request = {
             prenom,
             nom,
@@ -183,7 +190,7 @@ async function envoyerResultatAuServeur() {
             btnEnvoyer.textContent = "Envoi en cours...";
         }
 
-        // 3. Envoi au serveur Ktor
+        // Envoi de la requête au serveur avec gestion des erreurs et mise à jour de l'interface en fonction de la réponse
         try {
             const response = await fetch("/api/biathlon", {
                 method: "POST",
@@ -192,6 +199,7 @@ async function envoyerResultatAuServeur() {
             });
 
             if (response.ok) {
+                afficherToast("Résultat envoyé au professeur");
                 if (btnEnvoyer) {
                     btnEnvoyer.textContent = "Résultats transmis !";
                     btnEnvoyer.style.backgroundColor = "#7f8c8d";
@@ -257,10 +265,38 @@ const demanderConfirmation = (message) => {
  * Affiche une boîte de confirmation avant de retourner à la page de session, pour éviter les pertes de données accidentelles
  * @returns {Promise<void>} Une promesse qui se résout lorsque l'utilisateur a pris une décision, avec redirection vers la page de session si il confirme, ou maintien sur la page actuelle s'il annule
  */
-const retourSeance = async() =>{
+const retourSeance = async() => {
     if (await demanderConfirmation("Abandonner la session en cours et retourner sur Session Biathlon ?")) {
         window.location.href = "../pages/seance.html";
     }
+};
+
+/**
+ * Affiche un toast de notification en bas de l'écran
+ * @param {string} message - Le message à afficher dans le toast
+ */
+function afficherToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.82);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 24px;
+        font-size: 15px;
+        font-weight: 500;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+    setTimeout(() => { toast.remove(); }, 2600);
 }
 
 // Écouteurs d'événements pour les boutons d'ajout et de suppression de séries
@@ -268,4 +304,4 @@ btnNouveauTir.addEventListener("click", ouvrirModale);
 validerBtn.addEventListener("click", validerTir);
 btnAnnulerTir.addEventListener("click", annulerDernierTir);
 btnEnvoyer.addEventListener("click", envoyerResultatAuServeur);
-if(btnRetourSeance) btnRetourSeance.addEventListener("click", retourSeance);
+if (btnRetourSeance) btnRetourSeance.addEventListener("click", retourSeance);

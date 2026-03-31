@@ -19,6 +19,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.model.persistence.Eleve
+import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 /**
  * Fragment to display the list of students in a class.
@@ -255,7 +256,9 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
             chargerEleves()
 
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Eleve ${eleve.nom} supprimée", Toast.LENGTH_SHORT).show() // User feedback
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Élève ${eleve.nom} supprimé", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
