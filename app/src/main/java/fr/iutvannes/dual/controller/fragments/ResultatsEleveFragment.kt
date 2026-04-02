@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.xmlbeans.impl.xb.xsdschema.TopLevelAttribute
 import kotlin.collections.map
+import kotlin.math.max
 
 /**
  * Displaying student results
@@ -125,7 +126,7 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
                         // 4. Date et retour
                         val date = db.seanceDao().getSeanceById(courseAvecTours.course.id_seance)?.date ?: "Inconnu"
-                        Pair(date, min(130f, pourcentageVMA))
+                        Pair(date, max(50f,min(130f, pourcentageVMA)))
                     }
 
                     withContext(Dispatchers.Main) {
