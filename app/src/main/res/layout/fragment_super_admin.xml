@@ -35,7 +35,7 @@
         android:id="@+id/tvAdminTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Superadmin"
+        android:text="Gestionnaire de Données"
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="@color/blanc"

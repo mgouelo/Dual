@@ -331,9 +331,12 @@ class ProfilFragment : Fragment(R.layout.fragment_profil) {
 
         // bouton de déconnexion
         disconnectButton.setOnClickListener {
-            // supprime l'utilisateur de la mémoire cache
-            sharedPrefs.edit { putString("email", "") }
-            sharedPrefs.edit { putString("password", "") }
+            sharedPrefs.edit {
+                remove("password") // On détruit le mot de passe
+                putBoolean("rememberMe", false) // On décoche officiellement la case
+            }
+
+            Toast.makeText(requireContext(), "Déconnexion réussie", Toast.LENGTH_SHORT).show()
             (activity as? MainActivity)?.showFragment(ConnexionFragment(), false, false)
         }
     }
