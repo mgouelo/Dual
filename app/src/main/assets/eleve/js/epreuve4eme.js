@@ -738,38 +738,56 @@ const afficherResultats4eme = (pourcentageVMA, noteIntensite, vitesseRealiseeKmh
 
     // --- Gestion des Médailles & Couleurs ---
     const couleurs = {
-        "diamant": "#1456DB",
-        "or": "#ffd700",
-        "argent": "#c0c0c0",
-        "bronze": "#cd7f32"
+        "DIAMANT": "#1456DB",
+        "PLATINE": "#b9f2ff",
+        "OR": "#ffd700",
+        "ARGENT": "#c0c0c0",
+        "BRONZE": "#cd7f32"
     };
 
-    // Médaille Intensité (basée sur ton barème : Or dès 101%, Diamant +110%)
+    // Médaille Intensité (déjà corrigée)
     const mDisplayIntensite = document.getElementById("medaille-display-intensite");
     if (mDisplayIntensite) {
         let medaille = "BRONZE";
-        if (pourcentageVMA > 110) medaille = "DIAMANT";
-        else if (pourcentageVMA >= 101) medaille = "OR";
-        else if (pourcentageVMA >= 91) medaille = "ARGENT";
+        if (pourcentageVMA >= 105) medaille = "DIAMANT";
+        else if (pourcentageVMA >= 95) medaille = "PLATINE";
+        else if (pourcentageVMA >= 85) medaille = "OR";
+        else if (pourcentageVMA >= 75) medaille = "ARGENT";
 
         mDisplayIntensite.textContent = "Médaille : " + medaille;
-        mDisplayIntensite.style.backgroundColor = couleurs[medaille.toLowerCase()] || "#ccc";
-        mDisplayIntensite.style.color = medaille === "OR" ? "black" : "white";
+        // On s'assure d'utiliser les clés en MAJUSCULES pour correspondre au dictionnaire "couleurs"
+        mDisplayIntensite.style.backgroundColor = couleurs[medaille] || "#ccc";
+        mDisplayIntensite.style.color = (medaille === "OR" || medaille === "PLATINE") ? "black" : "white";
         mDisplayIntensite.style.padding = "20px";
         mDisplayIntensite.style.borderRadius = "12px";
         mDisplayIntensite.style.fontSize = "1.4rem";
     }
 
-    // Médaille VMA (basée sur la note intrinsèque sur 2)
+    // --- NOUVEAU CALCUL DE LA MÉDAILLE VMA (avec le genre) ---
     const mDisplayVma = document.getElementById("medaille-display-vma");
     if (mDisplayVma) {
+        // On récupère le genre de l'élève actif pour le barème
+        const coureurData = localStorage.getItem("coureur_actif_objet");
+        const genreEleve = (coureurData) ? JSON.parse(coureurData).genre : "M";
+
         let medaille = "BRONZE";
-        if (noteVma === 2) medaille = "OR";
-        else if (noteVma >= 1.5) medaille = "ARGENT";
+
+        if (genreEleve === "M") {
+            if (vmaRef >= 13.5) medaille = "DIAMANT";
+            else if (vmaRef >= 13) medaille = "PLATINE";
+            else if (vmaRef >= 11.5) medaille = "OR";
+            else if (vmaRef >= 10.5) medaille = "ARGENT";
+        } else {
+            // Filles
+            if (vmaRef >= 11.5) medaille = "DIAMANT";
+            else if (vmaRef >= 11) medaille = "PLATINE";
+            else if (vmaRef >= 10.5) medaille = "OR";
+            else if (vmaRef >= 9.5) medaille = "ARGENT";
+        }
 
         mDisplayVma.textContent = "Médaille : " + medaille;
-        mDisplayVma.style.backgroundColor = couleurs[medaille.toLowerCase()] || "#ccc";
-        mDisplayVma.style.color = medaille === "OR" ? "black" : "white";
+        mDisplayVma.style.backgroundColor = couleurs[medaille] || "#ccc";
+        mDisplayVma.style.color = (medaille === "OR" || medaille === "PLATINE") ? "black" : "white";
         mDisplayVma.style.padding = "20px";
         mDisplayVma.style.borderRadius = "12px";
         mDisplayVma.style.fontSize = "1.4rem";
@@ -900,6 +918,10 @@ btnVoirBilan.addEventListener("click", validerRessentis);
 btnValiderTir.addEventListener("click", validerTir4eme);
 btnAnnuler.addEventListener("click", annulerEtape);
 
+/**
+ * Affiche un toast de confirmation en bas de l'écran avec le message spécifié, qui disparaît automatiquement après quelques secondes.
+ * @param message - Le message à afficher dans le toast.
+ */
 function afficherToast(message) {
     const toast = document.createElement("div");
     toast.textContent = message;

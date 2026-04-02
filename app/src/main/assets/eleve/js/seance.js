@@ -21,11 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         typeSeance = localStorage.getItem("seance_type") || "Entraînement";
     }
 
-    // --- 1. NETTOYAGE ABSOLU DE L'INTERFACE ---
-    // On détruit tous les cadres gris inutiles
-    document.querySelectorAll(".mode-group, .separator").forEach(el => el.remove());
-
-    // --- 2. TRANSFORMATION DU BOUTON ROUGE (SORTI DE CREERBLOC) ---
+    // --- 1. TRANSFORMATION DU BOUTON ROUGE (SORTI DE CREERBLOC) ---
     const boutonRougeRetour = document.querySelector(".btn-back, a[href*='choix_niveau']");
     const modalConfirm = document.getElementById("custom-confirm");
     const confirmOk = document.getElementById("confirm-ok");
@@ -55,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // On cherche l'endroit où injecter notre nouveau cadre propre
     const conteneurPrincipal = boutonRougeRetour ? boutonRougeRetour.parentElement : document.body;
 
-    // --- 3. RECONSTRUCTION DYNAMIQUE ---
+    // --- 2. RECONSTRUCTION DYNAMIQUE ---
     /**
      * Crée un bloc de mode (Test VMA, Épreuve Finale ou Entraînement) avec les boutons correspondants
      * @param titreAction Le titre principal du bloc (ex: "Initialisation", "Entraînement")
@@ -117,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // --- 4. AFFICHAGE DU BON CADRE SELON LE PROFESSEUR ---
+    // --- 3. AFFICHAGE DU BON CADRE SELON LE PROFESSEUR ---
     if (typeSeance === "Test VMA") {
         creerBloc(
             "Initialisation",
@@ -149,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
     }
 
-    // --- 5. GESTION DU BINÔME ---
+    // --- 4. GESTION DU BINÔME ---
     let e1 = JSON.parse(localStorage.getItem("eleve1"));
     let e2 = JSON.parse(localStorage.getItem("eleve2"));
     let indexActif = parseInt(localStorage.getItem("active_index") || "0");

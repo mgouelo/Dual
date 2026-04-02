@@ -173,6 +173,11 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
             .show()
     }
 
+    /**
+     * Imports a CSV file from a URI
+     *
+     * @param uri The URI of the file
+     */
     private fun importerDepuisUriGlobal(uri: Uri) {
         val context = requireContext()
         val resolver = context.contentResolver
@@ -196,6 +201,11 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
         }
     }
 
+    /**
+     * Gets the file name from the URI
+     *
+     * @param uri The URI of the file
+     */
     private fun getFileName(uri: Uri): String? {
         val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
         cursor?.use {

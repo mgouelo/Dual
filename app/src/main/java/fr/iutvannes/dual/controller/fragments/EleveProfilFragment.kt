@@ -23,15 +23,22 @@ import fr.iutvannes.dual.model.utils.DatabaseProvider
 
 class EleveProfilFragment : Fragment() {
 
+    /* Variable for the id of the eleve */
     private var eleveId: Int = -1
+    /* Variable for the current eleve */
     private lateinit var currentEleve: Eleve
 
-    // Vues
+    /* Variable for the views */
     private lateinit var tvNomPrenom: TextView
     private lateinit var tvClasse: TextView
     private lateinit var etVma: TextInputEditText
     private lateinit var tvParcours: TextView
 
+    /**
+     * This method is called when the fragment is created.
+     *
+     * @param savedInstanceState The fragment's saved data.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // On récupère l'ID passé depuis la liste
@@ -40,6 +47,14 @@ class EleveProfilFragment : Fragment() {
         }
     }
 
+    /**
+     * This method is called when the fragment is created.
+     *
+     * @param inflater The inflator used to inflate the fragment's layout.
+     * @param container The container in which the fragment will be displayed.
+     * @param savedInstanceState The saved fragment data.
+     * @return The fragment's view.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -83,6 +98,9 @@ class EleveProfilFragment : Fragment() {
         return view
     }
 
+    /**
+     * Loads the eleve from the database and displays it in the UI.
+     */
     private fun chargerEleve() {
         val dao = DatabaseProvider.db.EleveDao()
 
@@ -113,6 +131,11 @@ class EleveProfilFragment : Fragment() {
         }
     }
 
+    /**
+     * Updates the UI to display the new parcours based on the new VMA.
+     *
+     * @param saisie The new VMA entered by the user.
+     */
     private fun mettreAJourAffichageParcours(saisie: String) {
         val vma = saisie.toFloatOrNull()
         if (vma != null) {
@@ -124,6 +147,9 @@ class EleveProfilFragment : Fragment() {
         couleurParcoursTexte(tvParcours.text.toString())
     }
 
+    /**
+     * Saves the VMA and the parcours in the database.
+     */
     private fun sauvegarderProfil() {
         val nouvelleVmaString = etVma.text.toString()
         val nouvelleVma = nouvelleVmaString.toFloatOrNull()
@@ -165,7 +191,10 @@ class EleveProfilFragment : Fragment() {
     }
 
     /**
-     * Détermine le parcours de l'élève en fonction de sa VMA (float)
+     * Determines the parcours based on the VMA.
+     *
+     * @param vma The VMA.
+     * @return The name of the parcours.
      */
     fun determinerParcours(vma: Float): String {
         return when {
@@ -180,7 +209,9 @@ class EleveProfilFragment : Fragment() {
     }
 
     /**
-     * Change la couleur du texte en fonction de la couleur du parcours (Utile que pour l'UI/UX)
+     * Changes the color of the textview based on the parcours.
+     *
+     * @param nomParcours The name of the parcours.
      */
     private fun couleurParcoursTexte(nomParcours: String) {
         val couleurId = when (nomParcours) {
@@ -196,9 +227,15 @@ class EleveProfilFragment : Fragment() {
         tvParcours.setTextColor(ContextCompat.getColor(requireContext(), couleurId))
     }
 
+    /**
+     * Creates a new instance of the fragment with the given eleveId.
+     */
     companion object {
         /**
-         * Crée une nouvelle instance du fragment en lui passant l'ID de l'élève
+         * Creates a new instance of the fragment with the given eleveId.
+         *
+         * @param eleveId The id of the eleve.
+         * @return A new instance of the fragment.
          */
         fun newInstance(eleveId: Int): EleveProfilFragment {
             val fragment = EleveProfilFragment()

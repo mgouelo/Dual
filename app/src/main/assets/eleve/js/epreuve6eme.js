@@ -608,6 +608,10 @@ btnValiderTir.addEventListener("click", validerTourEtTir);
 terminerBtn.addEventListener("click", declencherFinEpreuve);
 btnVoirBilan.addEventListener("click", validerRessentis);
 
+/**
+ * Affiche un toast de confirmation en bas de l'écran avec le message donné, puis disparaît après quelques secondes.
+ * @param message Le message à afficher dans le toast
+ */
 function afficherToast(message) {
     const toast = document.createElement("div");
     toast.textContent = message;
@@ -631,3 +635,4 @@ function afficherToast(message) {
     setTimeout(() => { toast.style.opacity = "0"; }, 2000);
     setTimeout(() => { toast.remove(); }, 2600);
 }
+

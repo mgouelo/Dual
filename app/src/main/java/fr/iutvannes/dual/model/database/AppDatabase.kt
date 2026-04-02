@@ -94,6 +94,18 @@ abstract class AppDatabase : RoomDatabase() {
      * @return [CourseDAO]
      */
     abstract fun courseDao(): CourseDAO
+
+    /**
+     * Abstract method that returns an object of type [SalveTirDAO].
+     *
+     * @return [SalveTirDAO]
+     */
     abstract fun salveTirDao(): SalveTirDAO
+
+    /**
+     * Abstract method that returns an object of type [TourCourseDAO].
+     *
+     * @return [TourCourseDAO]
+     */
     abstract fun tourCourseDao(): TourCourseDAO
 }

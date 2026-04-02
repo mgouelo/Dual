@@ -71,6 +71,11 @@ interface CourseDAO {
     @Query("SELECT COUNT(DISTINCT id_eleve) FROM Course WHERE id_seance = :idSeance")
     fun countBySeance(idSeance: Int): Int
 
+    /**
+     * Retrieves all existing courses from the database.
+     *
+     * @return A list of courses containing the courses.
+     */
     @Transaction
     @Query("SELECT * FROM Course WHERE id_seance = :idSeance AND id_eleve = :idEleve")
     suspend fun getCoursesBySeanceEtEleve(idSeance: Int, idEleve: Int): List<CourseAvecTours>

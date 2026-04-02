@@ -202,8 +202,10 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
     }
 
     /**
-     * Méthode pour lancer une séance.
-     * @param type : type de séance (Entraînement ou Évaluation)
+     * Launches a new session.
+     *
+     * @param classe The class of the session.
+     * @param type The type of the session.
      */
     private fun lancerLaSeance(classe: String, type: String) {
         classeActuelle = classe
@@ -231,6 +233,11 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         }
     }
 
+    /**
+     * Méthod to display the dialog to choose the class.
+     *
+     * @param classes : list of classes
+     */
     private fun afficherDialogChoix(classes: List<String>) {
         val dialog = android.app.Dialog(requireContext())
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
@@ -269,8 +276,9 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
     }
 
     /**
-     * Méthode pour afficher le type de séance.
-     * @param dialog : dialog en cours
+     * Méthod to display the dialog to choose the type of session.
+     *
+     * @param classeChoisie : class selected
      */
     private fun afficherDialogType(dialog: android.app.Dialog, classeChoisie: String) {
         val container = dialog.findViewById<LinearLayout>(R.id.dialog_choices_container)
@@ -312,6 +320,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         }
     }
 
+    /**
+     * Méthod to display the dialog to end the session.
+     *
+     * @param nbResultats : number of results
+     * @param nbEleves : number of students
+     */
     private fun afficherDialogFinSeance(nbResultats: Int, nbEleves: Int) {
         val dialog = android.app.Dialog(requireContext())
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
@@ -380,6 +394,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         dialog.show()
     }
 
+    /**
+     * Méthod to display the dialog to display the results in real time.
+     *
+     * @param type : type of session
+     * @param classe : class of session
+     * @param resultats : list of results
+     */
     private fun afficherDialogResultatsEnDirect(
         type: String,
         classe: String,
@@ -540,6 +561,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         }
     }
 
+    /**
+     * Méthod to display the dialog to display the graphs.
+     *
+     * @param idEleve : id of the student
+     * @param prenom : first name of the student
+     * @param nom : last name of the student
+     */
     private fun afficherGraphsEleve(idEleve: Int, prenom: String, nom: String) {
         viewLifecycleOwner.lifecycleScope.launch {
 
@@ -731,6 +759,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         }
     }
 
+    /**
+     * Méthod to display the dialog to display the graphs.
+     *
+     * @param idEleve : id of the student
+     * @param prenom : first name of the student
+     * @param nom : last name of the student
+     */
     private fun afficherDetailEpeuveFinale(idEleve: Int, prenom: String, nom: String) {
         viewLifecycleOwner.lifecycleScope.launch {
 
@@ -795,6 +830,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     setColumnStretchable(1, true)
                 }
 
+                /**
+                 * Méthod to add a row to the table.
+                 *
+                 * @param label : label of the row
+                 * @param valeur : value of the row
+                 * @param couleur : color of the row
+                 */
                 fun makeRow(label: String, valeur: String, couleur: Int = android.graphics.Color.WHITE) {
                     val row = android.widget.TableRow(requireContext())
                     val tvLabel = TextView(requireContext()).apply {
@@ -842,7 +884,20 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         else          -> "Grand Tour (400m)"
                     }
 
+                    /**
+                     * Méthod to convert dp to px.
+                     *
+                     * @param v : value in dp
+                     * @return value in px
+                     */
                     fun dp(v: Float) = (v * resources.displayMetrics.density).toInt()
+
+                    /**
+                     * Méthod to convert hex to color.
+                     *
+                     * @param hex : value in hex
+                     * @return color
+                     */
                     fun color(hex: String) = android.graphics.Color.parseColor(hex)
 
                     val white      = color("#FFFFFF")
@@ -930,6 +985,15 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         setPadding(0, 0, 0, dp(12f))
                     }
 
+                    /**
+                     * Méthod to add a card to the metrics row.
+                     *
+                     * @param label : label of the card
+                     * @param value : value of the card
+                     * @param max : max value of the card
+                     * @param sub : sub value of the card
+                     * @return the card
+                     */
                     fun metricCard(label: String, value: String, max: String, sub: String): android.widget.LinearLayout {
                         return android.widget.LinearLayout(requireContext()).apply {
                             orientation = android.widget.LinearLayout.VERTICAL
@@ -990,6 +1054,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     inner.addView(metricsRow)
 
                     // ── Helper tableau ────────────────────────────────────────────────────────
+                    /**
+                     * Méthod to add a table to the inner container.
+                     *
+                     * @param titre : title of the table
+                     * @param lignes : list of lines of the table
+                     */
                     fun ajouterTableau(titre: String, lignes: List<Pair<String, String>>) {
                         val card = android.widget.LinearLayout(requireContext()).apply {
                             orientation = android.widget.LinearLayout.VERTICAL
@@ -1038,6 +1108,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     }
 
                     // ── Tableau segments ──────────────────────────────────────────────────────
+                    /**
+                     * Méthod to convert seconds to minutes and seconds.
+                     *
+                     * @param sec : seconds
+                     * @return minutes and seconds as a string
+                     */
                     fun fmtSec(sec: Int): String {
                         val m = sec / 60; val s = sec % 60
                         return if (m > 0) "%d'%02d\"".format(m, s) else "%d\"".format(s)
@@ -1126,6 +1202,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         setColumnStretchable(1, true)
                     }
 
+                    /**
+                     * Méthod to add a row to the table.
+                     *
+                     * @param label : label of the row
+                     * @param valeur : value of the row
+                     */
                     fun ajouterLigneRessenti(label: String, valeur: String) {
                         val row = android.widget.TableRow(requireContext())
                         row.addView(TextView(requireContext()).apply {
@@ -1169,6 +1251,12 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
         }
     }
 
+    /**
+     * Méthod to create a title section.
+     *
+     * @param texte : text of the section
+     * @return the section
+     */
     private fun creerTitreSection(texte: String) = TextView(requireContext()).apply {
         text = texte
         setTextColor(android.graphics.Color.WHITE)

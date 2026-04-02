@@ -19,26 +19,27 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.xmlbeans.impl.xb.xsdschema.TopLevelAttribute
 import kotlin.collections.map
+import kotlin.math.max
 
 /**
- * Affichage des résultats de l'élève
- * Récupération de l'identifiant de l'élève depuis ElevesFragment
+ * Displaying student results
+ * Retrieving the student ID from ElevesFragment
  *
  * @see GraphView
  */
 class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
 
-    /* Variable qui contiendra l'identifiant de l'élève */
+    /* Variable that stores the student ID */
     private var eleveId: Int = -1
 
     val db = DatabaseProvider.db
 
     /**
-     * Méthode appelée lors de la création du fragment
-     * Récupération de l'identifiant de l'élève depuis ElevesFragment
+     * Method called during fragment creation
+     * Retrieving the student ID from ElevesFragment
      *
-     * @param savedInstanceState Bundle contenant l'état de l'interface
+     * @param savedInstanceState Bundle containing the fragment's state
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +49,10 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
     }
 
     /**
-     * Méthode appelée lors de la création de la vue du fragment
-     * Affichage des résultats de l'élève
+     * Method called when the fragment view is created
      *
-     * @param view Vue du fragment
-     * @param savedInstanceState Bundle contenant l'état de l'interface
+     * @param view The fragment view
+     * @param savedInstanceState The data saved during the activity's state
      */
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -95,32 +95,38 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                     val vmaEleve = eleveExist.vma
 
                     val dataCourse = coursesExist.mapNotNull { courseAvecTours ->
-                        val distance = courseAvecTours.course.distance_tour
+                        val distanceMetres = courseAvecTours.course.distance_tour
+                        val vmaRef = eleveExist.vma
 
-                        val date = db.seanceDao()
-                            .getSeanceById(courseAvecTours.course.id_seance)
-                            ?.date ?: "Inconnu"
+                        // 1. Trier les tours par numéro pour être sûr de l'ordre chronologique
+                        val toursTries = courseAvecTours.liste_tours.sortedBy { it.numero_tour }
 
-                        val toursValides = courseAvecTours.liste_tours
-                            .map { it.temps_ms }
-                            .filter { it > 0 }
+                        val tempsIndividuelsMs = mutableListOf<Long>()
+                        var tempsPrecedent = 0L
 
-                        if (toursValides.isEmpty()) return@mapNotNull null
+                        // 2. Transformer le cumul en temps par tour (Lap time)
+                        for (tour in toursTries) {
+                            val tempsCumule = tour.temps_ms
+                            val tempsDuTour = tempsCumule - tempsPrecedent
+                            if (tempsDuTour > 0) {
+                                tempsIndividuelsMs.add(tempsDuTour)
+                            }
+                            tempsPrecedent = tempsCumule // On garde le cumul pour le tour suivant
+                        }
 
-                        val moyenneTempsMs = toursValides.average()
+                        if (tempsIndividuelsMs.isEmpty() || vmaRef <= 0) return@mapNotNull null
 
-                        val calculatedValue = if (moyenneTempsMs > 0 && vmaEleve > 0) {
-                            val tempsSecondes = moyenneTempsMs / 1000
-                            val vitesse = (distance / tempsSecondes) * 3.6
-                            (vitesse / vmaEleve * 100).toFloat()
-                        } else return@mapNotNull null
+                        // 3. Calcul de la vitesse moyenne réelle
+                        // Vitesse = (Distance d'un tour * nb de tours) / Temps total du dernier tour (en heures)
+                        val distanceTotaleKm = (distanceMetres * tempsIndividuelsMs.size) / 1000.0
+                        val tempsTotalHeures = tempsPrecedent / 3600000.0 // tempsPrecedent est le cumul final
 
-                        val pourcentageVMA = min(130f, calculatedValue)
+                        val vitesseMoyenneKmh = distanceTotaleKm / tempsTotalHeures
+                        val pourcentageVMA = (vitesseMoyenneKmh / vmaRef * 100).toFloat()
 
-                        val parts = date.split("-")
-                        val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
-
-                        Pair(dateFormatee, pourcentageVMA)
+                        // 4. Date et retour
+                        val date = db.seanceDao().getSeanceById(courseAvecTours.course.id_seance)?.date ?: "Inconnu"
+                        Pair(date, max(50f,min(130f, pourcentageVMA)))
                     }
 
                     withContext(Dispatchers.Main) {
@@ -171,16 +177,29 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                         // Affichage des résultats de l'élève à l'examen
                         btnExamen.setOnClickListener {
                             resultTitre.text = "Résultat de l'examen"
-                            if (resultatExist.isEmpty() || resultatExist[0].note_finale == 0F) {
+
+                            // On cherche dans TOUS les résultats de l'élève s'il y a une note valide (> 0)
+                            // et on garde la meilleure note s'il y en a plusieurs !
+                            val meilleurExamen = resultatExist
+                                .filter { it.note_finale > 0F }
+                                .maxByOrNull { it.note_finale }
+
+                            if (meilleurExamen == null) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
                                 resultExamen.text = "Pas de données à afficher"
-                                return@setOnClickListener
+                                resultExamen.textSize = 24f // Taille par défaut
                             } else {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
-                                resultExamen.text = "Note finale : ${resultatExist[0].note_finale} / 20"
-                                resultExamen.textSize = 48f
+
+                                // Astuce : On regarde si c'est une 4ème (sur 12) ou une 6ème (sur 15)
+                                // L'épreuve 4ème a un ecart_max_course à 0 par défaut.
+                                val noteMax = if (meilleurExamen.ecart_max_course == 0) "12" else "15"
+
+                                resultExamen.text = "Note finale :\n${meilleurExamen.note_finale} / $noteMax"
+                                resultExamen.textSize = 40f
+                                resultExamen.textAlignment = View.TEXT_ALIGNMENT_CENTER
                             }
                         }
                     }
@@ -195,14 +214,16 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
     }
 
     /**
-     * Méthode statique pour créer un fragment ResultatsEleveFragment
+     * Static method to create a fragment: ResultatsEleveFragment
      *
      * @return Fragment ResultatsEleveFragment
      */
     companion object {
         /**
-         * Méthode utilitaire pour créer un fragment ResultatsEleveFragment
-         * en lui passant le nom de la classe à afficher.
+         * Static method to create a fragment: ResultatsEleveFragment
+         *
+         * @param eleveId ID of the student
+         * @return Fragment ResultatsEleveFragment
          */
         fun newInstance(eleveId: Int): ResultatsEleveFragment {
             val fragment = ResultatsEleveFragment()

@@ -304,7 +304,6 @@ fun Application.module(appContext: Context) {
                         val noteVma = payload?.get("note_vma")?.jsonPrimitive?.content?.toFloatOrNull() ?: 0f
                         val toursArray = payload?.get("tours")?.jsonArray
 
-                        // Recherche de l'élève dans la base de données
                         val eleve = withContext(Dispatchers.IO) {
                             DatabaseProvider.db.EleveDao().findByName(prenom, nom.uppercase())
                         }
@@ -334,20 +333,64 @@ fun Application.module(appContext: Context) {
                                 ressenti_durer     = ressentiDurer,
                                 ressenti_lucidite  = ressentiLucidite
                             )
-                            withContext(Dispatchers.IO) {
-                                DatabaseProvider.db.resultatDao().insert(resultatEpreuve)
 
+                            withContext(Dispatchers.IO) {
+                                // 1. On cherche si l'élève a DEJA une note pour cette séance
+                                val existant = DatabaseProvider.db.resultatDao().getResultatByEleveEtSeance(eleve.id_eleve, KtorServer.idSeanceActuelle)
+
+                                if (existant != null) {
+                                    // S'il a déjà une note, on LA MET A JOUR (on écrase pour garder la dernière tentative)
+                                    existant.cibles_touchees    = cibles
+                                    existant.temp_course        = vmaRealisee
+                                    existant.note_finale        = noteFinale
+                                    existant.nbTours            = nbTours        // Indispensable pour la 6ème !
+                                    existant.ecart_max_course   = ecartRegul     // Indispensable pour la 6ème !
+                                    existant.temps_A            = tempsA
+                                    existant.temps_B            = tempsB
+                                    existant.temps_C            = tempsC
+                                    existant.temps_D            = tempsD
+                                    existant.temps_E            = tempsE
+                                    existant.tir1               = tir1
+                                    existant.tir2               = tir2
+                                    existant.note_intensite     = noteIntensite
+                                    existant.note_efficience    = noteEfficience
+                                    existant.note_vma           = noteVma
+                                    existant.ressenti_intensite = ressentiIntensite
+                                    existant.ressenti_durer     = ressentiDurer
+                                    existant.ressenti_lucidite  = ressentiLucidite
+                                    DatabaseProvider.db.resultatDao().update(existant)
+                                } else {
+                                    // Sinon, c'est sa première tentative, on l'insère.
+                                    DatabaseProvider.db.resultatDao().insert(resultatEpreuve)
+                                }
+
+                                // 2. Gestion des temps par tours (Tableaux de détails)
                                 if (toursArray != null) {
+                                    // Si l'élève avait déjà couru, on efface ses anciens tours pour ne pas fausser le graphique/historique
+                                    if (existant != null) {
+                                        val anciennesCourses = DatabaseProvider.db.courseDao()
+                                            .getCoursesBySeanceEtEleve(KtorServer.idSeanceActuelle, eleve.id_eleve)
+                                        anciennesCourses.forEach { courseAvecTours ->
+                                            courseAvecTours.liste_tours.forEach { tour ->
+                                                DatabaseProvider.db.tourCourseDao().delete(tour)
+                                            }
+                                            DatabaseProvider.db.courseDao().delete(courseAvecTours.course)
+                                        }
+                                    }
+
+                                    // On insère la nouvelle course toute propre
                                     val course = fr.iutvannes.dual.model.persistence.Course(
                                         id_seance     = KtorServer.idSeanceActuelle,
                                         id_eleve      = eleve.id_eleve,
                                         distance_tour = 0.0
                                     )
                                     val courseId = DatabaseProvider.db.courseDao().insert(course).toInt()
+
                                     toursArray.forEachIndexed { index, tourEl ->
                                         val tourObj = tourEl.jsonObject
                                         val numero  = tourObj["numero"]?.jsonPrimitive?.content?.toIntOrNull() ?: (index + 1)
                                         val tempsMs = tourObj["temps_ms"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+
                                         DatabaseProvider.db.tourCourseDao().insert(
                                             fr.iutvannes.dual.model.persistence.TourCourse(
                                                 id_course   = courseId,
@@ -740,15 +783,40 @@ fun Application.module(appContext: Context) {
                                         put("vitesseVal", kotlin.math.round(pourcentageVma).toInt())
                                         put("vitesseRealiseeKmh", String.format(java.util.Locale.US, "%.1f", res.temp_course))
                                         put("noteVitesse", res.note_intensite)
-                                        put("medailleVitesse", if(pourcentageVma > 100) "OR" else "BRONZE") // À adapter avec tes règles
+                                        val medailleVitesse = when {
+                                            pourcentageVma >= 105 -> "DIAMANT"
+                                            pourcentageVma >= 95  -> "PLATINE"
+                                            pourcentageVma >= 85  -> "OR"
+                                            pourcentageVma >= 75  -> "ARGENT"
+                                            else                  -> "BRONZE"
+                                        }
 
+                                        put("medailleVitesse", medailleVitesse)
                                         put("tirVal", res.cibles_touchees)
                                         put("tirTempsMs", tempsTirSec * 1000L) // Envoi en millisecondes pour formatTemps JS
                                         put("noteTir", res.note_efficience)
-
                                         put("vmaVal", vmaRef)
                                         put("noteVma", res.note_vma)
-                                        put("medailleVma", "DIAMANT") // À adapter
+
+                                        val genre = eleve?.genre ?: "M"
+                                        val medailleVma = if (genre == "M") {
+                                            when {
+                                                vmaRef >= 13.5f -> "DIAMANT"
+                                                vmaRef >= 13f   -> "PLATINE"
+                                                vmaRef >= 11.5f -> "OR"
+                                                vmaRef >= 10.5f -> "ARGENT"
+                                                else            -> "BRONZE"
+                                            }
+                                        } else { // Filles
+                                            when {
+                                                vmaRef >= 11.5f -> "DIAMANT"
+                                                vmaRef >= 11f   -> "PLATINE"
+                                                vmaRef >= 10.5f -> "OR"
+                                                vmaRef >= 9.5f  -> "ARGENT"
+                                                else            -> "BRONZE"
+                                            }
+                                        }
+                                        put("medailleVma", medailleVma)
                                     } else {
                                         // --- CALCULS ÉPREUVE 6ÈME ---
                                         val nbTours = res.nbTours

@@ -27,6 +27,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Superadmin fragment.
+ */
 class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
 
     private val importViewModel: ImportViewModel by viewModels()
@@ -44,6 +47,12 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
     ) { uri -> if (uri != null) importerProfsDepuisUri(uri) }
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     *
+     * @param view The view returned by onCreateView(LayoutInflater, ViewGroup, Bundle)
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -109,12 +118,25 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         )
 
         // ── Helpers ───────────────────────────────────────────────────────
+        /**
+         * Show a message in a TextView.
+         *
+         * @param tv  TextView to show the message in
+         * @param ok  Whether the message is an error or not
+         * @param text Message to show
+         */
         fun showMsg(tv: TextView, ok: Boolean, text: String) {
             tv.visibility = View.VISIBLE
             tv.setTextColor(if (ok) Color.parseColor("#18A900") else Color.parseColor("#C8232C"))
             tv.text = text
         }
 
+        /**
+         * Clear all given EditText fields.
+         *
+         * @param fields EditText fields to clear
+         * @return Unit
+         */
         fun clearFields(vararg fields: EditText) = fields.forEach { it.setText("") }
 
         // ── Toggle visibilité mot de passe ────────────────────────────────
@@ -145,6 +167,9 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         }
 
         // ── Chargement + refresh du spinner classes ───────────────────────
+        /**
+         * Load the list of classes from the database.
+         */
         fun chargerClasses() {
             viewLifecycleOwner.lifecycleScope.launch {
                 val classes = withContext(Dispatchers.IO) {
@@ -289,6 +314,9 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         }
     }
 
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     */
     override fun onResume() {
         super.onResume()
         view?.let {
@@ -307,12 +335,22 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         }
     }
 
+    /**
+     * Open a file selection dialog.
+     *
+     * @param launcher Launcher for the file selection dialog
+     */
     private fun ouvrirSelectionFichier(
         launcher: androidx.activity.result.ActivityResultLauncher<Array<String>>
     ) {
         launcher.launch(arrayOf("text/csv", "text/comma-separated-values", "text/plain", "application/csv"))
     }
 
+    /**
+     * Import CSV élèves.
+     *
+     * @param uri URI du fichier CSV
+     */
     private fun importerElevesDepuisUri(uri: Uri) {
         val view      = view ?: return
         val tvMsg     = view.getTag(R.id.tv_msg_csv_eleves) as? TextView ?: return
@@ -355,6 +393,11 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         }
     }
 
+    /**
+     * Import CSV professeurs.
+     *
+     * @param uri URI du fichier CSV
+     */
     private fun importerProfsDepuisUri(uri: Uri) {
         val view  = view ?: return
         val tvMsg = view.getTag(R.id.tv_msg_csv_profs) as? TextView ?: return
@@ -402,6 +445,12 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         }
     }
 
+    /**
+     * Get the file name from a URI.
+     *
+     * @param uri URI of the file
+     * @return Name of the file
+     */
     private fun getFileName(uri: Uri): String? {
         val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
         cursor?.use {
@@ -411,6 +460,13 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
         return null
     }
 
+    /**
+     * Show a message in a TextView.
+     *
+     * @param tv  TextView to show the message in
+     * @param ok  Whether the message is an error or not
+     * @param text Message to show
+     */
     private fun showMsg(tv: TextView, ok: Boolean, text: String) {
         tv.visibility = View.VISIBLE
         tv.setTextColor(if (ok) Color.parseColor("#18A900") else Color.parseColor("#C8232C"))
