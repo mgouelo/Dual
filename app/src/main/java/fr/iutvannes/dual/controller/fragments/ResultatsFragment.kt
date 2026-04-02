@@ -22,15 +22,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment qui affiche les résultats des séances passées.
+ * Fragment that displays the results of past sessions.
  *
- * Fonctionnement en 3 étapes :
- * 1. Le prof choisit une classe et un type de séance (VMA, Entraînement, Épreuve Finale)
- * 2. La liste des séances correspondantes s'affiche
- * 3. En cliquant sur une séance, on voit les résultats de chaque élève
+ * Operation in 3 steps:
  *
- * Pour l'entraînement, un clic sur un élève ouvre un dialog avec son graphe de tir
- * et un tableau de ses temps de course.
+ * 1. The teacher chooses a class and a session type (VMA, Training, Final Event)
+ * 2. The list of corresponding sessions is displayed
+ * 3. Clicking on a session displays the results for each student
+ *
+ * For training, clicking on a student opens a dialog box with their shooting graph
+ * and a table of their running times.
  */
 class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
 
@@ -56,7 +57,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     // Contenu CSV généré, en attente d'être sauvegardé dans un fichier
     private var contenuCsvEnAttente: String? = null
 
-    // Lance le sélecteur de fichier Android pour sauvegarder le CSV
+    // Lance le sélecteur de fichier Android pour sauvegarder le CS
     private val exportLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv")
     ) { uri ->
@@ -74,6 +75,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
 
     // ── Initialisation du fragment ────────────────────────────────────────────
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     *
+     * @param view The view returned by onCreateView(LayoutInflater, ViewGroup, Bundle)
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -127,8 +134,8 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     // ── Étape 1 : Liste des séances ───────────────────────────────────────────
 
     /**
-     * Charge et affiche la liste des séances correspondant aux filtres choisis.
-     * Appelée dès que la classe ou le type change.
+     * Load the list of sessions for the selected class and type.
+     * If no filter is selected, load all sessions.
      */
     private fun chargerSeances() {
         tvTitre.text = "Résultats"
@@ -192,6 +199,9 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
         }
     }
 
+    /**
+     * Manage the back button press.
+     */
     private fun gererActionRetour() {
         when {
             seanceAffichee != null -> {
@@ -210,10 +220,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     // ── Étape 2 : Résultats d'une séance ─────────────────────────────────────
 
     /**
-     * Affiche la liste des élèves et leurs résultats pour une séance donnée.
+     * Displays the list of students and their results for a given session.
      *
-     * Pour l'entraînement, on charge aussi les données de tir et de course
-     * depuis les tables Tir/SalveTir et Course/TourCourse.
+     * For training, shooting and running data are also loaded
+     * from the Shooting/SalveShooting and Running/Running tables.
+     *
+     * @param seance  Session à afficher
      */
     private fun afficherResultatsSeance(seance: Seance) {
         val type = typeSelectionne ?: return
@@ -224,8 +236,8 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
         viewLifecycleOwner.lifecycleScope.launch {
 
             /**
-             * Modèle interne qui regroupe toutes les infos d'un élève pour l'affichage.
-             * ligneTir et ligneCourse ne sont remplies que pour l'entraînement.
+             * Internal template that groups all of a student's information for display.
+             * The Shooting line and Running line are only filled in for practice.
              */
             data class LigneResultat(
                 val eleve: Eleve,
@@ -316,13 +328,35 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
 
             recycler.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+                /**
+                 * ViewHolder for the RecyclerView.
+                 *
+                 * @param v View of the item
+                 * @return ViewHolder for the item
+                 */
                 inner class VH(v: View) : RecyclerView.ViewHolder(v)
 
+                /**
+                 * Called when RecyclerView needs a new ViewHolder of the given type to represent an item.
+                 *
+                 * @param parent   The ViewGroup into which the new View will be added after it is bound to an adapter position.
+                 * @param viewType The view type of the new View.
+                 * @return A new ViewHolder that holds a View of the given view type.
+                 */
                 override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int) =
                     VH(layoutInflater.inflate(R.layout.item_resultat, parent, false))
 
+                /**
+                 * Returns the total number of items in the data set held by the adapter.
+                 */
                 override fun getItemCount() = lignes.size
 
+                /**
+                 * Called by RecyclerView to display the data at the specified position.
+                 *
+                 * @param holder   The ViewHolder which should be updated to represent the contents of the item at the given position in the data set.
+                 * @param position The position of the item within the adapter's data set.
+                 */
                 override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                     val ligne = lignes[position]
                     val v = holder.itemView
@@ -504,7 +538,9 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
 
     // ── Helpers de construction du dialog ────────────────────────────────────
 
-    /** Crée un TextView titre de section (blanc, 14sp). */
+    /**
+     * Create a TextView with the given text.
+     */
     private fun creerTitreSection(texte: String) = TextView(requireContext()).apply {
         text = texte
         setTextColor(android.graphics.Color.WHITE)
@@ -512,7 +548,9 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
         setPadding(8, 16, 8, 8)
     }
 
-    /** Crée un TextView pour indiquer l'absence de données. */
+    /**
+     * Create a TextView with the given text.
+     */
     private fun creerTexteVide(texte: String) = TextView(requireContext()).apply {
         text = texte
         setTextColor(android.graphics.Color.argb(150, 255, 255, 255))
@@ -521,10 +559,11 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     }
 
     /**
-     * Construit un TableLayout avec une ligne par tour.
-     * Le meilleur tour est mis en vert avec une étoile ⭐.
+     * Creates a TableLayout with one row per turn.
+     * The best turn is highlighted in green with a star ⭐.
      *
-     * @param tours Liste de paires (label, temps en secondes)
+     * @param turns List of pairs (label, time in seconds)
+     * @return TableLayout with one row per turn
      */
     private fun creerTableauCourse(tours: List<Pair<String, Float>>): android.widget.TableLayout {
 
@@ -591,13 +630,14 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     // ── Export CSV ───────────────────────────────────────────────────────────
 
     /**
-     * Génère un fichier CSV avec les résultats de la séance,
-     * puis ouvre le sélecteur de fichier Android pour le sauvegarder.
+     * Generates a CSV file with the session results,
+     * then opens the Android file selector to save it.
+     * The content varies depending on the session type:
+     * - VMA Test → Last Name, First Name, VMA
+     * - Final Event → different columns depending on whether it's 4th or 6th grade
+     * - Training → Last Name, First Name, Targets, VMA
      *
-     * Le contenu varie selon le type de séance :
-     * - Test VMA       → Nom, Prénom, VMA
-     * - Épreuve Finale → colonnes différentes selon 4ème ou 6ème
-     * - Entraînement   → Nom, Prénom, Cibles, VMA
+     * @param seance  Session à exporter
      */
     private fun genererEtExporterCSV(seance: Seance) {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -704,6 +744,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
         }
     }
 
+    /**
+     * Open details of the final event result.
+     *
+     * @param eleve Eleve à afficher
+     * @param res   Résultat à afficher
+     */
     private fun afficherDetailEpreuveFinaleResultats(
         eleve: Eleve,
         res: Resultat
@@ -747,6 +793,13 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 setColumnStretchable(1, true)
             }
 
+            /**
+             * Make a row to the table.
+             *
+             * @param label    Label of the row
+             * @param valeur   Value of the row
+             * @param couleur  Color of the value
+             */
             fun makeRow(label: String, valeur: String, couleur: Int = android.graphics.Color.WHITE) {
                 val row = android.widget.TableRow(requireContext())
                 row.addView(TextView(requireContext()).apply {
@@ -793,7 +846,18 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     else          -> "Grand Tour (400m)"
                 }
 
+                /**
+                 * Convert dp to px
+                 *
+                 * @param v Value in dp
+                 */
                 fun dp(v: Float) = (v * resources.displayMetrics.density).toInt()
+
+                /**
+                 * Convert hex to color
+                 *
+                 * @param hex Hexadecimal color
+                 */
                 fun color(hex: String) = android.graphics.Color.parseColor(hex)
 
                 val white      = color("#FFFFFF")
@@ -881,6 +945,15 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     setPadding(0, 0, 0, dp(12f))
                 }
 
+                /**
+                 * Create a metric card with the given parameters.
+                 *
+                 * @param label Label of the card
+                 * @param value Value of the card
+                 * @param max Max value of the card
+                 * @param sub Subtext of the card
+                 * @return android.widget.LinearLayout
+                 */
                 fun metricCard(label: String, value: String, max: String, sub: String): android.widget.LinearLayout {
                     return android.widget.LinearLayout(requireContext()).apply {
                         orientation = android.widget.LinearLayout.VERTICAL
@@ -941,6 +1014,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 inner.addView(metricsRow)
 
                 // ── Helper tableau ────────────────────────────────────────────────────────
+                /**
+                 * Create a table with the given parameters.
+                 *
+                 * @param titre Titre du tableau
+                 * @param lignes Liste de paires (label, valeur)
+                 */
                 fun ajouterTableau(titre: String, lignes: List<Pair<String, String>>) {
                     val card = android.widget.LinearLayout(requireContext()).apply {
                         orientation = android.widget.LinearLayout.VERTICAL
@@ -995,6 +1074,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     inner.addView(card)
                 }
                 // ── Tableau segments ──────────────────────────────────────────────────────
+                /**
+                 * Convert seconds to minutes and seconds.
+                 *
+                 * @param sec Seconds
+                 * @return String in the format "mm'ss" or "ss"'
+                 */
                 fun fmtSec(sec: Int): String {
                     val m = sec / 60; val s = sec % 60
                     return if (m > 0) "%d'%02d\"".format(m, s) else "%d\"".format(s)
@@ -1084,6 +1169,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     setColumnStretchable(1, true)
                 }
 
+                /**
+                 * Add a row to the table.
+                 *
+                 * @param label Label of the row
+                 * @param valeur Value of the row
+                 */
                 fun ajouterLigneRessenti(label: String, valeur: String) {
                     val row = android.widget.TableRow(requireContext())
                     row.addView(TextView(requireContext()).apply {
@@ -1128,6 +1219,12 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
         }
     }
 
+    /**
+     * Formats the date to a more readable format.
+     *
+     * @param date Date to format
+     * @return Formatted date
+     */
     private fun formaterDate(date: String): String {
         return try {
             val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.FRANCE)

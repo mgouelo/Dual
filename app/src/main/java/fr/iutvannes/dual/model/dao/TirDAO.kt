@@ -80,6 +80,11 @@ interface TirDAO {
     @Query("SELECT COUNT(DISTINCT id_eleve) FROM Tir WHERE id_seance = :idSeance")
     fun countBySeance(idSeance: Int): Int
 
+    /**
+     * Retrieves all existing tirs from the database.
+     *
+     * @return A list of tir containing the tirs.
+     */
     @Transaction
     @Query("SELECT * FROM Tir WHERE id_seance = :idSeance AND id_eleve = :idEleve")
     suspend fun getTirsBySeanceEtEleve(idSeance: Int, idEleve: Int): List<TirAvecPassages>

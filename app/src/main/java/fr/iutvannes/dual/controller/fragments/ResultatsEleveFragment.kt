@@ -21,24 +21,24 @@ import org.apache.xmlbeans.impl.xb.xsdschema.TopLevelAttribute
 import kotlin.collections.map
 
 /**
- * Affichage des résultats de l'élève
- * Récupération de l'identifiant de l'élève depuis ElevesFragment
+ * Displaying student results
+ * Retrieving the student ID from ElevesFragment
  *
  * @see GraphView
  */
 class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
 
 
-    /* Variable qui contiendra l'identifiant de l'élève */
+    /* Variable that stores the student ID */
     private var eleveId: Int = -1
 
     val db = DatabaseProvider.db
 
     /**
-     * Méthode appelée lors de la création du fragment
-     * Récupération de l'identifiant de l'élève depuis ElevesFragment
+     * Method called during fragment creation
+     * Retrieving the student ID from ElevesFragment
      *
-     * @param savedInstanceState Bundle contenant l'état de l'interface
+     * @param savedInstanceState Bundle containing the fragment's state
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +48,10 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
     }
 
     /**
-     * Méthode appelée lors de la création de la vue du fragment
-     * Affichage des résultats de l'élève
+     * Method called when the fragment view is created
      *
-     * @param view Vue du fragment
-     * @param savedInstanceState Bundle contenant l'état de l'interface
+     * @param view The fragment view
+     * @param savedInstanceState The data saved during the activity's state
      */
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -195,14 +194,16 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
     }
 
     /**
-     * Méthode statique pour créer un fragment ResultatsEleveFragment
+     * Static method to create a fragment: ResultatsEleveFragment
      *
      * @return Fragment ResultatsEleveFragment
      */
     companion object {
         /**
-         * Méthode utilitaire pour créer un fragment ResultatsEleveFragment
-         * en lui passant le nom de la classe à afficher.
+         * Static method to create a fragment: ResultatsEleveFragment
+         *
+         * @param eleveId ID of the student
+         * @return Fragment ResultatsEleveFragment
          */
         fun newInstance(eleveId: Int): ResultatsEleveFragment {
             val fragment = ResultatsEleveFragment()

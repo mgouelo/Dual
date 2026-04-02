@@ -45,6 +45,12 @@ interface ResultatDAO {
     @Query("SELECT * FROM Resultat WHERE id_resultat = :idResultat")
     suspend fun getResultatById(idResultat: Int): Resultat?
 
+    /**
+     * Retrieves all results for a specific eleve.
+     *
+     * @param idEleve The ID of the eleve to retrieve results for
+     * @return A list of results corresponding to the eleve
+     */
     @Query("SELECT * FROM Resultat WHERE id_eleve = :idEleve")
     suspend fun getResultatsByEleve(idEleve: Int): List<Resultat>
 
@@ -83,12 +89,29 @@ interface ResultatDAO {
     @Query("SELECT * FROM Resultat WHERE id_seance = :idSeance")
     suspend fun getBySeance(idSeance: Int): List<Resultat>
 
+    /**
+     * Retrieves the results of a specific seance.
+     *
+     * @param idSeance The ID of the seance to retrieve results for
+     * @return The number of results
+     */
     @Query("SELECT COUNT(*) FROM Resultat WHERE id_seance = :idSeance")
     suspend fun countBySeance(idSeance: Int): Int
 
+    /**
+     * Retrieves the results of a specific eleve.
+     *
+     * @param idEleve The ID of the eleve to retrieve results for
+     * @return A list of results corresponding to the eleve
+     */
     @Query("SELECT * FROM Resultat WHERE id_eleve = :idEleve AND id_seance = :idSeance LIMIT 1")
     suspend fun getResultatByEleveEtSeance(idEleve: Int, idSeance: Int): Resultat?
 
+    /**
+     * Deletes all results for a specific seance.
+     *
+     * @param idSeance The ID of the seance to delete results for
+     */
     @Query("DELETE FROM Resultat WHERE id_seance = :idSeance")
     suspend fun deleteBySeance(idSeance: Int): Int
 

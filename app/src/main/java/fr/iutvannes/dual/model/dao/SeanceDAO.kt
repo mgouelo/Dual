@@ -63,6 +63,12 @@ interface SeanceDAO {
     @Query("SELECT * FROM Seance WHERE classe = :classe AND type = :type ORDER BY date DESC")
     suspend fun getSeancesByClasseEtType(classe: String, type: String): List<Seance>
 
+    /**
+     * Retrieves all sessions for a specific class.
+     * The sessions are ordered by date in descending order.
+     *
+     * @param classe The class to retrieve sessions for.
+     */
     @Query("SELECT * FROM seance")
     fun getAllSeances(): List<Seance>
 }
