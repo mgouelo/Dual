@@ -94,33 +94,38 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                     val vmaEleve = eleveExist.vma
 
                     val dataCourse = coursesExist.mapNotNull { courseAvecTours ->
-                        val distanceMetres = courseAvecTours.course.distance_tour // ex: 250.0
-                        val vmaRef = eleveExist.vma // ex: 12.0
+                        val distanceMetres = courseAvecTours.course.distance_tour
+                        val vmaRef = eleveExist.vma
 
-                        // 1. On récupère les temps de chaque tour en ms (on filtre les zéros)
-                        val listeTemps = courseAvecTours.liste_tours
-                            .map { it.temps_ms }
-                            .filter { it > 0 }
+                        // 1. Trier les tours par numéro pour être sûr de l'ordre chronologique
+                        val toursTries = courseAvecTours.liste_tours.sortedBy { it.numero_tour }
 
-                        if (listeTemps.isEmpty() || vmaRef <= 0) return@mapNotNull null
+                        val tempsIndividuelsMs = mutableListOf<Long>()
+                        var tempsPrecedent = 0L
 
-                        // 2. Calcul de la vitesse moyenne de la course
-                        // Formule directe : (Distance totale / Temps total) * 3.6 pour avoir des km/h
-                        val distanceTotaleKm = (distanceMetres * listeTemps.size) / 1000.0
-                        val tempsTotalHeures = listeTemps.sum() / 3600000.0
+                        // 2. Transformer le cumul en temps par tour (Lap time)
+                        for (tour in toursTries) {
+                            val tempsCumule = tour.temps_ms
+                            val tempsDuTour = tempsCumule - tempsPrecedent
+                            if (tempsDuTour > 0) {
+                                tempsIndividuelsMs.add(tempsDuTour)
+                            }
+                            tempsPrecedent = tempsCumule // On garde le cumul pour le tour suivant
+                        }
+
+                        if (tempsIndividuelsMs.isEmpty() || vmaRef <= 0) return@mapNotNull null
+
+                        // 3. Calcul de la vitesse moyenne réelle
+                        // Vitesse = (Distance d'un tour * nb de tours) / Temps total du dernier tour (en heures)
+                        val distanceTotaleKm = (distanceMetres * tempsIndividuelsMs.size) / 1000.0
+                        val tempsTotalHeures = tempsPrecedent / 3600000.0 // tempsPrecedent est le cumul final
 
                         val vitesseMoyenneKmh = distanceTotaleKm / tempsTotalHeures
-
-                        // 3. Calcul du pourcentage de VMA
                         val pourcentageVMA = (vitesseMoyenneKmh / vmaRef * 100).toFloat()
 
-                        // 4. Formatage de la date pour l'axe X du graphique
+                        // 4. Date et retour
                         val date = db.seanceDao().getSeanceById(courseAvecTours.course.id_seance)?.date ?: "Inconnu"
-                        val parts = date.split("-")
-                        val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
-
-                        // On limite à 130% pour éviter que le graphique sorte du cadre si l'élève sprinte
-                        Pair(dateFormatee, min(130f, pourcentageVMA))
+                        Pair(date, min(130f, pourcentageVMA))
                     }
 
                     withContext(Dispatchers.Main) {
