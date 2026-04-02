@@ -58,7 +58,7 @@ class SuperAdminFragment : Fragment(R.layout.fragment_super_admin) {
 
         val db = DatabaseProvider.db
 
-        Toast.makeText(requireContext(), "Connecté en tant que Superadmin", Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), "Connecté en tant que Gestionnaire de Données", Toast.LENGTH_LONG).show()
 
         // ── Bouton retour ─────────────────────────────────────────────────
         view.findViewById<ImageButton>(R.id.btn_back_superadmin).setOnClickListener {
