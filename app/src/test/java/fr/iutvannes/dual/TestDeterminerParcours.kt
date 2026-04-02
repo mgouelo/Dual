@@ -2,7 +2,6 @@ package fr.iutvannes.dual
 
 import org.junit.Test
 import fr.iutvannes.dual.model.Algo.Parcours
-import fr.iutvannes.dual.model.Algo.VMA
 import org.junit.Before
 
 class TestDeterminerParcours {
@@ -51,7 +50,7 @@ class TestDeterminerParcours {
 
         println("--- Cas d'erreur ---")
         testCasDeterminerParcours(-2.0f, "Coupelles jaunes", false)
-        // la fonction ne crash pas et renvoie silencieusement le parcours coupelle jaune soit le parcours le plus court
+        // la fonction ne crash pas et renvoie le parcours coupelle jaune soit le parcours le plus court
         // cela évite de faire crash l'application même en cas de valeur érronée ce qui laisse la possibilité de modifier
         // la valeur de la vma plus tard
     }
