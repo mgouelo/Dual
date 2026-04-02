@@ -31,7 +31,9 @@ Ces opérations sont généralement réalisées **manuellement**, ce qui peut en
 - offrir un retour immédiat aux élèves ;
 - fonctionner **sans dépendance à Internet**, directement sur le terrain.
 
-Un premier **prototype fonctionnel** est livré dans le cadre du **semestre 3**.
+Un premier **prototype fonctionnel** a été livré lors du **semestre 3**.
+
+Et **l'application final** est livré dans le cadre du **semestre 4**.
 
 ---
 
@@ -80,13 +82,17 @@ Cette architecture garantit une **faible latence**, une **autonomie totale** et 
 ### 👨‍🏫 Côté enseignant
 - Inscription et connexion
 - Gestion minimale des classes et des élèves (identification lors des séances)
-- Lancement d’une séance de biathlon
+- Lancement d’une séance de biathlon en sélectionnant le type de séance
 - Génération d’un **QR code** pour permettre l’accès des élèves à la séance
+- Observation des anciennes séances
+- Observation de la courbe de progression de chaque élève en course et en tir
+- Exportation des différents résultats
 
 ### 🧑‍🎓 Côté élève
 - Accès à la séance via le **scan du QR code**
-- Saisie des résultats de tir
+- Saisie des résultats en fonction de la séance
 - Consultation immédiate des résultats calculés
+- Consultation des anciennes séances réalisées
 
 ### ⚙️ Aspects techniques
 - Fonctionnement entièrement hors ligne
@@ -136,7 +142,10 @@ Professeur référent du projet Biathlon
 - **Nolann Lescop**  
   Développeur Full Stack
 
-- **Glen Potay**  
+- **Glen Potay** (Semestre 3)  
+  Développeur Full Stack
+  
+- **Lucien Carré** (Semestre 4)  
   Développeur Full Stack
 
 
