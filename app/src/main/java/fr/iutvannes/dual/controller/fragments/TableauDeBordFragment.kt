@@ -1177,6 +1177,7 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     inner.addView(table)
                 }
 
+                // Section Ressenti
                 if (res.ressenti_intensite.isNotEmpty() || res.ressenti_durer.isNotEmpty() || res.ressenti_lucidite.isNotEmpty()) {
 
                     inner.addView(View(requireContext()).apply {
@@ -1193,51 +1194,63 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                         setPadding(8, 8, 8, 12)
                     })
 
-                    val tableRessenti = android.widget.TableLayout(requireContext()).apply {
-                        layoutParams = android.widget.LinearLayout.LayoutParams(
-                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-                        )
-                        setColumnStretchable(0, true)
-                        setColumnStretchable(1, true)
-                    }
+                    val emojiMap = mapOf(
+                        // Intensité 6ème
+                        "Tranquille" to "🟢", "Chaud" to "🟡", "Essoufflé" to "🟠", "À bout" to "🔴",
+                        // Intensité 4ème
+                        "Contrôlé" to "🟢", "Intense" to "🟡", "Critique" to "🟠", "Saturation" to "🔴",
+                        "Peu essoufflé" to "🟢", "Effort soutenu" to "🟡", "Gros souffle" to "🟠", "Épuisé" to "🔴",
+                        // Durée 6ème
+                        "Lent" to "🐢", "Bien" to "✅", "Vite" to "🥵",
+                        // Durée 4ème
+                        "Régulier" to "✅", "Économie" to "🐢", "Décroissant" to "📉",
+                        "Vitesse stable" to "✅", "Gardé de la réserve" to "🐢", "Fin de course difficile" to "📉",
+                        // Lucidité 6ème
+                        "Zen" to "🎯", "Bouge" to "⚖️",
+                        // Lucidité 4ème
+                        "Équilibré" to "⚖️", "Prudent" to "🎯", "Instable" to "🤠",
+                        "Rapide et précis" to "⚖️", "Calme et appliqué" to "🎯", "Précipité / Tremblant" to "🤠"
+                    )
 
-                    /**
-                     * Méthod to add a row to the table.
-                     *
-                     * @param label : label of the row
-                     * @param valeur : value of the row
-                     */
-                    fun ajouterLigneRessenti(label: String, valeur: String) {
-                        val row = android.widget.TableRow(requireContext())
+                    fun creerBadgeRessenti(valeur: String, questionLabel: String) {
+                        val emoji = emojiMap[valeur] ?: "•"
+                        val dp = { v: Float -> (v * resources.displayMetrics.density).toInt() }
+                        val row = android.widget.LinearLayout(requireContext()).apply {
+                            orientation = android.widget.LinearLayout.HORIZONTAL
+                            gravity = android.view.Gravity.CENTER_VERTICAL
+                            setPadding(dp(4f), dp(6f), dp(4f), dp(6f))
+                            layoutParams = android.widget.LinearLayout.LayoutParams(
+                                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                            ).also { it.bottomMargin = dp(8f) }
+                        }
                         row.addView(TextView(requireContext()).apply {
-                            text = label
-                            setTextColor(android.graphics.Color.argb(180, 255, 255, 255))
+                            text = questionLabel
+                            setTextColor(android.graphics.Color.argb(160, 255, 255, 255))
                             textSize = 13f
-                            setPadding(12, 10, 12, 10)
+                            layoutParams = android.widget.LinearLayout.LayoutParams(
+                                0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+                            )
                         })
                         row.addView(TextView(requireContext()).apply {
-                            text = valeur
+                            text = "$emoji  $valeur"
                             setTextColor(android.graphics.Color.WHITE)
                             textSize = 13f
                             setTypeface(null, android.graphics.Typeface.BOLD)
-                            setPadding(12, 10, 12, 10)
-                            gravity = android.view.Gravity.END
+                            setPadding(dp(14f), dp(8f), dp(14f), dp(8f))
+                            background = android.graphics.drawable.GradientDrawable().apply {
+                                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                                cornerRadius = dp(20f).toFloat()
+                                setColor(android.graphics.Color.argb(60, 255, 255, 255))
+                                setStroke(dp(1f), android.graphics.Color.argb(100, 255, 255, 255))
+                            }
                         })
-                        tableRessenti.addView(row)
-                        tableRessenti.addView(View(requireContext()).apply {
-                            layoutParams = android.widget.TableLayout.LayoutParams(
-                                android.widget.TableLayout.LayoutParams.MATCH_PARENT, 1
-                            )
-                            setBackgroundColor(android.graphics.Color.argb(30, 255, 255, 255))
-                        })
+                        inner.addView(row)
                     }
 
-                    if (res.ressenti_intensite.isNotEmpty()) ajouterLigneRessenti("Intensité", res.ressenti_intensite)
-                    if (res.ressenti_durer.isNotEmpty())     ajouterLigneRessenti("Durée",     res.ressenti_durer)
-                    if (res.ressenti_lucidite.isNotEmpty())  ajouterLigneRessenti("Lucidité",  res.ressenti_lucidite)
-
-                    inner.addView(tableRessenti)
+                    if (res.ressenti_intensite.isNotEmpty()) creerBadgeRessenti(res.ressenti_intensite, "Niveau d'engagement")
+                    if (res.ressenti_durer.isNotEmpty())     creerBadgeRessenti(res.ressenti_durer,     "Gestion de l'allure")
+                    if (res.ressenti_lucidite.isNotEmpty())  creerBadgeRessenti(res.ressenti_lucidite,  "Lucidité face aux cibles")
                 }
             }
 
