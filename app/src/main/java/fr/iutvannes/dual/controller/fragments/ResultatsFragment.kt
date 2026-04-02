@@ -167,7 +167,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                     val seance = seances[position]
                     val v = holder.itemView
-                    v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${seance.date.replace(" ", " à ")}"
+                    v.findViewById<TextView>(R.id.tv_seance_titre).text  = "Séance du ${formaterDate(seance.date)}"
                     v.findViewById<TextView>(R.id.tv_seance_detail).text = "${seance.type} — ${seance.classe}"
                     v.setOnClickListener {
                         val typeSeance = seance.type  // type de la séance pour l'affichage
@@ -230,7 +230,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
     private fun afficherResultatsSeance(seance: Seance) {
         val type = typeSelectionne ?: return
         seanceAffichee = seance
-        tvTitre.text = "Séance du ${seance.date.replace(" ", " à ")} — ${seance.classe}"
+        tvTitre.text = "Séance du ${formaterDate(seance.date)} — ${seance.classe}"
         btnBack.visibility = View.VISIBLE
 
         viewLifecycleOwner.lifecycleScope.launch {
