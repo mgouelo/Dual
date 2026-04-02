@@ -170,16 +170,29 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                         // Affichage des résultats de l'élève à l'examen
                         btnExamen.setOnClickListener {
                             resultTitre.text = "Résultat de l'examen"
-                            if (resultatExist.isEmpty() || resultatExist[0].note_finale == 0F) {
+
+                            // On cherche dans TOUS les résultats de l'élève s'il y a une note valide (> 0)
+                            // et on garde la meilleure note s'il y en a plusieurs !
+                            val meilleurExamen = resultatExist
+                                .filter { it.note_finale > 0F }
+                                .maxByOrNull { it.note_finale }
+
+                            if (meilleurExamen == null) {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
                                 resultExamen.text = "Pas de données à afficher"
-                                return@setOnClickListener
+                                resultExamen.textSize = 24f // Taille par défaut
                             } else {
                                 resultExamen.visibility = View.VISIBLE
                                 resultGraph.visibility = View.GONE
-                                resultExamen.text = "Note finale : ${resultatExist[0].note_finale} / 20"
-                                resultExamen.textSize = 48f
+
+                                // Astuce : On regarde si c'est une 4ème (sur 12) ou une 6ème (sur 15)
+                                // L'épreuve 4ème a un ecart_max_course à 0 par défaut.
+                                val noteMax = if (meilleurExamen.ecart_max_course == 0) "12" else "15"
+
+                                resultExamen.text = "Note finale :\n${meilleurExamen.note_finale} / $noteMax"
+                                resultExamen.textSize = 40f
+                                resultExamen.textAlignment = View.TEXT_ALIGNMENT_CENTER
                             }
                         }
                     }
