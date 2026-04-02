@@ -59,7 +59,6 @@ class ClasseAdapter(
         val card: View = view
     }
 
-    // CORRECTION 1: The return type must be TON ViewHolder
     /**
      * Creates a new ViewHolder for the list of classes.
      *
@@ -69,11 +68,9 @@ class ClasseAdapter(
      */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_classe, parent, false)
-        // CORRECTION 2: You must return an instance of YOUR ViewHolder, not the default one
         return ViewHolder(view)
     }
 
-    // CORRECTION 3: The 'holder' argument must be of type 'ViewHolder' (yours), not 'RecyclerView.ViewHolder'
     /**
      * Binds the data to the ViewHolder.
      *

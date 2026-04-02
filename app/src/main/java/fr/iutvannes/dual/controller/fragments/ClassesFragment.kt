@@ -4,6 +4,7 @@ package fr.iutvannes.dual.controller.fragments
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -185,18 +186,39 @@ class ClassesFragment : Fragment(R.layout.fragment_classes) {
         val fileName = getFileName(uri) ?: "import"
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val report = withContext(Dispatchers.IO) {
-                resolver.openInputStream(uri)?.use { input ->
-                    importViewModel.importer(input, fileName, mime, classeNom = null)
+            try {
+                val report = withContext(Dispatchers.IO) {
+                    resolver.openInputStream(uri)?.use { input ->
+                        importViewModel.importer(input, fileName, mime, classeNom = null)
+                    }
                 }
-            }
-            if (report != null) {
+
+                if (report != null) {
+                    Toast.makeText(
+                        context,
+                        "${report.created} élève(s) importé(s), ${report.classesCreated} classe(s) créée(s)",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    chargerClasses() // rafraîchit la liste des classes
+                }
+
+            } catch (e: IllegalArgumentException) {
+                // Intercepte les erreurs de colonnes manquantes (ex: "Colonne 'Prénom' absente")
                 Toast.makeText(
                     context,
-                    "${report.created} élève(s) importé(s), ${report.classesCreated} classe(s) créée(s)",
+                    "Format de fichier invalide : ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
-                chargerClasses() // rafraîchit la liste des classes
+                Log.e("ImportCSVGlobal", "Erreur de format CSV", e)
+
+            } catch (e: Exception) {
+                // Intercepte toute autre erreur pour éviter le crash
+                Toast.makeText(
+                    context,
+                    "Impossible de lire le fichier.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                Log.e("ImportCSVGlobal", "Erreur inattendue", e)
             }
         }
     }
