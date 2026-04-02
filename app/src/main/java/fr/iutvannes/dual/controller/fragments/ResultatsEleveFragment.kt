@@ -94,32 +94,33 @@ class ResultatsEleveFragment : Fragment(R.layout.fragment_resultats_eleve){
                     val vmaEleve = eleveExist.vma
 
                     val dataCourse = coursesExist.mapNotNull { courseAvecTours ->
-                        val distance = courseAvecTours.course.distance_tour
+                        val distanceMetres = courseAvecTours.course.distance_tour // ex: 250.0
+                        val vmaRef = eleveExist.vma // ex: 12.0
 
-                        val date = db.seanceDao()
-                            .getSeanceById(courseAvecTours.course.id_seance)
-                            ?.date ?: "Inconnu"
-
-                        val toursValides = courseAvecTours.liste_tours
+                        // 1. On récupère les temps de chaque tour en ms (on filtre les zéros)
+                        val listeTemps = courseAvecTours.liste_tours
                             .map { it.temps_ms }
                             .filter { it > 0 }
 
-                        if (toursValides.isEmpty()) return@mapNotNull null
+                        if (listeTemps.isEmpty() || vmaRef <= 0) return@mapNotNull null
 
-                        val moyenneTempsMs = toursValides.average()
+                        // 2. Calcul de la vitesse moyenne de la course
+                        // Formule directe : (Distance totale / Temps total) * 3.6 pour avoir des km/h
+                        val distanceTotaleKm = (distanceMetres * listeTemps.size) / 1000.0
+                        val tempsTotalHeures = listeTemps.sum() / 3600000.0
 
-                        val calculatedValue = if (moyenneTempsMs > 0 && vmaEleve > 0) {
-                            val tempsSecondes = moyenneTempsMs / 1000
-                            val vitesse = (distance / tempsSecondes) * 3.6
-                            (vitesse / vmaEleve * 100).toFloat()
-                        } else return@mapNotNull null
+                        val vitesseMoyenneKmh = distanceTotaleKm / tempsTotalHeures
 
-                        val pourcentageVMA = min(130f, calculatedValue)
+                        // 3. Calcul du pourcentage de VMA
+                        val pourcentageVMA = (vitesseMoyenneKmh / vmaRef * 100).toFloat()
 
+                        // 4. Formatage de la date pour l'axe X du graphique
+                        val date = db.seanceDao().getSeanceById(courseAvecTours.course.id_seance)?.date ?: "Inconnu"
                         val parts = date.split("-")
                         val dateFormatee = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
 
-                        Pair(dateFormatee, pourcentageVMA)
+                        // On limite à 130% pour éviter que le graphique sorte du cadre si l'élève sprinte
+                        Pair(dateFormatee, min(130f, pourcentageVMA))
                     }
 
                     withContext(Dispatchers.Main) {
