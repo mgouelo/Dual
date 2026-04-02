@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import androidx.fragment.app.viewModels
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import fr.iutvannes.dual.model.persistence.Eleve
 import fr.iutvannes.dual.model.utils.DatabaseProvider
@@ -185,24 +186,44 @@ class ElevesFragment : Fragment(R.layout.fragment_eleves){
         val mime = resolver.getType(uri)
         val fileName = getFileName(uri) ?: "import"
 
-        // Opening a coroutine on the I/O thread to import the data
+        // Opening a coroutine on the main thread, switching to I/O for reading
         viewLifecycleOwner.lifecycleScope.launch {
-            val report = withContext(Dispatchers.IO) {
-                resolver.openInputStream(uri)?.use { input ->
-                    importViewModel.importer(input, fileName, mime, classeNom)
+            try {
+                val report = withContext(Dispatchers.IO) {
+                    resolver.openInputStream(uri)?.use { input ->
+                        importViewModel.importer(input, fileName, mime, classeNom)
+                    }
                 }
-            }
 
-            // Displaying a message based on the import result
-            if (report != null) {
+                // Displaying a message based on the import result
+                if (report != null) {
+                    Toast.makeText(
+                        context,
+                        "Import terminé (${report.created} créés, ${report.errorCount} erreurs)",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    // student list update
+                    chargerEleves()
+                }
+
+            } catch (e: IllegalArgumentException) {
+                // L'erreur "Colonne 'Prénom' absente" sera attrapée ici !
                 Toast.makeText(
                     context,
-                    "Import terminé (${report.created} créés, ${report.errorCount} erreurs)",
+                    "Format de fichier invalide : ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
+                Log.e("ImportCSV", "Erreur de format CSV", e)
 
-                // student list update
-                chargerEleves()
+            } catch (e: Exception) {
+                // Sécurité supplémentaire pour toute autre erreur (fichier corrompu, etc.)
+                Toast.makeText(
+                    context,
+                    "Impossible de lire le fichier.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                Log.e("ImportCSV", "Erreur inattendue", e)
             }
         }
     }
