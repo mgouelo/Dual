@@ -36,46 +36,8 @@
     </div>
 
     <!-- Sections principales de la séance, regroupant les différentes activités d'entraînement et d'évaluation -->
-    <div class="hub-sections">
-
-        <!-- Section d'initialisation avec le test VMA pour évaluer la condition physique de l'élève -->
-        <div class="mode-group">
-            <p class="mode-title">Initialisation</p>
-            <button class="button" onclick="location.href='vma.html'">Faire le Test VMA</button>
-        </div>
-
-        <hr class="separator">
-
-        <!-- Section d'entraînement regroupant les activités de tir et de course pour préparer l'élève à l'épreuve finale -->
-        <div class="mode-group">
-            <p class="mode-title">Entraînement</p>
-            <div class="btn-group">
-                <button id="btn-tir" class="button" onclick="location.href='tir6eme.html'">Tir</button>
-                <button class="button" onclick="location.href='course.html'">Course</button>
-
-                <hr class="separator">
-
-                <!-- Section de suivi permettant à l'élève de visualiser son historique de séances et d'évaluer ses progrès au fil du temps -->
-                <p class="mode-title">Suivi</p>
-                <button class="button" onclick="location.href='historique.html'">Visualiser mon Historique</button>
-            </div>
-        </div>
-
-        <hr class="separator">
-
-        <!-- Section d'évaluation avec le lancement de l'épreuve finale pour tester les compétences de l'élève dans des conditions réelles -->
-        <div class="mode-group">
-            <p class="mode-title">Évaluation</p>
-            <button id="btn-eval" class="button btn-eval">Lancer l'Épreuve Finale</button>
-
-            <hr class="separator">
-
-            <!-- Section de suivi permettant à l'élève de visualiser son historique de séances et d'évaluer ses progrès au fil du temps -->
-            <p class="mode-title">Suivi</p>
-            <button class="button" onclick="location.href='historique.html'">Visualiser mon Historique</button>
-        </div>
-    </div>
-
+    <div class="hub-sections" id="hub-sections"></div>
+    
     <!-- Un bouton pour changer de niveau et revenir à la page de sélection du niveau -->
     <button class="button btn-back">Changer de niveau</button>
 
