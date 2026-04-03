@@ -419,14 +419,21 @@ fun Application.module(appContext: Context) {
                         }
 
                         if (eleve != null) {
-                            val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
-                                id_eleve = eleve.id_eleve,
-                                id_seance = KtorServer.idSeanceActuelle,
-                                cibles_touchees = scoreInt,
-                                temp_course = 0F
-                            )
                             withContext(Dispatchers.IO) {
-                                DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                                val existant = DatabaseProvider.db.resultatDao()
+                                    .getResultatByEleveEtSeance(eleve.id_eleve, KtorServer.idSeanceActuelle)
+                                if (existant != null) {
+                                    existant.cibles_touchees = scoreInt
+                                    DatabaseProvider.db.resultatDao().update(existant)
+                                } else {
+                                    val nouveauResultat = fr.iutvannes.dual.model.persistence.Resultat(
+                                        id_eleve = eleve.id_eleve,
+                                        id_seance = KtorServer.idSeanceActuelle,
+                                        cibles_touchees = scoreInt,
+                                        temp_course = 0F
+                                    )
+                                    DatabaseProvider.db.resultatDao().insert(nouveauResultat)
+                                }
                             }
                             Log.i("KtorServer", "RÉUSSITE : $studentId enregistré avec score $scoreInt")
                             call.respond(HttpStatusCode.Accepted, mapOf("status" to "OK"))
@@ -448,15 +455,21 @@ fun Application.module(appContext: Context) {
                                 eleve.vma = vmaValue
                                 DatabaseProvider.db.EleveDao().update(eleve)
 
-                                //On crée une ligne dans la table Resultat liée à l'idSeanceActuelle
-                                val marquageResultat = fr.iutvannes.dual.model.persistence.Resultat(
-                                    id_eleve = eleve.id_eleve,
-                                    id_seance = KtorServer.idSeanceActuelle,
-                                    vma = vmaValue, //On stocke la VMA ici pour l'historique de la séance
-                                    cibles_touchees = 0, //Pas de tir en Test VMA
-                                    temp_course = 0F
-                                )
-                                DatabaseProvider.db.resultatDao().insert(marquageResultat)
+                                val existant = DatabaseProvider.db.resultatDao()
+                                    .getResultatByEleveEtSeance(eleve.id_eleve, KtorServer.idSeanceActuelle)
+                                if (existant == null) {
+                                    val marquageResultat = Resultat(
+                                        id_eleve = eleve.id_eleve,
+                                        id_seance = KtorServer.idSeanceActuelle,
+                                        vma = vmaValue,
+                                        cibles_touchees = 0,
+                                        temp_course = 0F
+                                    )
+                                    DatabaseProvider.db.resultatDao().insert(marquageResultat)
+                                } else {
+                                    existant.vma = vmaValue
+                                    DatabaseProvider.db.resultatDao().update(existant)
+                                }
                             }
                             Log.i("KtorServer", "Test VMA enregistré : $studentId -> $vmaValue km/h")
                             call.respond(HttpStatusCode.Accepted, mapOf("status" to "VMA_OK"))
@@ -654,7 +667,7 @@ fun Application.module(appContext: Context) {
                     }
 
                     "Épreuve Finale" -> {
-                        val is4eme = resultats.all { it.ecart_max_course == 0 && it.nbTours == 6 }
+                        val is4eme = seance.classe.startsWith("4")
 
                         if (is4eme) {
                             csv.append("Épreuve Finale 4ème - ${seance.classe} - ${seance.date}\n\n")

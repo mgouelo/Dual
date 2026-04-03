@@ -95,29 +95,27 @@ const finAutomatique = () => {
 const reset = async() => {
     const confirmation = await demanderConfirmation("Réinitialiser le chronomètre ?");
 
-    // Si l'utilisateur confirme, on arrête le chrono et on réinitialise les valeurs
+    // Si l'utilisateur confirme, on réinitialise
     if (confirmation) {
         estArrete = true;
         clearTimeout(timeout);
-
-        // Remettre à la valeur de départ (20 minutes)
         minutes = 20;
         secondes = 0;
         millisecondes = 0;
         chrono.textContent = "20:00:00";
-    }
 
-    // Réinitialiser les données de l'épreuve
-    tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
-    historiqueEpreuve = [];
-    tourActuel = 1;
+        // Toutes les réinitialisations sont dans le bloc de confirmation
+        tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
+        historiqueEpreuve = [];
+        autoEval = { intensite: "", durer: "", lucidite: "" };
+        tourActuel = 1;
 
-    // Réinitialiser les tours
-    const listeTours = document.getElementById("listeTours");
-    if (listeTours) {
-        listeTours.innerHTML = "";
+        // On vide la liste des tours
+        const listeTours = document.getElementById("listeTours");
+        if (listeTours) {
+            listeTours.innerHTML = "";
+        }
     }
-};
 
 /** Enregistre le temps et ouvre la saisie du tir */
 const enregistrer = () => {
@@ -182,16 +180,17 @@ const validerTourEtTir = () => {
     let dureeTir = (tempsDebutTir.min * 60 + tempsDebutTir.sec) - (minutes * 60 + secondes);
 
     // Stockage de l'historique pour le bilan final
-    historiqueEpreuve.push({
-        tour: tourActuel,
-        course: dureeCourse,
-        tir: dureeTir,
-        totalTour: dureeCourse + dureeTir,
-        scoreTir: score,
-    });
+    const departAvantCeTour = { ...tempsDepartCourse }; // snapshot avant mise à jour
+        historiqueEpreuve.push({
+            tour: tourActuel,
+            course: dureeCourse,
+            tir: dureeTir,
+            totalTour: dureeCourse + dureeTir,
+            scoreTir: score,
+            departCourse: departAvantCeTour // Pour restauration en cas de suppression
+        });
 
-    // Preparation du tour suivant : on considère que le départ du prochain tour est à l'heure actuelle du chrono
-    tempsDepartCourse = { min: minutes, sec: secondes, ms: millisecondes };
+        tempsDepartCourse = { min: minutes, sec: secondes, ms: millisecondes };
 
     // Création de l'affichage dans la liste
     const listeTours = document.getElementById("listeTours");
@@ -213,10 +212,12 @@ const validerTourEtTir = () => {
 /** Supprime le dernier tour enregistré de la liste des tours si le chronomètre n'est pas à zéro. */
 const supprimer = () => {
     if(chrono.textContent != "00:00:00"){
-        const listeTours = document.getElementById("listeTours"); // conteneur de tous les tours
-        /* Vérifie s'il y a au moins un tour enregistré avant de tenter de supprimer le dernier. */
-        if (listeTours.lastElementChild) {
-            listeTours.lastElementChild.remove(); // Supprime le dernier enfant affiché
+        const listeTours = document.getElementById("listeTours");
+        if (listeTours.lastElementChild && historiqueEpreuve.length > 0) {
+            listeTours.lastElementChild.remove();
+            const tourSupprime = historiqueEpreuve.pop();
+            // Restaure le point de départ de course au moment où ce tour avait commencé
+            tempsDepartCourse = tourSupprime.departCourse;
             tourActuel--;
         }
     }

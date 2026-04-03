@@ -821,17 +821,25 @@ const annulerEtape = async () => {
     // CAS CLASSIQUE : On recule d'une étape
     const confirmationAction = await demanderConfirmation("Annuler la dernière étape ?");
     if (confirmationAction) {
-        // Reset des données selon l'étape qu'on annule
-        if (etapeActuelle === 6) {
-            pointsPassage.E = 0;
-            terminerBtn.style.display = "none";
-        } else if (etapeActuelle === 5) {
-            pointsPassage.D = 0;
-        } else if (etapeActuelle === 3) {
-            pointsPassage.B = 0;
-        }
+            // Reset des données selon l'étape qu'on annule
+            if (etapeActuelle === 6) {
+                pointsPassage.E = 0;
+                terminerBtn.style.display = "none";
+            } else if (etapeActuelle === 5) {
+                pointsPassage.D = 0;
+            } else if (etapeActuelle === 4) {
+                // On annule la sortie du tir 2 : on réinitialise D et le score de la série 2
+                pointsPassage.D = 0;
+                tirsData.serie2 = 0;
+            } else if (etapeActuelle === 3) {
+                pointsPassage.B = 0;
+            } else if (etapeActuelle === 2) {
+                // On annule la sortie du tir 1 : on réinitialise B et le score de la série 1
+                pointsPassage.B = 0;
+                tirsData.serie1 = 0;
+            }
 
-        etapeActuelle--;
+            etapeActuelle--;
 
         // Suppression visuelle du dernier élément
         if (liste.lastElementChild && liste.lastElementChild.className === "tour-item") {
