@@ -374,7 +374,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                         }
                         "Épreuve Finale" -> {
                             // Distinction 4ème/6ème par heuristique
-                            val is4eme = ligne.resultat.ecart_max_course == 0 && ligne.resultat.nbTours == 6
+                            val is4eme = seance.classe.startsWith("4")
                             if (is4eme) {
                                 val pct = if ((ligne.eleve.vma ?: 0f) > 0f)
                                     "%.0f%%".format((ligne.resultat.temp_course / ligne.eleve.vma!!) * 100)
@@ -651,9 +651,9 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                 when (seance.type) {
 
                     "Test VMA" -> {
-                        csv.append("\uFEFF")
-                        csv.append("Test VMA - ${seance.classe} - ${seance.date}\n\n")
-                        csv.append("Nom;Prénom;VMA (km/h)\n")
+                        val nomCourt = seance.classe.substringAfter(" ")
+                        csv.append("\uFEFFTest VMA $nomCourt ${seance.date}\n\n")
+                        csv.append("Nom;Prénom;VMA(km/h)\n")
                         resultats.forEach { res ->
                             val eleve = withContext(Dispatchers.IO) {
                                 DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
@@ -667,39 +667,39 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
 
                     "Épreuve Finale" -> {
                         // Heuristique 4ème : ecart_max = 0 et nbTours = 6 fixe
-                        val is4eme = resultats.all { it.ecart_max_course == 0 && it.nbTours == 6 }
+                        val is4eme = seance.classe.startsWith("4")
 
                         if (is4eme) {
-                            csv.append("\uFEFF")
-                            csv.append("Épreuve Finale 4ème - ${seance.classe} - ${seance.date}\n\n")
-                            csv.append("Nom;Prénom;VMA ref;Vitesse;% VMA;Course1;Tir1;Course2;Tir2;Course3;Cibles;Note /12\n")
+                            val nomCourt = seance.classe.substringAfter(" ")
+                            csv.append("\uFEFFÉpreuve Finale 4ème $nomCourt ${seance.date}\n\n")
+                            csv.append("Nom;Prénom;VMAref;Vitesse;%VMA;Course1;Tir1;Course2;Tir2;Course3;Cibles;Note(/12)\n")
                             resultats.forEach { res ->
                                 val eleve = withContext(Dispatchers.IO) { DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve) }
                                 if (eleve != null) {
-                                    fun fmtSec(sec: Int) = if (sec > 0) "${sec/60}'${"%02d".format(sec%60)}\"" else "-"
-                                    val tc1 = fmtSec(res.temps_A)
-                                    val tt1 = fmtSec(res.temps_B - res.temps_A)
-                                    val tc2 = fmtSec(res.temps_C - res.temps_B)
-                                    val tt2 = fmtSec(res.temps_D - res.temps_C)
-                                    val tc3 = fmtSec(res.temps_E - res.temps_D)
-                                    val vmaRef = eleve.vma?.let { "%.1f".format(it) } ?: "-"
-                                    val vitesse = "%.2f".format(res.temp_course)
-                                    val pct = if ((eleve.vma ?: 0f) > 0f) "%.0f%%".format((res.temp_course / eleve.vma!!) * 100) else "-"
-                                    val note = "%.2f".format(res.note_finale)
+                                    fun fmtSec(sec: Int) = if (sec > 0) "${sec/60}'${"%02d".format(sec%60)}" else "-"
+                                    val tc1 = if (res.temps_A > 0) fmtSec(res.temps_A) else "-"
+                                    val tt1 = if (res.temps_B > 0 && res.temps_A > 0) fmtSec(res.temps_B - res.temps_A) else "-"
+                                    val tc2 = if (res.temps_C > 0 && res.temps_B > 0) fmtSec(res.temps_C - res.temps_B) else "-"
+                                    val tt2 = if (res.temps_D > 0 && res.temps_C > 0) fmtSec(res.temps_D - res.temps_C) else "-"
+                                    val tc3 = if (res.temps_E > 0 && res.temps_D > 0) fmtSec(res.temps_E - res.temps_D) else "-"
+                                    val vmaRef = eleve.vma?.let { String.format(java.util.Locale.US, "%.1f", it) } ?: "-"
+                                    val vitesse = String.format(java.util.Locale.US, "%.2f", res.temp_course)
+                                    val pct = if ((eleve.vma ?: 0f) > 0f) String.format(java.util.Locale.US, "%.0f%%", (res.temp_course / eleve.vma!!) * 100) else "-"
+                                    val note = String.format(java.util.Locale.US, "%.2f", res.note_finale)
                                     csv.append("${eleve.nom.uppercase()};${eleve.prenom};$vmaRef;$vitesse;$pct;$tc1;$tt1;$tc2;$tt2;$tc3;${res.cibles_touchees};$note\n")
                                 }
                             }
                         } else {
-                            csv.append("\uFEFF")
-                            csv.append("Épreuve Finale 6ème - ${seance.classe} - ${seance.date}\n\n")
-                            csv.append("Nom;Prénom;VMA (km/h);Nb tours;Écart max (s);Cibles;Note /15\n")
+                            val nomCourt = seance.classe.substringAfter(" ")
+                            csv.append("\uFEFFÉpreuve Finale 6ème $nomCourt ${seance.date}\n\n")
+                            csv.append("Nom;Prénom;VMA(km/h);NbTours;EcartMax(s);Cibles;Note(/15)\n")
                             resultats.forEach { res ->
                                 val eleve = withContext(Dispatchers.IO) {
                                     DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve)
                                 }
                                 if (eleve != null) {
-                                    val vma  = eleve.vma?.let { "%.1f".format(it) } ?: "-"
-                                    val note = "%.2f".format(res.note_finale)
+                                    val vma  = eleve.vma?.let { String.format(java.util.Locale.US, "%.1f", it) } ?: "-"
+                                    val note = String.format(java.util.Locale.US, "%.2f", res.note_finale)
                                     csv.append("${eleve.nom.uppercase()};${eleve.prenom};$vma;${res.nbTours};${res.ecart_max_course};${res.cibles_touchees};$note\n")
                                 }
                             }
@@ -707,16 +707,16 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                     }
 
                     else -> { // Entraînement
-                        csv.append("\uFEFF")
-                        csv.append("Entraînement - ${seance.classe} - ${seance.date}\n\n")
-                        csv.append("Nom;Prénom;Nb séries tir;Moyenne tir;Meilleur tir;Nb tours;Meilleur tour;VMA (km/h)\n")
+                        val nomCourt = seance.classe.substringAfter(" ")
+                        csv.append("\uFEFFEntraînement $nomCourt ${seance.date}\n\n")
+                        csv.append("Nom;Prénom;NbSeries;MoyenneTir;MeilleurTir;NbTours;MeilleurTour;VMA(km/h)\n")
                         resultats.forEach { res ->
                             val eleve = withContext(Dispatchers.IO) { DatabaseProvider.db.EleveDao().getEleveById(res.id_eleve) }
                             if (eleve != null) {
                                 val tirs = withContext(Dispatchers.IO) { DatabaseProvider.db.tirDao().getTirsBySeanceEtEleve(seance.id_seance, eleve.id_eleve) }
                                 val scores = tirs.flatMap { it.liste_passages }.map { it.nb_tir_reussi }
                                 val nbSeries = scores.size
-                                val moyenne = if (nbSeries > 0) "%.1f".format(scores.average()) else "-"
+                                val moyenne = if (nbSeries > 0) String.format(java.util.Locale.US, "%.1f", scores.average()) else "-"
                                 val meilleurTir = scores.maxOrNull()?.toString() ?: "-"
 
                                 val courses = withContext(Dispatchers.IO) { DatabaseProvider.db.courseDao().getCoursesBySeanceEtEleve(seance.id_seance, eleve.id_eleve) }
@@ -724,7 +724,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
                                 val meilleurMs = courses.flatMap { it.liste_tours }.minOfOrNull { it.temps_ms }
                                 val meilleurTour = meilleurMs?.let { val s = (it/1000).toInt(); "%d'%02d\"".format(s/60, s%60) } ?: "-"
 
-                                val vma = eleve.vma?.let { "%.1f".format(it) } ?: "-"
+                                val vma = eleve.vma?.let { String.format(java.util.Locale.US, "%.1f", it) } ?: "-"
                                 csv.append("${eleve.nom.uppercase()};${eleve.prenom};$nbSeries;$moyenne;$meilleurTir;$nbTours;$meilleurTour;$vma\n")
                             }
                         }
@@ -780,7 +780,7 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
             }
             scrollView.addView(inner)
 
-            val is4eme = res.ecart_max_course == 0 && res.nbTours == 6
+            val is4eme = seanceAffichee?.classe?.startsWith("4") == true
             val vmaRef = eleve.vma ?: 0f
 
             // Tableau principal des résultats
@@ -1110,11 +1110,11 @@ class ResultatsFragment : Fragment(R.layout.fragment_resultats) {
             } else {
                 // 6ème — inchangé
                 val medailleTours = when {
-                    res.nbTours >= 7 -> "💎 DIAMANT"
+                    res.nbTours >= 8 -> "💎 DIAMANT"
+                    res.nbTours >= 7 -> "🏅 PLATINE"
                     res.nbTours >= 6 -> "🏆 OR"
                     res.nbTours >= 5 -> "🥈 ARGENT"
-                    res.nbTours >= 4 -> "🥉 BRONZE"
-                    else             -> "—"
+                    else             -> "🥉 BRONZE"
                 }
                 val medailleEcart = when {
                     res.ecart_max_course < 10  -> "💎 DIAMANT"

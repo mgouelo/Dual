@@ -1143,13 +1143,13 @@ class TableauDeBordFragment : Fragment(R.layout.fragment_tableau_de_bord) {
                     ))
 
                 } else {
-                    // 6ème — inchangé
+                    // 6ème
                     val medailleTours = when {
-                        res.nbTours >= 7 -> "💎 DIAMANT"
+                        res.nbTours >= 8 -> "💎 DIAMANT"
+                        res.nbTours >= 7 -> "🏅 PLATINE"
                         res.nbTours >= 6 -> "🏆 OR"
                         res.nbTours >= 5 -> "🥈 ARGENT"
-                        res.nbTours >= 4 -> "🥉 BRONZE"
-                        else             -> "—"
+                        else             -> "🥉 BRONZE"
                     }
                     val medailleEcart = when {
                         res.ecart_max_course < 10  -> "💎 DIAMANT"
