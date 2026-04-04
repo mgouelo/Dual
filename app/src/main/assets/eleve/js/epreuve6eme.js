@@ -105,9 +105,9 @@ const reset = async() => {
         chrono.textContent = "20:00:00";
 
         // Toutes les réinitialisations sont dans le bloc de confirmation
-        tempsDepartCourse = { min: 20, sec: 0, ms: 0 };
+        tempsDepartCourse = {min: 20, sec: 0, ms: 0};
         historiqueEpreuve = [];
-        autoEval = { intensite: "", durer: "", lucidite: "" };
+        autoEval = {intensite: "", durer: "", lucidite: ""};
         tourActuel = 1;
 
         // On vide la liste des tours
@@ -116,6 +116,7 @@ const reset = async() => {
             listeTours.innerHTML = "";
         }
     }
+};
 
 /** Enregistre le temps et ouvre la saisie du tir */
 const enregistrer = () => {

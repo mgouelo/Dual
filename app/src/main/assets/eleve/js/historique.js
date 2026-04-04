@@ -155,193 +155,226 @@ const chargerHistorique = async (idEleve) => {
 const afficherCartesHistorique = (donnees) => {
     if (msgChargement) msgChargement.style.display = "none";
 
-    if (!donnees || donnees.length === 0) {
-        listeHistorique.innerHTML = "<p class='text-center-italic'>Aucun historique trouvé.</p>";
+    // 1. On filtre les données pour EXCLURE les tests VMA
+    const historiqueFiltre = donnees.filter(resultat => {
+        const typeSeance = (resultat.type || "").toLowerCase();
+        // On ne garde la séance QUE SI elle ne contient pas le mot "vma"
+        return !typeSeance.includes("vma");
+    });
+
+    // 2. On vérifie s'il reste des choses à afficher après le filtre
+    if (!historiqueFiltre || historiqueFiltre.length === 0) {
+        listeHistorique.innerHTML = "<p class='text-center-italic'>Aucun historique de biathlon trouvé.</p>";
         return;
     }
 
-    donnees.forEach(resultat => {
-        const typeSeance = resultat.type.toLowerCase();
-        const isEpreuve = typeSeance.includes("épreuve") || typeSeance.includes("epreuve");
-        const is6eme = typeSeance.includes("6ème") || typeSeance.includes("6eme");
+    historiqueFiltre.forEach(resultat => {
+        // 🛡️ SÉCURITÉ : Un try/catch pour éviter qu'une séance buggée bloque tout l'historique
+        try {
+            const typeSeance = (resultat.type || "").toLowerCase();
+            const isEpreuve = typeSeance.includes("épreuve") || typeSeance.includes("epreuve");
 
-        // 1. CHOIX DU TEMPLATE
-        let templateId = "";
-        if (isEpreuve && is6eme) templateId = "template-epreuve-6eme";
-        else if (isEpreuve && !is6eme) templateId = "template-epreuve-4eme";
-        else if (!isEpreuve && is6eme) templateId = "template-entrainement-6eme";
-        else templateId = "template-entrainement-4eme";
+            // 🛡️ SÉCURITÉ : Si "6ème" n'est pas dans le titre de la séance, on regarde la classe de l'élève !
+            const classeEleve = eleveActif && eleveActif.classe ? eleveActif.classe.toString() : "";
+            const is6eme = typeSeance.includes("6ème") || typeSeance.includes("6eme") || classeEleve.includes("6");
 
-        const templateCarte = document.getElementById(templateId);
-        if (!templateCarte) return;
+            // 1. CHOIX DU TEMPLATE
+            let templateId = "";
+            if (isEpreuve && is6eme) templateId = "template-epreuve-6eme";
+            else if (isEpreuve && !is6eme) templateId = "template-epreuve-4eme";
+            else if (!isEpreuve && is6eme) templateId = "template-entrainement-6eme";
+            else templateId = "template-entrainement-4eme";
 
-        const carte = templateCarte.cloneNode(true);
-        carte.id = "";
-        carte.style.display = "block";
+            const templateCarte = document.getElementById(templateId);
+            if (!templateCarte) return; // Si le template manque, on passe au suivant
 
-        // 2. EN-TÊTE COMMUN
-        carte.querySelector(".archive-titre").textContent = resultat.type;
-        carte.querySelector(".archive-date").textContent = resultat.dateStr;
+            const carte = templateCarte.cloneNode(true);
+            carte.id = "";
+            carte.style.display = "block";
 
-        // 3. REMPLISSAGE SPÉCIFIQUE
-        if (isEpreuve && is6eme) {
-            carte.querySelector(".archive-note").textContent = `${resultat.noteFinale} / 15`;
+            // 2. EN-TÊTE COMMUN
+            carte.querySelector(".archive-titre").textContent = resultat.type;
+            carte.querySelector(".archive-date").textContent = resultat.dateStr;
 
-            carte.querySelector(".archive-col1-val").innerHTML = `<strong>Tours : </strong>${resultat.bilan.nbTours || 0}`;
-            carte.querySelector(".archive-col1-note").innerHTML = `<strong>Note : </strong> <span>${resultat.bilan.notePerf || 0} / 5</span>`;
-            configurerMedaille(carte, ".archive-col1-medaille", resultat.bilan.medaillePerf);
+            // 3. REMPLISSAGE SPÉCIFIQUE
+            if (isEpreuve && is6eme) {
+                const bilan = resultat.bilan || {}; // Sécurité
+                carte.querySelector(".archive-note").textContent = `${resultat.noteFinale || 0} / 15`;
 
-            carte.querySelector(".archive-col2-val").innerHTML = `<strong>Écart max : </strong>${resultat.bilan.ecartMax || 0}s`;
-            carte.querySelector(".archive-col2-note").innerHTML = `<strong>Note : </strong> <span>${resultat.bilan.noteRegul || 0} / 5</span>`;
-            configurerMedaille(carte, ".archive-col2-medaille", resultat.bilan.medailleRegul);
+                carte.querySelector(".archive-col1-val").innerHTML = `<strong>Tours : </strong>${bilan.nbTours || 0}`;
+                carte.querySelector(".archive-col1-note").innerHTML = `<strong>Note : </strong> <span>${bilan.notePerf || 0} / 5</span>`;
+                configurerMedaille(carte, ".archive-col1-medaille", bilan.medaillePerf);
 
-            carte.querySelector(".archive-col3-val").innerHTML = `<strong>Réussites : </strong>${resultat.bilan.totalTir || 0} / ${(resultat.bilan.nbTours || 0) * 5}`;
-            carte.querySelector(".archive-col3-note").innerHTML = `<strong>Note : </strong> <span>${resultat.bilan.noteTir || 0} / 5</span>`;
-            configurerMedaille(carte, ".archive-col3-medaille", resultat.bilan.medailleTir);
+                carte.querySelector(".archive-col2-val").innerHTML = `<strong>Écart max : </strong>${bilan.ecartMax || 0}s`;
+                carte.querySelector(".archive-col2-note").innerHTML = `<strong>Note : </strong> <span>${bilan.noteRegul || 0} / 5</span>`;
+                configurerMedaille(carte, ".archive-col2-medaille", bilan.medailleRegul);
 
-            if (resultat.audit && Object.keys(resultat.audit).length > 0) {
-                carte.querySelector(".archive-audit-6eme").innerHTML = genererAuditHTML(resultat.audit, true);
-            }
+                carte.querySelector(".archive-col3-val").innerHTML = `<strong>Réussites : </strong>${bilan.totalTir || 0} / ${(bilan.nbTours || 0) * 5}`;
+                carte.querySelector(".archive-col3-note").innerHTML = `<strong>Note : </strong> <span>${bilan.noteTir || 0} / 5</span>`;
+                configurerMedaille(carte, ".archive-col3-medaille", bilan.medailleTir);
 
-        } else if (isEpreuve && !is6eme) {
-            carte.querySelector(".archive-note").textContent = `${resultat.noteFinale} / 12`;
+                if (resultat.audit && Object.keys(resultat.audit).length > 0) {
+                    const zoneAudit = carte.querySelector(".archive-audit-6eme");
+                    if (zoneAudit) zoneAudit.innerHTML = genererAuditHTML(resultat.audit, true);
+                }
 
-            carte.querySelector(".archive-col1-val").innerHTML = `<strong>Intensité : </strong>${resultat.bilan.vitesseVal || 0}% VMA`;
-            if (resultat.bilan.vitesseRealiseeKmh) {
-                const det1 = carte.querySelector(".archive-col1-detail");
-                det1.style.display = "block";
-                det1.innerHTML = `<strong>Vitesse : </strong>${resultat.bilan.vitesseRealiseeKmh} km/h`;
-            }
-            carte.querySelector(".archive-col1-note").innerHTML = `<strong>Note : </strong> <span>${resultat.bilan.noteVitesse || 0} / 4</span>`;
-            configurerMedaille(carte, ".archive-col1-medaille", resultat.bilan.medailleVitesse);
+            } else if (isEpreuve && !is6eme) {
+                const bilan = resultat.bilan || {}; // Sécurité
+                carte.querySelector(".archive-note").textContent = `${resultat.noteFinale || 0} / 12`;
 
-            carte.querySelector(".archive-col2-val").innerHTML = `<strong>Précision : </strong>${resultat.bilan.tirVal || 0} cibles`;
-            const det2 = carte.querySelector(".archive-col2-detail");
-            det2.style.display = "block";
+                carte.querySelector(".archive-col1-val").innerHTML = `<strong>Intensité : </strong>${bilan.vitesseVal || 0}% VMA`;
+                if (bilan.vitesseRealiseeKmh) {
+                    const det1 = carte.querySelector(".archive-col1-detail");
+                    if (det1) {
+                        det1.style.display = "block";
+                        det1.innerHTML = `<strong>Vitesse : </strong>${bilan.vitesseRealiseeKmh} km/h`;
+                    }
+                }
+                carte.querySelector(".archive-col1-note").innerHTML = `<strong>Note : </strong> <span>${bilan.noteVitesse || 0} / 4</span>`;
+                configurerMedaille(carte, ".archive-col1-medaille", bilan.medailleVitesse);
 
-            // --- CORRECTION ICI : Remplacement de formatTemps par des secondes pures ---
-            const tempsTirSecondes = Math.floor((resultat.bilan.tirTempsMs || 0) / 1000);
-            det2.innerHTML = `<strong>Temps : </strong>${tempsTirSecondes}s`;
-            // -------------------------------------------------------------------------
+                carte.querySelector(".archive-col2-val").innerHTML = `<strong>Précision : </strong>${bilan.tirVal || 0} cibles`;
+                const det2 = carte.querySelector(".archive-col2-detail");
+                if (det2) {
+                    det2.style.display = "block";
+                    const tempsTirSecondes = Math.floor((bilan.tirTempsMs || 0) / 1000);
+                    det2.innerHTML = `<strong>Temps : </strong>${tempsTirSecondes}s`;
+                }
 
-            carte.querySelector(".archive-col2-note").innerHTML = `<strong>Note : </strong> <span>${resultat.bilan.noteTir || 0} / 6</span>`;
+                carte.querySelector(".archive-col2-note").innerHTML = `<strong>Note : </strong> <span>${bilan.noteTir || 0} / 6</span>`;
 
-            carte.querySelector(".archive-col3-val").innerHTML = `<strong>VMA réf : </strong>${resultat.bilan.vmaVal || 0} km/h`;
-            carte.querySelector(".archive-col3-note").innerHTML = `<strong>Note : </strong> <span>${resultat.bilan.noteVma || 0} / 2</span>`;
-            configurerMedaille(carte, ".archive-col3-medaille", resultat.bilan.medailleVma);
+                carte.querySelector(".archive-col3-val").innerHTML = `<strong>VMA réf : </strong>${bilan.vmaVal || 0} km/h`;
+                carte.querySelector(".archive-col3-note").innerHTML = `<strong>Note : </strong> <span>${bilan.noteVma || 0} / 2</span>`;
+                configurerMedaille(carte, ".archive-col3-medaille", bilan.medailleVma);
 
-            if (resultat.audit && Object.keys(resultat.audit).length > 0) {
-                carte.querySelector(".archive-audit-4eme").innerHTML = genererAuditHTML(resultat.audit, false);
-            }
+                if (resultat.audit && Object.keys(resultat.audit).length > 0) {
+                    const zoneAudit = carte.querySelector(".archive-audit-4eme");
+                    if (zoneAudit) zoneAudit.innerHTML = genererAuditHTML(resultat.audit, false);
+                }
 
-        } else {
-            // ENTRAÎNEMENT
-            const zoneDetails = carte.querySelector(".archive-details-entrainement");
-            let htmlEntrainement = "";
+            } else {
+                // ENTRAÎNEMENT
+                const zoneDetails = carte.querySelector(".archive-details-entrainement");
+                let htmlEntrainement = "";
 
-            if (resultat.bilan.tours && resultat.bilan.tours.length > 0) {
-                htmlEntrainement += `<h4 style="margin: 15px 0 10px 0; color: #303586; font-size: 1.2rem;">🏃 Course détaillée</h4>`;
-                htmlEntrainement += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #e74c3c;">`;
-                resultat.bilan.tours.forEach((tourMs, index) => {
-                    // On garde formatTemps ici car pour la course (des minutes et des secondes), c'est plus lisible
-                    htmlEntrainement += `<div style="margin-bottom: 5px; font-size: 1.1rem;"><strong>Tour ${index + 1}:</strong> ${formatTemps(tourMs)}</div>`;
-                });
-                htmlEntrainement += `</div>`;
-            }
+                // 🛡️ CORRECTION MAJEURE ICI : Les entraînements peuvent ne pas avoir l'enveloppe "bilan"
+                const data = resultat.bilan || resultat || {};
 
-            if (resultat.bilan.tirs && resultat.bilan.tirs.length > 0) {
-                htmlEntrainement += `<h4 style="margin: 20px 0 10px 0; color: #303586; font-size: 1.2rem;">🎯 Tir détaillé</h4>`;
+                if (data.tours && data.tours.length > 0) {
+                    htmlEntrainement += `<h4 style="margin: 15px 0 10px 0; color: #303586; font-size: 1.2rem;">🏃 Course détaillée</h4>`;
+                    htmlEntrainement += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #e74c3c;">`;
+                    data.tours.forEach((tourMs, index) => {
+                        htmlEntrainement += `<div style="margin-bottom: 5px; font-size: 1.1rem;"><strong>Tour ${index + 1}:</strong> ${formatTemps(tourMs)}</div>`;
+                    });
+                    htmlEntrainement += `</div>`;
+                }
 
-                if (is6eme) {
-                    htmlEntrainement += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
-                    let totalReussites = 0;
-                    resultat.bilan.tirs.forEach((score, index) => {
-                        totalReussites += score;
-                        let couleurScore = score >= 4 ? "#27ae60" : (score >= 2 ? "#f39c12" : "#e74c3c");
+                if (data.tirs && data.tirs.length > 0) {
+                    htmlEntrainement += `<h4 style="margin: 20px 0 10px 0; color: #303586; font-size: 1.2rem;">🎯 Tir détaillé</h4>`;
+
+                    if (is6eme) {
+                        htmlEntrainement += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+                        let totalReussites = 0;
+                        data.tirs.forEach((score, index) => {
+                            // Sécurité pour gérer les anciens et nouveaux formats
+                            const valScore = (typeof score === 'object' && score !== null) ? (score.reussites || 0) : score;
+                            totalReussites += valScore;
+                            let couleurScore = valScore >= 4 ? "#27ae60" : (valScore >= 2 ? "#f39c12" : "#e74c3c");
+                            htmlEntrainement += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background-color: #f8f9fa; padding: 12px 15px; border-radius: 8px; border-left: 5px solid #303586;">
+                                <div style="font-weight: bold; font-size: 1.1rem;">Série ${index + 1}</div>
+                                <span style="background-color: ${couleurScore}; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1.1rem;">${valScore} / 5</span>
+                            </div>`;
+                        });
+                        htmlEntrainement += `</div>`;
+
+                        const maxPossible = data.tirs.length * 5;
+                        const pct = maxPossible > 0 ? (totalReussites / maxPossible) * 100 : 0;
+                        let medaille = "BRONZE", couleur = "#cd7f32";
+                        if (pct >= 90)      { medaille = "DIAMANT"; couleur = "#1456DB"; }
+                        else if (pct >= 80) { medaille = "PLATINE"; couleur = "#b9f2ff"; }
+                        else if (pct >= 70) { medaille = "OR";      couleur = "#ffd700"; }
+                        else if (pct >= 60) { medaille = "ARGENT";  couleur = "#c0c0c0"; }
+
                         htmlEntrainement += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #f8f9fa; padding: 12px 15px; border-radius: 8px; border-left: 5px solid #303586;">
-                            <div style="font-weight: bold; font-size: 1.1rem;">Série ${index + 1}</div>
-                            <span style="background-color: ${couleurScore}; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1.1rem;">${score} / 5</span>
+                        <div style="margin-top: 20px; padding: 15px; border-radius: 8px; border: 2px solid #333; text-align: center;">
+                            <p style="font-size: 1.6rem; margin: 0;">Total réussites : <span style="font-weight: bold;">${totalReussites} / ${maxPossible}</span></p>
+                            <div style="margin-top: 15px; font-weight: bold; color: white; background-color:${couleur}; padding:15px; border-radius:12px; font-size:1.4rem;">Médaille : ${medaille}</div>
                         </div>`;
-                    });
-                    htmlEntrainement += `</div>`;
 
-                    const maxPossible = resultat.bilan.tirs.length * 5;
-                    const pct = (totalReussites / maxPossible) * 100;
-                    let medaille = "BRONZE", couleur = "#cd7f32";
-                    if (pct >= 90)      { medaille = "DIAMANT"; couleur = "#1456DB"; }
-                    else if (pct >= 80) { medaille = "PLATINE"; couleur = "#b9f2ff"; }
-                    else if (pct >= 70) { medaille = "OR";      couleur = "#ffd700"; }
-                    else if (pct >= 60) { medaille = "ARGENT";  couleur = "#c0c0c0"; }
+                    } else {
+                        htmlEntrainement += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #303586;">`;
+                        let totalReussites = 0;
+                        let totalTempsMs = 0;
 
-                    htmlEntrainement += `
-                    <div style="margin-top: 20px; padding: 15px; border-radius: 8px; border: 2px solid #333; text-align: center;">
-                        <p style="font-size: 1.6rem; margin: 0;">Total réussites : <span style="font-weight: bold;">${totalReussites} / ${maxPossible}</span></p>
-                        <div style="margin-top: 15px; font-weight: bold; color: white; background-color:${couleur}; padding:15px; border-radius:12px; font-size:1.4rem;">Médaille : ${medaille}</div>
-                    </div>`;
+                        data.tirs.forEach((s, i) => {
+                            const reussites = typeof s === 'object' ? (s.reussites || 0) : s;
+                            const tempsMs = typeof s === 'object' ? (s.tempsMs || 0) : 0;
 
-                } else {
-                    htmlEntrainement += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #303586;">`;
-                    let totalReussites = 0;
-                    let totalTempsMs = 0;
+                            totalReussites += reussites;
+                            totalTempsMs += tempsMs;
 
-                    resultat.bilan.tirs.forEach((s, i) => {
-                        totalReussites += s.reussites;
-                        totalTempsMs += (s.tempsMs || 0);
+                            let couleurScore = reussites >= 4 ? "#27ae60" : (reussites >= 2 ? "#f39c12" : "#e74c3c");
+                            let secondesTir = Math.floor(tempsMs / 1000);
 
-                        let couleurScore = s.reussites >= 4 ? "#27ae60" : (s.reussites >= 2 ? "#f39c12" : "#e74c3c");
+                            htmlEntrainement += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <div style="font-weight: bold; font-size: 1.1rem;">Tir ${i + 1}</div>
+                                <div>
+                                    <span style="color: ${couleurScore}; font-weight: bold; font-size: 1.1rem; margin-right: 15px;">${reussites} / 5</span>
+                                    <span style="color: #666; font-size: 1.1rem;">⏱️ ${secondesTir}s</span>
+                                </div>
+                            </div>
+                            <hr style="border:none; border-top: 1px solid #ccc; margin: 10px 0;">`;
+                        });
+                        htmlEntrainement += `</div>`;
 
-                        // On calcule directement les secondes pour l'affichage
-                        let secondesTir = Math.floor((s.tempsMs || 0) / 1000);
+                        const maxCibles = data.tirs.length * 5;
+                        const totalSecondes = Math.floor(totalTempsMs / 1000);
+                        const noteGlobale = calculerNoteEfficience(totalSecondes, totalReussites);
 
                         htmlEntrainement += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <div style="font-weight: bold; font-size: 1.1rem;">Tir ${i + 1}</div>
-                            <div>
-                                <span style="color: ${couleurScore}; font-weight: bold; font-size: 1.1rem; margin-right: 15px;">${s.reussites} / 5</span>
-                                <span style="color: #666; font-size: 1.1rem;">⏱️ ${secondesTir}s</span>
-                            </div>
-                        </div>
-                        <hr style="border:none; border-top: 1px solid #ccc; margin: 10px 0;">`;
-                    });
-                    htmlEntrainement += `</div>`;
+                        <div style="margin-top: 25px; padding: 15px; border-radius: 8px; border: 2px solid #303586; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <h3 style="margin: 0 0 15px 0; color: #303586; font-size: 1.3rem;">BILAN GLOBAL</h3>
+                            <p style="font-size: 1.1rem; margin: 5px 0;"><strong>Précision :</strong> ${totalReussites} / ${maxCibles} cibles</p>
+                            <p style="font-size: 1.1rem; margin: 5px 0;"><strong>Temps Cumulé :</strong> ${totalSecondes} secondes</p>
+                            <hr style="border:none; border-top: 1px solid #303586; margin: 15px 0;">
+                            <p style="font-size: 1.3rem; margin: 0; color: #333;">Note Efficience : <strong style="color:#303586;">${noteGlobale} / 6</strong></p>
+                        </div>`;
+                    }
+                }
 
-                    const maxCibles = resultat.bilan.tirs.length * 5;
-                    const totalSecondes = Math.floor(totalTempsMs / 1000);
-                    const noteGlobale = calculerNoteEfficience(totalSecondes, totalReussites);
+                if (htmlEntrainement === "") {
+                    htmlEntrainement = "<p class='text-center-italic'>Aucune donnée détaillée enregistrée pour cette séance.</p>";
+                }
 
-                    htmlEntrainement += `
-                    <div style="margin-top: 25px; padding: 15px; border-radius: 8px; border: 2px solid #303586; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <h3 style="margin: 0 0 15px 0; color: #303586; font-size: 1.3rem;">BILAN GLOBAL</h3>
-                        <p style="font-size: 1.1rem; margin: 5px 0;"><strong>Précision :</strong> ${totalReussites} / ${maxCibles} cibles</p>
-                        <p style="font-size: 1.1rem; margin: 5px 0;"><strong>Temps Cumulé :</strong> ${totalSecondes} secondes</p>
-                        <hr style="border:none; border-top: 1px solid #303586; margin: 15px 0;">
-                        <p style="font-size: 1.3rem; margin: 0; color: #333;">Note Efficience : <strong style="color:#303586;">${noteGlobale} / 6</strong></p>
-                    </div>`;
+                if (zoneDetails) {
+                    zoneDetails.innerHTML = htmlEntrainement;
                 }
             }
 
-            if (htmlEntrainement === "") {
-                htmlEntrainement = "<p class='text-center-italic'>Aucune donnée détaillée enregistrée pour cette séance.</p>";
+            // 4. ACCORDÉON
+            const header = carte.querySelector(".archive-header");
+            const content = carte.querySelector(".archive-content");
+            const toggle = carte.querySelector(".archive-toggle");
+
+            if (header && content && toggle) {
+                header.addEventListener("click", () => {
+                    const estFerme = content.style.display === "none";
+                    content.style.display = estFerme ? "block" : "none";
+                    toggle.textContent = estFerme ? "▲" : "▼";
+                });
             }
 
-            zoneDetails.innerHTML = htmlEntrainement;
+            listeHistorique.appendChild(carte);
+
+        } catch (erreur) {
+            // Si une séance plante, on l'affiche dans la console mais on NE BLOQUE PAS le reste !
+            console.error("Impossible de charger cette entrée d'historique :", resultat, erreur);
         }
-
-        // 4. ACCORDÉON
-        const header = carte.querySelector(".archive-header");
-        const content = carte.querySelector(".archive-content");
-        const toggle = carte.querySelector(".archive-toggle");
-
-        header.addEventListener("click", () => {
-            const estFerme = content.style.display === "none";
-            content.style.display = estFerme ? "block" : "none";
-            toggle.textContent = estFerme ? "▲" : "▼";
-        });
-
-        listeHistorique.appendChild(carte);
     });
 };
+
 /**
  * Génère le HTML de l'audit en surlignant les choix passés de l'élève
  * @param {object} choixEleve - L'objet contenant les choix de l'élève (intensite, durer, lucidite)
