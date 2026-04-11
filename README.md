@@ -41,16 +41,17 @@ Et **l'application final** est livré dans le cadre du **semestre 4**.
 
 L’application est conçue pour fonctionner **en extérieur**, souvent sans accès à Internet.
 
-La solution retenue repose sur un **réseau local ad-hoc** :
-- la tablette de l’enseignant agit comme **point d’accès Wi-Fi et serveur local** ;
-- les élèves se connectent directement à ce réseau ;
+La solution retenue repose sur un **réseau local LAN** :
+- la tablette de l’enseignant agit comme **serveur web local, zone de persistence de données** ;
+- le raspberry emet une connexion wifi locale et permet la communication entre les tablettes
+- les élèves se connectent directement au wifi émit par le raspberry avec la tablette professeur pour pouvoir envoyer et recevoir des données ;
 - aucun serveur externe n’est requis.
 
 Les échanges reposent sur :
 - **HTTP** pour les requêtes ;
 - **SSE (Server-Sent Events)** pour la communication en temps réel.
 
-Cette architecture garantit une **faible latence**, une **autonomie totale** et une **robustesse en conditions réelles**.
+Cette architecture garantit une **faible latence**, une **autonomie totale** et une **sécurité garantie par l'isolation**.
 
 ---
 
